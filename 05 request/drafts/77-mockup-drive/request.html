@@ -1,0 +1,115 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<title>VPO request layout</title>
+<!--
+  Layout rules, for whoever fills this in:
+  - Copy this file to 05 request/drafts/<house>/request.html and replace the sample rows and numbers
+    with the variance and review. Every name and number comes from those files.
+  - Leave {{PAGES}} exactly as it is. build_request.py prints the page, counts it, and fills it in.
+    Never type a page count.
+  - "Why" is one short sentence, about ten words at most.
+  - A tax line of $0.00 (for example PST $0.00) is not shown. The tax note says which taxes were $0.
+  - Keep the last group and the footer inside <div class="keep"> so the footer never splits from it.
+-->
+<style>
+  @page { size: 11in 8.5in; margin: 0.5in; }
+  :root { --ink:#1d2733; --muted:#5f6b78; --line:#cfd6dd; --soft:#f2f5f7; --red:#b42318; }
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", Arial, sans-serif; color: var(--ink); font-size: 11.5px; margin: 0; }
+  h1 { font-size: 24px; margin: 0 0 2px; }
+  .sub { color: var(--muted); font-size: 12.5px; margin: 0 0 10px; }
+  .sample { float: right; border: 1.5px solid var(--red); color: var(--red); font-weight: 700;
+            font-size: 10.5px; padding: 3px 8px; letter-spacing: .06em; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px 16px;
+          border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 8px 0; }
+  .lab { font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .val { font-size: 12.5px; }
+  .boxes { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 12px; margin: 12px 0; }
+  .box { border: 1px solid var(--line); padding: 10px 12px; }
+  .box.main { border: 2px solid var(--ink); background: var(--soft); }
+  .big { font-size: 22px; font-weight: 700; margin-top: 2px; }
+  .note { font-size: 10.5px; color: var(--muted); margin-top: 4px; }
+  h2 { font-size: 13px; margin: 14px 0 4px; }
+  h2 span { font-weight: 400; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th { font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+       text-align: right; border-bottom: 1.5px solid var(--ink); padding: 3px 6px; }
+  th.l, td.l { text-align: left; }
+  td { text-align: right; padding: 5px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td.why { text-align: left; width: 22%; }
+  tr.sum td { border-bottom: 0; padding-top: 3px; padding-bottom: 3px; }
+  tr.sum td.lab2 { text-align: right; color: var(--muted); }
+  tr.total td { font-weight: 700; border-top: 1.5px solid var(--ink); }
+  .plus { font-weight: 700; }
+  .minus { font-weight: 700; color: var(--red); }
+  .open { color: var(--red); font-size: 10px; }
+  .foot { display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; margin-top: 14px; font-size: 10.5px; }
+  .sign { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; align-self: end; }
+  .sign div { border-top: 1px solid var(--ink); padding-top: 3px; color: var(--muted); }
+  ul { margin: 2px 0 0; padding-left: 16px; }
+  h2 { break-after: avoid; page-break-after: avoid; }
+  table, .boxes, .grid { break-inside: avoid; page-break-inside: avoid; }
+  .keep { break-inside: avoid; page-break-inside: avoid; }
+</style></head>
+<body>
+
+<div class="sample">PRACTICE SAMPLE. MADE-UP DATA.</div>
+<h1>VPO request</h1>
+<p class="sub">The work measured on site, compared with the builder's POs and priced at the agreed rates. One EPO per PO, please.</p>
+
+<div class="grid">
+  <div><div class="lab">Job</div><div class="val">77 Mockup Drive, lot 24, block 3</div></div>
+  <div><div class="lab">Builder</div><div class="val">Sample Builder Ltd.</div></div>
+  <div><div class="lab">Trade contractor</div><div class="val">Sample Painting Co. (V00999)</div></div>
+  <div><div class="lab">Prepared</div><div class="val">October 17, 2026</div></div>
+  <div><div class="lab">Job name</div><div class="val">MKR-02402401-77 Mockup Drive</div></div>
+  <div><div class="lab">Community</div><div class="val">Mockup Ridge Single Family</div></div>
+  <div><div class="lab">Measured on site</div><div class="val">October 2, 2026</div></div>
+  <div><div class="lab">Document</div><div class="val">VR-0001, page 1 of {{PAGES}}</div></div>
+</div>
+
+<div class="boxes">
+  <div class="box"><div class="lab">Before tax</div><div class="big">$972.00</div>
+    <div class="note">2 items: 1 on a PO, 1 on no PO</div></div>
+  <div class="box"><div class="lab">Tax</div><div class="big">$48.60</div>
+    <div class="note">GST/HST 5%, at the rate printed on each PO. PST is $0.00 on every PO, so no PST line is shown.</div></div>
+  <div class="box main"><div class="lab">Total requested</div><div class="big">$1,020.60</div>
+    <div class="note">PO MKR-02402401/027: $315.00. No PO: $705.60. No credits included.</div></div>
+</div>
+
+<h2>PO MKR-02402401/027 <span>Interior paint and stain. One EPO for this PO.</span></h2>
+<table>
+  <tr><th class="l">Item</th><th>Unit</th><th>Agreed rate</th><th>PO qty</th><th>PO rate</th><th>PO amount</th>
+      <th>Measured qty</th><th>Measured value</th><th>Difference</th><th class="l">Why</th></tr>
+  <tr><td class="l">8' doors and trim</td><td>EA</td><td>$60.00</td><td>7</td><td>$60.00</td><td>$420.00</td>
+      <td>12</td><td>$720.00</td><td class="plus">+$300.00</td><td class="why">PO quantity short of the site count.</td></tr>
+  <tr class="sum"><td colspan="8" class="lab2">Difference before tax</td><td>+$300.00</td><td></td></tr>
+  <tr class="sum"><td colspan="8" class="lab2">GST/HST 5%, from this PO's own tax line</td><td>$15.00</td><td></td></tr>
+  <tr class="sum total"><td colspan="8" class="lab2">EPO requested for this PO</td><td>$315.00</td><td></td></tr>
+</table>
+
+<div class="keep">
+<h2>No PO <span>Work done on site that is on no PO. A new PO or EPO is needed.</span></h2>
+<table>
+  <tr><th class="l">Item</th><th>Unit</th><th>Agreed rate</th><th>PO qty</th><th>PO rate</th><th>PO amount</th>
+      <th>Measured qty</th><th>Measured value</th><th>Difference</th><th class="l">Why</th></tr>
+  <tr><td class="l">Prime and paint garage, including ceiling</td><td>SF</td><td>$1.60</td><td>0</td><td></td><td>$0.00</td>
+      <td>420</td><td>$672.00</td><td class="plus">+$672.00</td><td class="why">On site, on no PO. Site super asked for it.</td></tr>
+  <tr class="sum"><td colspan="8" class="lab2">Difference before tax</td><td>+$672.00</td><td></td></tr>
+  <tr class="sum"><td colspan="8" class="lab2">GST/HST 5%, at the rate on this house's other POs</td><td>$33.60</td><td></td></tr>
+  <tr class="sum total"><td colspan="8" class="lab2">New PO or EPO requested</td><td>$705.60</td><td></td></tr>
+</table>
+
+<div class="foot">
+  <div>
+    <b>Proof attached.</b> PO MKR-02402401/012, PO MKR-02402401/027, PO MKR-02402401/041, and the site measurements of October 2, 2026.
+    <br><br>
+    <b>How to read this.</b> PO amount is PO quantity times PO rate. Measured value is measured quantity times the agreed rate.
+    Difference is measured value minus PO amount. A plus is owed to the trade contractor. A minus is a credit back to the builder.
+    Tax is worked out from each PO's own tax line. No PO has been changed or deleted. Each EPO adds the difference for its PO.
+  </div>
+  <div class="sign"><div>Checked and approved by (trade contractor)</div><div>Date</div></div>
+</div>
+</div>
+
+</body></html>

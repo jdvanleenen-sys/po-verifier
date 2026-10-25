@@ -1,0 +1,54 @@
+Item,Unit,Rate,Active
+Handrail,LF,10,TRUE
+Ceiling wood panels,SF,4.5,TRUE
+Locker detail / built-ins (over 7' up to 10'),LF,120,TRUE
+Bench detail (lid),LF,45,TRUE
+"Walls, 2 coats",per room,450,TRUE
+"Above Level 3 trim, floor",Floor SF,0.4,TRUE
+French door,EA,85,TRUE
+Wood panels / wainscotting / posts / column,SF,4,TRUE
+"Wood windows, opening window",EA,60,TRUE
+"Additional wall colours, one-time fee per colour",EA,150,TRUE
+"Prime and paint garage, including ceiling",SF,1.6,TRUE
+Plant ledge capping,SF,5,TRUE
+Furnace room floor,EA,300,TRUE
+Fireplace columns,EA,50,TRUE
+"Gelstain door, one side",EA,110,TRUE
+"Above Level 3 trim, doors only, additional colour charge",EA,180,TRUE
+Bench detail (no lid),LF,30,TRUE
+"Closet shelving, full-height gables & long top shelves",LF,16,TRUE
+Hourly service,Hours,65,TRUE
+"Hallway walls over 16', or 2-storey walls",SF,2.25,TRUE
+Stubwall,LF,8,TRUE
+Locker detail / built-ins (up to 7'),LF,85,TRUE
+"Basement window box, std up to 4'",EA,55,TRUE
+Stairwell,Incl.,0,TRUE
+Lacquer or stain stair riser,EA,18,TRUE
+"Railing, wood",LF,38,TRUE
+"Closet shelving, incl. cleats or thick shelves (~4' wide)",LF,14,TRUE
+"Railing, 2-tone",LF,50,TRUE
+"Flat ceiling painted, over 10' up to 16'",SF,1.75,TRUE
+"Wall repaint, customer change colour",SF,1.75,TRUE
+"Upgrade 4"" baseboard up to 6""",SF,0.45,TRUE
+Accent wall,EA,225,TRUE
+Whole-house interior,Floor SF,3.5,FALSE
+"Mantle, painted or stained",LF,30,TRUE
+Cabinet refinishing,per kitchen,4200,TRUE
+Hallway walls up to 16',Incl.,0,TRUE
+Skylights,EA,90,TRUE
+Flat ceiling painted,SF,1.2,TRUE
+"Basement window box, large",EA,95,TRUE
+"Basic SF Painting, prime and 2 coat, MULTI FAMILY",Floor SF,2.6,TRUE
+"Railing, metal",LF,40,TRUE
+"Stringer, inside or outside",LF,9,TRUE
+"Wood windows, picture window",EA,40,TRUE
+"Basic SF Painting, prime and 2 coat, SINGLE FAMILY",Floor SF,2.75,TRUE
+Pocket door,EA,45,TRUE
+Trim and doors,per room,275,TRUE
+Skylights over 10',EA,175,TRUE
+Headers,EA,20,TRUE
+"Paint walls, height over 9'",SF,0.5,TRUE
+Upgrade std door to 8',EA,30,TRUE
+"Wall prime, flat rate",EA,1000,TRUE
+"Interior paint touch-up, flat rate",EA,500,TRUE
+8' doors and trim,EA,60,TRUE
