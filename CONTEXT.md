@@ -20,12 +20,14 @@ difference. This is a practice build. The data is made up and nothing is ever se
 | `03 compare/` | The difference, worked out by calculation |
 | `04 review/` | Sam's decisions |
 | `05 request/` | The request for the site super, checked before Sam sees it |
-| `05 request/build_request.py` | Prints the request, counts its pages, merges the proof, checks it, and numbers only a request that passed |
+| `05 request/build_request.py` | Prints the request, merges the proof, runs the six checks on the PDF, and numbers only a request that passed. Its helpers: `money.py` (works out what the request must say from Sam's approved records), `verify.py` (the six checks), `printing.py` (the browser) |
+| `tests/` | Planted mistakes the money gate must refuse: `python -m unittest discover -s tests` |
 | `05 request/drafts/` | The workbench for a request before it passes. Not the record |
 | `06 outcome/` | What the builder paid against each request |
 | `06 outcome/ledger.md` | One line per request: asked, received, the difference |
 | `templates/` | Blank forms for each stage's output: read-back, variance, review, request check, outcome |
 | `change-log.md` | What changed in this folder, when and why |
+| `README.md`, `_for-testers/` | For people testing the folder, not for the agent doing the job |
 
 Each stage folder has a `CONTEXT.md` that says what happens there. Read it before working in it.
 Each stage writes its output by copying its form from `templates/`, so every house's files look alike.

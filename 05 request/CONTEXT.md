@@ -38,7 +38,11 @@ and rows Sam left off are not on the request.
 
 ## How the sums are done
 Every difference is copied from the compare, never worked out again. The tax and the totals come
-from a calculation, run and shown.
+from a calculation, run and shown. The script then works them all out again on its own, from Sam's
+approved read-back and review, and refuses a request where any figure differs (`money.py`).
+
+Write each row's item exactly as the variance names it (the price list's name), and print every
+difference with its sign and a dollar sign (`+$300.00`, `-$170.00`): the script finds them that way.
 
 ## Filling in the header
 - **Prepared:** the date the request is built.
@@ -46,46 +50,44 @@ from a calculation, run and shown.
   number in `<house>/`, so `VR-0001` for a house's first request).
 - **Tax:** name each tax as the PO prints it (for example "GST/HST 5%").
 
+## Ask Sam one thing before the build
+"Attach your site notes to the request as proof?" His notes are his own scribbles, so they go to
+the builder only if he says yes. Write his answer into the proof list on the request.
+
 ## How the PDF is made: draft first, number only what passes
 The PDF is never written straight into the record. A print that goes wrong must cost nothing.
 1. Copy the layout to `drafts/<house>/request.html` and fill it in from the review and variance.
-2. Run `python "05 request/build_request.py" build <house>` from the folder root. It prints the
-   request, counts the pages, writes "page 1 of N" from that count and prints again, merges the
-   proof from `01 intake/<house>/`, and checks what a script can check (page count, footer on the
-   last page, proof attached). Its findings go in `drafts/<house>/script-checks.md`. If it fails,
-   fix the draft (usually a "why" that is too long) and build again.
-3. Read the draft PDF back and do the checks below. Write all six lines to
-   `drafts/<house>/request-check.md`, copied from `../templates/request-check.md`. Copy checks 5 and
-   6 from the script's findings.
-4. Only when no line says `fail`, run `python "05 request/build_request.py" commit <house>`. It
-   copies the draft in as the next numbered `vpo-request-N.pdf` and `request-check-N.md`. It
-   refuses if any line failed, if a check is missing, or if the draft changed after its build.
+2. Run `python "05 request/build_request.py" build <house> --notes yes` (or `--notes no`, Sam's
+   answer) from the folder root. Before printing, it checks that Sam's read-back and review are
+   approved and that the variance agrees with them; then it prints the request with "page 1 of N"
+   from the real count, attaches each PO and EPO once (a file saved twice goes once), adds the
+   notes only if Sam said yes, and names any other file it did not attach. Then it runs all six
+   checks below on the PDF itself and writes them to `drafts/<house>/script-checks.md`. If one
+   fails, fix the draft and build again.
+3. Only when all six pass, run `python "05 request/build_request.py" commit <house>`. It runs the
+   six checks again on the draft PDF, trusting nothing written about it, and only then copies it
+   in as the next numbered `vpo-request-N.pdf` and writes `request-check-N.md`. It refuses a file
+   that is not the built request, a request already numbered, or a draft changed after its build.
 `drafts/` is a workbench, not the record. Anything in it may be deleted.
-The script needs Python 3 with PyMuPDF, and Edge or Chrome.
+The script needs Python 3.9 or newer with PyMuPDF, and Chrome, Chromium or Edge. Prove it on your
+machine with `python -m unittest discover -s tests` from the folder root.
 
-## Check the request before Sam sees it
-The compare can be right and the PDF still wrong, and the PDF is the only thing the builder sees.
-Check the draft PDF, with a calculation run and shown:
-1. Every row on it is a row Sam approved in the review, and no other row is on it.
-2. Each row's difference equals the variance file's figure for that row.
+## The six checks (the script runs them; nobody writes them by hand)
+1. Every row on it is a row Sam approved in the review, and no row he left off is on it.
+2. Each row's difference equals the figure worked out from Sam's read-back.
 3. Each PO group's tax uses that PO's own printed rate, and the group adds up.
 4. The house total before tax, the tax and the total add up from the groups.
-5. Every document in the proof list is attached. (From the script.)
+5. Every PO and EPO in the read-back is attached, and the notes only if Sam said so.
 6. The page count printed on the request equals its actual pages, and the footer is on the last
-   page. (From the script.)
+   page.
 
-Write one line per check, each with one of three findings and the evidence:
-- `pass: <what was checked, with the numbers>`
-- `fail: <what is on the PDF>; expected: <what the review or variance says>`
-- `cannot check: <why>`. This is not a pass. Sam sees it and decides, and his decision is
-  written on that line.
-"Close enough" or "looks right" is not a finding. If any check
-fails, say which and stop. Sam does not see a request that failed a check.
+Each line reads `pass: <evidence>` or `fail: <what is on the PDF, and what was expected>`. If any
+check fails, nothing is numbered and Sam does not see the request.
 
 ## What goes out
 `<house>/vpo-request-N.pdf` and `<house>/request-check-N.md`, numbered by the script's commit,
-for Sam to check. Sam reads both and says yes to the request he will send. His yes, his name, the date, and `sent: yes` go in the
-request check. This yes block is the only part of a numbered request check written after the
+for Sam to check. Sam reads both and says yes to the request he will send. His yes, his name, the
+date, and `sent: yes` go in the yes block the script left blank in the request check. This yes block is the only part of a numbered request check written after the
 commit; nothing else in a numbered file changes. A changed request is the next number; a request already sent is never replaced. Sam
 sends it to the site super himself.
 

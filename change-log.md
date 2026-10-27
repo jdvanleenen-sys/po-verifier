@@ -1,5 +1,28 @@
 # Change log
 
+## 2026-10-27, the money gate (from a 7-agent test round)
+
+A test round on the public kit (a cohort critic, a skeptical contractor, a program judge, an
+attacker, a claims checker, a setup walker and a cold job walk) found that the request script
+trusted what the AI wrote: a 1-byte file was numbered as a request, a "fail" worded slightly
+differently was missed, and every dollar was typed by the AI and checked only by the AI. Fixed:
+
+- `05 request/money.py` (new) works out what the request must say from Sam's approved read-back
+  and review only, and checks the variance against them (rates, quantities, EPOs, measured
+  quantities in Sam's notes). Records that are unapproved or disagree stop the build.
+- `05 request/verify.py` (new) runs all six checks on the PDF itself. Commit runs them again on the
+  real file and no longer reads any check the AI wrote; it refuses a non-PDF, a wrong dollar, a
+  row Sam left off, a missing PO or EPO, notes he did not agree to, and a request already numbered.
+- Build asks for Sam's notes answer (`--notes yes|no`); his site notes go to the builder only if
+  he says yes. A file saved twice is attached once; any other file is named, never silently sent.
+- `05 request/printing.py` (split out): Chrome before Edge (Edge hung in testing), browsers found
+  by name on Linux, Python 3.9 supported.
+- `04 review`: a row that is both flagged and a credit has no default; Sam always decides.
+- `02 read`: a PO saved twice is read once on Sam's word, and his answer is written down.
+- `tests/`: 16 cases: 13 planted mistakes that must be refused, 2 clean cases that must pass, and
+  records saved as UTF-16 or with a BOM that must still be read.
+- Tester material moved to `_for-testers/`; `AGENTS.md` points other agents to `CLAUDE.md`.
+
 Newest first. What changed, why, and where the idea came from.
 
 ## 2026-10-17 (later), first full run, and what it found

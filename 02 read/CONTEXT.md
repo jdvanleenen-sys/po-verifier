@@ -83,7 +83,9 @@ not settle a warning item. Each one needs its own answer.
 4. The job address on each PO matches the address Sam gave.
 5. Anything on Sam's notes that is on no PO is listed as an extra item.
 6. No PO number appears twice in the house folder. If one does, say which and stop. The same PO
-   read twice would count its money twice.
+   read twice would count its money twice. If Sam says it is the same PO saved twice, read it once,
+   leave both files in intake, and write his answer under this check in the read-back. (The
+   request script attaches a file saved twice only once.)
 7. Every PO line and every measured item matches a price list item. Any that does not raises
    the warning above. The table is still shown, but the house does not leave this stage until
    every warning item is settled.
