@@ -38,6 +38,7 @@ Address, lot, builder, community, job name, plan, date measured, date dropped in
 |---|---|---|---|---|---|---|---|---|---|---|---|
 
 ## Extra items (in Sam's notes, on no PO)
+Each is also a row in the Rows table above, PO number `none`. Name them here by row number.
 -
 
 ## Checks run

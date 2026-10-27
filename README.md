@@ -1,7 +1,9 @@
 # PO Verifier
 
+*Agents: start at `CLAUDE.md`. This page and `_for-testers/` are for people.*
+
 A folder an AI agent runs to check a painting contractor's builder purchase orders (POs) against
-what he actually measured on site, then build a one-page request for the difference, with the
+what he actually measured on site, then build a request for the difference, with the
 proof attached.
 
 **It is a practice build with made-up data.** The builder, the painter, the addresses, the POs
@@ -24,17 +26,20 @@ method): the folders are the agent's instructions. `CLAUDE.md` is the agent's fr
 | `02 read` | The documents turned into rows | the painter says yes |
 | `03 compare` | The difference, line by line, by calculation | runs on its own |
 | `04 review` | What is worth chasing | the painter decides |
-| `05 request` | A one-page request PDF, checked by a script before it gets a number | the painter says yes, and sends it himself |
+| `05 request` | A request PDF with the proof attached. A script works every dollar out again from the painter's approved records and runs all six checks on the PDF before it gets a number | the painter says yes, and sends it himself |
 | `06 outcome` | What the builder paid against it | the painter confirms |
 
 Two rules never bend: the AI never decides the money, and it never sends anything.
 
 ## Test it
-Want to break it? See **[TESTING.md](TESTING.md)**. There is a house waiting for you to run.
+Want to break it? See **[_for-testers/TESTING.md](_for-testers/TESTING.md)**. There is a house waiting for you to run.
 
 ## Status
-- 2 practice houses run cold by a fresh AI with no memory of the build. Every number matched an
-  answer key worked out separately, to the cent.
+- The finished example, 77 Mockup Drive, checks out to the cent: `python -m unittest discover -s tests`
+  re-adds it and plants 13 mistakes the money gate must refuse.
+- The test house, 14 Example Crescent, has been run cold by a fresh AI twice (2026-10-25 and
+  2026-10-27; those runs are not in the repo). Both matched its sealed answer key to the cent.
+  Yours is the next run.
 - Not yet run on a real job. That is the next step.
 - What changed and why: `change-log.md`.
 

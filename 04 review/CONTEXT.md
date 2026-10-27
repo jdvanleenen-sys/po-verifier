@@ -14,6 +14,8 @@ Every row shows its PO number, grouped by PO.
 - **Sam's-call rows.** He says chase or leave for each. If he says nothing, the row is left off.
 - **Credits back to the builder,** shown as minus rows. Each one is Sam's call, like the rows
   above. A credit is left off unless he says to include it.
+- **A flagged credit has no default.** A row that is both flagged and a credit is always a
+  question Sam answers, on or off; neither rule above decides it for him. (Jeff, 2026-10-27.)
 - **If the house total is flagged:** every ignore row as well, so he sees the small ones together.
   They stay off the request unless he names them, like any row he did not choose.
 - **Not-comparable rows,** for his information only. They have no call.
