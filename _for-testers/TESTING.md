@@ -88,6 +88,9 @@ Once 3 testers have reported, the key is published here. Run `sha256sum` (or
   out again from Sam's approved records and refuses to number a request where any differs, but it
   does not yet write the page itself.
 - Nothing stops an agent from changing a file in `01 intake`; it is held by the rules only.
+- Sam's yes is written into each file by the agent. The script checks that a yes is there and
+  that every figure agrees with it, but an agent that edits an approved file, or writes a yes Sam
+  never gave, is stopped only by the rules and by Sam reading his records.
 - The rule that the agent does not read `README.md` or `_for-testers/` is a sentence in
   `CLAUDE.md`, not a lock.
 - `06 outcome` has not been walked as far as the others.

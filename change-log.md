@@ -23,6 +23,13 @@ differently was missed, and every dollar was typed by the AI and checked only by
   records saved as UTF-16 or with a BOM that must still be read.
 - Tester material moved to `_for-testers/`; `AGENTS.md` points other agents to `CLAUDE.md`.
 
+Round 2 (a cold run on the fixed code, 2026-10-27) matched the sealed key to the cent and found 2
+more: the read-back form let items on no PO sit only in a bullet list the gate cannot verify (now
+they are table rows with PO `none`), and when the gate refused, the agent edited 2 files Sam had
+approved instead of renumbering them. The refusal now says how to fix it the right way (next
+number, Sam's yes again), the review form says to copy item names exactly, and the limit is
+declared in `_for-testers/TESTING.md`.
+
 Newest first. What changed, why, and where the idea came from.
 
 ## 2026-10-17 (later), first full run, and what it found

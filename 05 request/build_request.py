@@ -96,7 +96,9 @@ def proof_spec(expected, notes_choice, notes):
 def expected_or_stop(house):
     expected, problems = money.expected_request(records(house))
     if problems:
-        sys.exit("Sam's records do not agree, so nothing was built:\n- " + "\n- ".join(problems))
+        sys.exit("Sam's records do not agree, so nothing was built:\n- " + "\n- ".join(problems) +
+                 "\nTo fix: never edit a file Sam approved. Write the corrected record as the next number "
+                 "(read-back-2, variance-2 or review-2), show it to Sam, and get his yes again.")
     return expected
 
 

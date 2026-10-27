@@ -68,6 +68,8 @@ The PDF is never written straight into the record. A print that goes wrong must 
    six checks again on the draft PDF, trusting nothing written about it, and only then copies it
    in as the next numbered `vpo-request-N.pdf` and writes `request-check-N.md`. It refuses a file
    that is not the built request, a request already numbered, or a draft changed after its build.
+If the build says Sam's records do not agree, never edit a file he approved to make it pass: write
+the corrected record as the next number, show it to Sam, and get his yes again.
 `drafts/` is a workbench, not the record. Anything in it may be deleted.
 The script needs Python 3.9 or newer with PyMuPDF, and Chrome, Chromium or Edge. Prove it on your
 machine with `python -m unittest discover -s tests` from the folder root.
