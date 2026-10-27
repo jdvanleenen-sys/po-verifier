@@ -81,7 +81,9 @@ not settle a warning item. Each one needs its own answer.
 2. The lines add up to the subtotal printed on the PO.
 3. The subtotal plus the taxes equals the total.
 4. The job address on each PO matches the address Sam gave.
-5. Anything on Sam's notes that is on no PO is listed as an extra item.
+5. Anything on Sam's notes that is on no PO is an extra item. Each one is a row in the Rows table
+   with PO number `none` (the request script reads only that table), and is named again under
+   "Extra items".
 6. No PO number appears twice in the house folder. If one does, say which and stop. The same PO
    read twice would count its money twice. If Sam says it is the same PO saved twice, read it once,
    leave both files in intake, and write his answer under this check in the read-back. (The

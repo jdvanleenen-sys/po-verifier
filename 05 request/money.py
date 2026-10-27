@@ -156,7 +156,9 @@ def variance_rows(text, rb_rows, epos, problems):
              "measured_qty": to_number(column(r, "measured qty")), "variance": to_amount(column(r, "variance"))}
         match = [rb for rb in rb_rows if rb["po"] == v["po"] and rb["item"] == v["item"]]
         if len(match) != 1:
-            problems.append(f"variance row '{v['item']}' ({v['po']}) matches {len(match)} read-back rows, not 1")
+            problems.append(f"variance row '{v['item']}' ({v['po']}) matches {len(match)} read-back rows, not 1. "
+                            "Every item, including one on no PO, must be a row in the read-back's Rows table "
+                            "(PO number 'none' for no PO), with Sam's yes on that read-back")
             continue
         result[(v["po"], v["item"])] = checked_row(v, match[0], epos, problems)
     for rb in rb_rows:
