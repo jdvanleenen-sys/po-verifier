@@ -37,7 +37,7 @@ out by a formula, and he approves anything that goes to a builder.
 
 ## Inputs
 For each house, the builder's POs and EPOs and the painter's site measurements, dropped into
-`01 intake/<house>/`. The price list in Airtable, as described in `reference/price-list.md`.
+`01 intake/<house>/`. The price list, `reference/price-list.csv`, as described in `reference/price-list.md`.
 
 ## Done, in his words
 Not asked yet in his words. My read so far: a document he can keep that shows the difference

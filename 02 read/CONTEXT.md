@@ -8,6 +8,9 @@ rows before anything is compared.
 Everything in `../01 intake/<house>/`: each PO, each EPO, Sam's measurements, and the address,
 lot, builder and dates he gave. The price list, as described in `../reference/price-list.md`.
 
+**First step, every read-back:** run `python "02 read/prices.py" snapshot <house>` and put the line
+it prints in the read-back's front matter as `price list read:`. Match only against that snapshot.
+
 ## What is read from each PO
 All of it, copied exactly as printed.
 - **The PO number** (printed as ORDER #). It goes on every row read from that PO and follows
@@ -67,8 +70,9 @@ can see why they did not fit. Never show the PO's own rate as the suggested rate
 Sam's to set.
 
 Sam settles each one in one of three ways:
-1. **He adds the item to the Airtable price list himself.** The AI then reads the price list
-   again and matches the item to the new row.
+1. **He adds the item to the price list himself,** in Excel (`../reference/price-list.csv`). The AI
+   then takes a new snapshot, writes a new numbered read-back from it, and matches the item to
+   the new row.
 2. **He names an existing item** that it should match.
 3. **He says leave it unpriced.** It goes to compare marked "not on the price list", with no
    measured value and no call.
@@ -91,8 +95,11 @@ not settle a warning item. Each one needs its own answer.
 7. Every PO line and every measured item matches a price list item. Any that does not raises
    the warning above. The table is still shown, but the house does not leave this stage until
    every warning item is settled.
+8. `python "02 read/prices.py" check <house>` passes: every priced row's item, unit and rate is
+   exactly as the snapshot has them.
 
-If check 1, 2, 3, 4 or 6 fails, say which PO and stop.
+If check 1, 2, 3, 4 or 6 fails, say which PO and stop. If check 8 fails, fix the row from the
+snapshot and run it again; never change the snapshot.
 
 ## At risk for this house
 Above the table Sam confirms, list each trap from "Careful" below and from "Careful" in

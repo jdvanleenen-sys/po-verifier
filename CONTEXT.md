@@ -10,7 +10,8 @@ difference. This is a practice build. The data is made up and nothing is ever se
 |---|---|
 | `CLAUDE.md`, `the-page.md` | Where to start, and who this is for and why |
 | `reference/price-list.md` | Where the price list lives and how to read it |
-| `reference/price-list.csv` | The price list to read for now (Airtable lacks three rows) |
+| `reference/price-list.csv` | The price list, the only one. Sam keeps it in Excel |
+| `02 read/prices.py` | Checks the price list, freezes a copy per read-back (`price-list-N.csv`), and checks every rate in the read-back against it |
 | `reference/contractor.md` | Who the contractor is and his settings, written by `00 setup` |
 | `reference/walk-test.md` | The checklist for testing this folder cold |
 | `reference/request-layout.html`, `request-layout-sample.pdf` | How the request looks |
@@ -21,7 +22,7 @@ difference. This is a practice build. The data is made up and nothing is ever se
 | `04 review/` | Sam's decisions |
 | `05 request/` | The request for the site super, checked before Sam sees it |
 | `05 request/build_request.py` | Prints the request, merges the proof, runs the six checks on the PDF, and numbers only a request that passed. Its helpers: `money.py` (works out what the request must say from Sam's approved records), `verify.py` (the six checks), `printing.py` (the browser) |
-| `tests/` | Planted mistakes the money gate must refuse: `python -m unittest discover -s tests` |
+| `tests/` | Planted mistakes the money gate and the price check must refuse: `python -m unittest discover -s tests` |
 | `05 request/drafts/` | The workbench for a request before it passes. Not the record |
 | `06 outcome/` | What the builder paid against each request |
 | `06 outcome/ledger.md` | One line per request: asked, received, the difference |
@@ -62,7 +63,6 @@ contractor is a second copy of the folder, set up through `00 setup`.
 - Tax is taken from each PO's own figures. See `05 request/CONTEXT.md`.
 
 ## What lives somewhere else
-- The price list is in Airtable. See `reference/price-list.md`.
 - The POs come from the builder's ordering system (SupplyPro). The files here are copies.
 - EPOs are written and approved in the builder's system, not here.
 
