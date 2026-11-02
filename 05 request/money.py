@@ -8,6 +8,10 @@ cannot be read, or does not agree, is a problem, and a problem stops the request
 import re
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "02 read"))
+import prices  # noqa: E402
 
 CENT = Decimal("0.01")
 NO_PO = "none"
@@ -154,6 +158,10 @@ def variance_rows(text, rb_rows, epos, problems):
              "rate": to_amount(column(r, "agreed rate")), "po_qty": to_number(column(r, "po qty")),
              "po_rate": to_amount(column(r, "po rate")), "po_amount": to_amount(column(r, "po amount")),
              "measured_qty": to_number(column(r, "measured qty")), "variance": to_amount(column(r, "variance"))}
+        if v["item"].startswith(prices.UNPRICED):
+            problems.append(f"variance row '{v['item']}' ({v['po']}) is unpriced, so it belongs in the "
+                            "'Not comparable, or left unpriced' list with no dollars, not in the Rows table")
+            continue
         match = [rb for rb in rb_rows if rb["po"] == v["po"] and rb["item"] == v["item"]]
         if len(match) != 1:
             problems.append(f"variance row '{v['item']}' ({v['po']}) matches {len(match)} read-back rows, not 1. "
@@ -162,9 +170,14 @@ def variance_rows(text, rb_rows, epos, problems):
             continue
         result[(v["po"], v["item"])] = checked_row(v, match[0], epos, problems)
     for rb in rb_rows:
-        if (rb["po"], rb["item"]) not in result:
+        if (rb["po"], rb["item"]) not in result and not unpriced(rb):
             problems.append(f"read-back row {rb['num']} ('{rb['item']}') is missing from the variance")
     return result
+
+
+def unpriced(rb_row):
+    """A row Sam left unpriced: no rate, no measured value, no call, never on a request."""
+    return rb_row["item"].startswith(prices.UNPRICED)
 
 
 def decisions(text, variances, problems):
@@ -198,11 +211,16 @@ def group_rate(po, rates, problems):
 
 
 def expected_request(records):
-    """Everything the request must say, and every problem found on the way. records = 3 texts."""
+    """Everything the request must say, and every problem found on the way.
+
+    records: the read-back, variance and review texts, and "price-list", the bytes of the price
+    list snapshot the read-back names (None if it is missing).
+    """
     problems = []
     for name in ("read-back", "review"):
         if not approved(records[name]):
             problems.append(f"the {name} does not carry Sam's approval (status: approved and his yes)")
+    problems += prices.check_read_back(records["read-back"], records.get("price-list"))
     rb_rows, rates, epos = read_back(records["read-back"])
     variances = variance_rows(records["variance"], rb_rows, epos, problems)
     chosen = decisions(records["review"], variances, problems)

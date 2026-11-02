@@ -60,6 +60,7 @@ def records(house):
         if path is None or not path.is_file():
             sys.exit(f"No {key} for {house} in {stage}/. Nothing was built.")
         texts[key] = source = money.read_text(path)
+    texts["price-list"] = money.prices.snapshot_bytes(house, texts["read-back"])
     return texts
 
 

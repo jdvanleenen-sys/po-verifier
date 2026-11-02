@@ -16,6 +16,10 @@ Every row shows its PO number, grouped by PO.
   above. A credit is left off unless he says to include it.
 - **A flagged credit has no default.** A row that is both flagged and a credit is always a
   question Sam answers, on or off; neither rule above decides it for him. (Jeff, 2026-10-27.)
+- **A row whose difference comes only from a back charge has no default.** When Sam's count and
+  the rate match the PO and the variance is the back charge taken off the PO amount, putting the row
+  on asks the builder to reverse the back charge. Say so in plain words, and Sam answers on or off.
+  (Found by the 62 Messy Bay test house, 2026-11-02.)
 - **If the house total is flagged:** every ignore row as well, so he sees the small ones together.
   They stay off the request unless he names them, like any row he did not choose.
 - **Not-comparable rows,** for his information only. They have no call.
@@ -29,6 +33,10 @@ this stage. "I don't know" leaves it open; it is not a yes to the rows as shown.
 `<house>/review-N.md`, copied from `../templates/review.md`, holding the variance file it came from, each row with Sam's decision, the reason for any flagged row he took
 off, his yes, his name and the date. Each review makes one request. The request stage
 (`../05 request/`) works from that file.
+
+**When nothing is on.** If every row matches, or Sam leaves every row off, there is no request.
+Sam's yes to the review still closes it: write "nothing to ask for" above the table, his yes, name
+and date. The house stops here; `05 request` and `06 outcome` do nothing for it.
 
 ## What must never happen here
 The AI never makes a call for Sam and never fills in a decision he did not give. A row Sam did

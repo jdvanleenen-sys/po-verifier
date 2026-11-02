@@ -23,13 +23,15 @@ HOUSE = "77-mockup-drive"
 RECORDS = {"read-back": ROOT / "02 read" / HOUSE / "read-back-1.md",
            "variance": ROOT / "03 compare" / HOUSE / "variance-1.md",
            "review": ROOT / "04 review" / HOUSE / "review-1.md"}
+SNAPSHOT = ROOT / "02 read" / HOUSE / "price-list-1.csv"
 REAL_PDF = ROOT / "05 request" / HOUSE / "vpo-request-1.pdf"
 NOTES_MARKER = "77 Mockup Dr / lot 24"
 
 
 def texts(**changes):
-    """77's three records, with (old, new) replacements applied to the named record."""
+    """77's three records and its price snapshot, with (old, new) replacements applied by name."""
     out = {k: money.read_text(p) for k, p in RECORDS.items()}
+    out["price-list"] = SNAPSHOT.read_bytes()
     for key, (old, new) in changes.items():
         assert old in out[key], f"planted change not found in {key}: {old}"
         out[key] = out[key].replace(old, new, 1)

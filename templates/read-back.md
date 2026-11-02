@@ -4,7 +4,7 @@ attempt:
 stage: 02 read
 from: 01 intake/<house>/
 status: draft
-price list read:
+price list read: <the line printed by: python "02 read/prices.py" snapshot <house>>
 ---
 
 # <house>, read-back <N>

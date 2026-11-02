@@ -4,7 +4,7 @@ attempt: 1
 stage: 02 read
 from: 01 intake/77-mockup-drive/
 status: approved
-price list read: 2026-10-17, from reference/price-list.csv (Airtable export of 2026-10-15 plus the three added rows; 53 rows, 52 active)
+price list read: 2026-10-17, price-list-1.csv, sha256 2165c84360409d1a276ca421ac20d0999ddd1224ee6a5964e3ecffe54db9aeaa (53 rows, 52 active; the snapshot file was saved 2026-11-02 from the same price list, unchanged since 2026-10-15; see change-log)
 ---
 
 # 77-mockup-drive, read-back 1

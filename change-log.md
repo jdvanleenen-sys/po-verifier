@@ -1,5 +1,39 @@
 # Change log
 
+## 2026-11-02 (later), what the six cold runs found, fixed
+
+Six fresh agents each ran one test house from `tests/houses/` cold, with Jeff's session playing Sam.
+- **Fixed: a row Sam left unpriced could not pass the money gate honestly.** `03 compare` lists
+  unpriced rows separately with no dollars, but `money.py` demanded every read-back row in the
+  variance table, so the only way through was a fake credit for the row's whole PO amount. The run
+  on 30 Not Listed Road refused to write one and stopped. The gate now skips rows marked "not on the
+  price list", and refuses one that shows up in the variance Rows table with dollars.
+- **Fixed: a row waiting on Sam's "pick one" failed the 02 read price check**, so the table could
+  never pass before he saw it. `prices.py check` now passes it and says how many wait on him; the
+  money gate still refuses any.
+- Tests: 2 cases for unpriced rows and 1 for pick-one rows (they fail on the old gate).
+
+## 2026-11-02, the price list is one file, and code checks every rate
+
+Jeff's call: run the prices from one price list that anyone testing has, with no database login.
+
+- `reference/price-list.csv` is now the price list, not a copy of Airtable. Sam keeps it in Excel
+  and saves it as "CSV UTF-8 (Comma delimited)". `reference/price-list.md` rewritten to match.
+- `02 read/prices.py` (new). `snapshot <house>` checks the file (four columns, a number in every
+  rate, a known unit, no item active twice, a clear message for a semicolon file) and freezes an
+  unchanged copy as `02 read/<house>/price-list-N.csv`, with its sha256 written into the
+  read-back's `price list read:` line. `check <house>` refuses any read-back row whose item, unit
+  or rate differs from that snapshot, or names an inactive item.
+- The money gate (`05 request/money.py`) runs the same check, so no request is numbered from a
+  rate that is not on the frozen list, or from a snapshot edited after the read.
+- `tests/test_price_list.py`: 18 cases (9 on the file Sam saves from Excel, 8 on the read-back's
+  rates). With the check switched off, 7 of the gate tests fail, so they test it.
+- 77 Mockup Drive: `02 read/77-mockup-drive/price-list-1.csv` saved 2026-11-02 from the same
+  price list it was read from on 2026-10-17 (the file has not changed since 2026-10-15), and its
+  read-back's `price list read:` line now names it. No rate or number changed.
+Why: the rates were read by the AI's eyes and checked by nobody. A wrong rate gives Sam a wrong
+dollar on a request he signs.
+
 ## 2026-10-27, the money gate (from a 7-agent test round)
 
 A test round on the public kit (a cohort critic, a skeptical contractor, a program judge, an
