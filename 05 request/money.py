@@ -158,6 +158,10 @@ def variance_rows(text, rb_rows, epos, problems):
              "rate": to_amount(column(r, "agreed rate")), "po_qty": to_number(column(r, "po qty")),
              "po_rate": to_amount(column(r, "po rate")), "po_amount": to_amount(column(r, "po amount")),
              "measured_qty": to_number(column(r, "measured qty")), "variance": to_amount(column(r, "variance"))}
+        if v["item"].startswith(prices.UNPRICED):
+            problems.append(f"variance row '{v['item']}' ({v['po']}) is unpriced, so it belongs in the "
+                            "'Not comparable, or left unpriced' list with no dollars, not in the Rows table")
+            continue
         match = [rb for rb in rb_rows if rb["po"] == v["po"] and rb["item"] == v["item"]]
         if len(match) != 1:
             problems.append(f"variance row '{v['item']}' ({v['po']}) matches {len(match)} read-back rows, not 1. "
@@ -166,9 +170,14 @@ def variance_rows(text, rb_rows, epos, problems):
             continue
         result[(v["po"], v["item"])] = checked_row(v, match[0], epos, problems)
     for rb in rb_rows:
-        if (rb["po"], rb["item"]) not in result:
+        if (rb["po"], rb["item"]) not in result and not unpriced(rb):
             problems.append(f"read-back row {rb['num']} ('{rb['item']}') is missing from the variance")
     return result
+
+
+def unpriced(rb_row):
+    """A row Sam left unpriced: no rate, no measured value, no call, never on a request."""
+    return rb_row["item"].startswith(prices.UNPRICED)
 
 
 def decisions(text, variances, problems):

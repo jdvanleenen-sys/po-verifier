@@ -101,6 +101,27 @@ class ReadBackPrices(unittest.TestCase):
         self.assertGateRefuses("does not name a price-list-N.csv",
                                **{"read-back": ("price-list-1.csv", "reference/price-list.csv")})
 
+    def test_pick_one_row_passes_at_read_but_never_at_the_gate(self):
+        records = texts(**{"read-back": ("| Railing, wood | LF | 38 |", "| pick one (Sam to choose) | | |")})
+        self.assertEqual(prices.check_read_back(records["read-back"], records["price-list"], pending_ok=True), [])
+        _, problems = money.expected_request(records)
+        self.assertTrue(any("waiting on Sam's pick" in p for p in problems), problems)
+
+    def test_row_sam_left_unpriced_needs_no_variance_row(self):
+        row = ('| 8 | MKR-02402401/027 | (5120) Soffit | LF | 60 | $3.50 | $210.00 | | "soffits 60 ft" '
+               '| not on the price list (Sam: leave unpriced) | | |')
+        garage = "| Prime and paint garage, including ceiling | SF | 1.6 |"
+        records = texts(**{"read-back": (garage, f"{garage}\n{row}")})
+        self.assertIn(row, records["read-back"])
+        exp, problems = money.expected_request(records)
+        self.assertEqual(problems, [])
+        self.assertEqual(str(exp["house"]["total"]), "1020.60")
+
+    def test_unpriced_row_with_dollars_in_the_variance_is_refused(self):
+        row = "| none | not on the price list | | | | | $0.00 | 2 | | -$210.00 | unpriced | |"
+        self.assertGateRefuses("belongs in the 'Not comparable",
+                               variance=("| missing from every PO | flag |", f"| missing from every PO | flag |\n{row}"))
+
     def test_inactive_item_is_refused(self):
         raw = texts()["price-list"].replace(b"\"Railing, wood\",LF,38,TRUE", b"\"Railing, wood\",LF,38,FALSE")
         records = texts()

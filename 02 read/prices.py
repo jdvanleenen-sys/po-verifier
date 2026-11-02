@@ -31,6 +31,7 @@ UNITS = {"Floor SF", "SF", "LF", "EA", "per room", "per kitchen", "Hours", "Incl
 YES = {"true", "yes", "y", "1", "x"}
 NO = {"false", "no", "n", "0", ""}
 UNPRICED = "not on the price list"
+PENDING = "pick one"
 READ_LINE = re.compile(r"^price list read:\s*(.+)$", re.M)
 SNAPSHOT_NAME = re.compile(r"price-list-\d+\.csv")
 FINGERPRINT = re.compile(r"sha256\s+([0-9a-f]{64})")
@@ -152,8 +153,12 @@ def rows_table(read_back_text):
     return rows
 
 
-def check_read_back(read_back_text, snapshot_raw):
-    """Every way the read-back's prices could disagree with the frozen price list."""
+def check_read_back(read_back_text, snapshot_raw, pending_ok=False):
+    """Every way the read-back's prices could disagree with the frozen price list.
+
+    pending_ok: a row still waiting on Sam's "pick one" passes (at 02 read, before he answers).
+    The money gate never passes one.
+    """
     name, expected = snapshot_named(read_back_text)
     if not name or not expected:
         return ["the read-back's 'price list read:' line does not name a price-list-N.csv snapshot "
@@ -164,14 +169,16 @@ def check_read_back(read_back_text, snapshot_raw):
         return [f"{name} has changed since the read-back was made (its sha256 does not match)"]
     prices, problems = parse(snapshot_raw)
     for r in rows_table(read_back_text):
-        problems += check_price_row(r, prices)
+        problems += check_price_row(r, prices, pending_ok)
     return problems
 
 
-def check_price_row(r, prices):
+def check_price_row(r, prices, pending_ok=False):
     """One read-back row against the frozen list: exact item, its unit, its rate, and active."""
     num, item = r.get("#", "?"), " ".join(r.get("price list item", "").split())
     rate_cell = r.get("rate", "")
+    if item.lower().startswith(PENDING):
+        return [] if pending_ok else [f"read-back row {num}: still waiting on Sam's pick"]
     if item.lower().startswith(UNPRICED):
         return [] if not rate_cell.strip() else [f"read-back row {num}: unpriced, but has a rate"]
     match = prices.get(item.lower())
@@ -211,10 +218,12 @@ def main(argv):
     if path is None:
         sys.exit(f"No read-back for {house} in 02 read/.")
     text = path.read_bytes().decode("utf-8-sig")
-    problems = check_read_back(text, snapshot_bytes(house, text))
+    problems = check_read_back(text, snapshot_bytes(house, text), pending_ok=True)
     if problems:
         sys.exit(f"{path.name}: the prices do not match the price list:\n- " + "\n- ".join(problems))
-    print(f"{path.name}: every priced row matches its price list snapshot exactly.")
+    waiting = sum(1 for r in rows_table(text) if r.get("price list item", "").lower().startswith(PENDING))
+    note = f" {waiting} row(s) wait on Sam's pick; the house cannot leave 02 read until he answers." if waiting else ""
+    print(f"{path.name}: every priced row matches its price list snapshot exactly.{note}")
 
 
 if __name__ == "__main__":
