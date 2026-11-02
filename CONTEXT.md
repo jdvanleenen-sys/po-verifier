@@ -23,6 +23,7 @@ difference. This is a practice build. The data is made up and nothing is ever se
 | `05 request/` | The request for the site super, checked before Sam sees it |
 | `05 request/build_request.py` | Prints the request, merges the proof, runs the six checks on the PDF, and numbers only a request that passed. Its helpers: `money.py` (works out what the request must say from Sam's approved records), `verify.py` (the six checks), `printing.py` (the browser) |
 | `tests/` | Planted mistakes the money gate and the price check must refuse: `python -m unittest discover -s tests` |
+| `tests/houses/` | Six test houses with POs, site notes, Sam's answers and the key; `tests/cold_run.py` runs one cold and scores it. For testing the folder, not for the agent doing the job |
 | `05 request/drafts/` | The workbench for a request before it passes. Not the record |
 | `06 outcome/` | What the builder paid against each request |
 | `06 outcome/ledger.md` | One line per request: asked, received, the difference |
