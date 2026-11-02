@@ -1,3 +1,5 @@
 * text=auto eol=lf
 *.pdf binary
 *.png binary
+# Price list snapshots are fingerprinted: keep their bytes exactly as saved.
+price-list-*.csv binary
