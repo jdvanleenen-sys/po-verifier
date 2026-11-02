@@ -87,7 +87,8 @@ Every house output is numbered: `read-back-N.md`, `variance-N.md`, `review-N.md`
 `vpo-request-N.pdf`, `request-check-N.md`, `outcome-N.md`. Each stage numbers its own files 1, 2, 3
 in the order it writes them (`attempt:` in the file is that same N), and each file names the file
 it was made from in its `from:` line. A
-correction or a re-run writes the next number and keeps the old one. A later stage reads the
+correction or a re-run writes the next number and keeps the old one. Until Sam's yes is written,
+a file is a draft and may be updated in place; once it is approved, it is never edited again. A later stage reads the
 highest number in the stage before it, with three exceptions: `05 request` uses the variance the
 review names, `06 outcome` reads each request marked sent, and a re-ask in `04 review` starts from
 the outcome Sam answered. The old files are the record of what was asked for and

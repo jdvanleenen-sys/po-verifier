@@ -28,7 +28,9 @@ All of it, copied exactly as printed: who created it, community, job name, lot n
 lot and block, EPO name, EPO total, reason code, notes, account code, trade partner, date
 requested, and its approval status. The EPO name carries the vendor number and the PO number it is
 against. Record that PO number on the EPO row. An EPO has a total and no lines, so match it to the item it pays for, using its
-account code and notes, and show that match to Sam like any other.
+account code and notes, and show that match to Sam like any other. Write the match in the EPO
+table's "Item it pays for" cell as `row N, <price list item>`: the money gate finds the row by that.
+A field the EPO does not print is written "not printed".
 Also say which way the money goes. Most EPOs pay Sam. A back charge against Sam takes money from
 him. A back charge against another trade, where the builder pays Sam to fix that trade's work,
 still pays Sam. Sam confirms the direction with the rest of the table.
