@@ -92,6 +92,12 @@ def approved(text):
                 and answer and re.search(r"\byes\b", answer.group(1), re.I) is not None)
 
 
+def takes_from_sam(which_way):
+    """-1 for a back charge against Sam. A back charge against another trade still pays Sam: +1."""
+    text = which_way.lower()
+    return -1 if "back charge" in text and "other trade" not in text else 1
+
+
 def read_back(text):
     """Sam's approved read-back: the rows, each PO's printed tax rate, and the EPOs."""
     found = tables(text)
@@ -115,7 +121,7 @@ def read_back(text):
         "po": po_key(column(r, "po it is against")),
         "pays_for": column(r, "item it pays for").lower(),
         "total": to_amount(column(r, "total")) or Decimal(0),
-        "sign": -1 if "back charge" in column(r, "which way").lower() else 1,
+        "sign": takes_from_sam(column(r, "which way")),
         "name": column(r, "epo name"),
     } for r in section(found, "epos read") if to_amount(column(r, "total")) is not None]
     return rows, rates, epos
