@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "05 request"))
 import money  # noqa: E402
 import prices  # noqa: E402  (money puts 02 read on the path)
-from test_money_gate import texts  # noqa: E402
+from test_money_gate import regrid, texts  # noqa: E402
 
 GOOD = b"Item,Unit,Rate,Active\nHandrail,LF,10,TRUE\n\"Railing, wood\",LF,38,TRUE\n"
 
@@ -108,11 +108,16 @@ class ReadBackPrices(unittest.TestCase):
         self.assertTrue(any("waiting on Sam's pick" in p for p in problems), problems)
 
     def test_row_sam_left_unpriced_needs_no_variance_row(self):
-        row = ('| 8 | MKR-02402401/027 | (5120) Soffit | LF | 60 | $3.50 | $210.00 | | "soffits 60 ft" '
+        row = ('| 8 | none | (on no PO) | | | | | | "soffits"; 60 ft '
                '| not on the price list (Sam: leave unpriced) | | |')
         garage = "| Prime and paint garage, including ceiling | SF | 1.6 |"
-        records = texts(**{"read-back": (garage, f"{garage}\n{row}")})
+        extra = "## Extra items (in Sam's notes, on no PO)\n"
+        records = texts()
+        records["read-back"] = (records["read-back"].replace(garage, f"{garage}\n{row}", 1)
+                                .replace(extra, f"{extra}- Row 8: soffits, 60 ft, left unpriced by Sam.\n", 1))
+        records["grid"] = regrid(records["read-back"], records["grid"], records["price-list"])
         self.assertIn(row, records["read-back"])
+        self.assertIn("Row 8: soffits", records["read-back"])
         exp, problems = money.expected_request(records)
         self.assertEqual(problems, [])
         self.assertEqual(str(exp["house"]["total"]), "1020.60")

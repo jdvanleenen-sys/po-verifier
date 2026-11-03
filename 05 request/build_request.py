@@ -46,6 +46,11 @@ def latest(folder, stem):
     return max(found)[1] if found else None
 
 
+def grid_path(read_back_path):
+    """The rule grid built for a read-back: read-back-N.md has grid-N.md beside it."""
+    return read_back_path.with_name(read_back_path.name.replace("read-back-", "grid-", 1))
+
+
 def records(house):
     """The approved review, the variance it names, and the read-back that variance names."""
     review = latest(ROOT / "04 review" / house, "review")
@@ -60,6 +65,8 @@ def records(house):
         if path is None or not path.is_file():
             sys.exit(f"No {key} for {house} in {stage}/. Nothing was built.")
         texts[key] = source = money.read_text(path)
+    grid = grid_path(path)
+    texts["grid"] = money.read_text(grid) if grid.is_file() else None
     texts["price-list"] = money.prices.snapshot_bytes(house, texts["read-back"])
     return texts
 

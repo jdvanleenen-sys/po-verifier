@@ -57,6 +57,8 @@ def load(run, slug):
              "variance": latest(run / "03 compare" / slug, "variance"),
              "review": latest(run / "04 review" / slug, "review")}
     texts = {k: money.read_text(p) if p else "" for k, p in paths.items()}
+    grid = paths["read-back"].with_name(paths["read-back"].name.replace("read-back-", "grid-", 1))         if paths["read-back"] else None
+    texts["grid"] = money.read_text(grid) if grid and grid.is_file() else None
     texts["price-list"] = money.prices.snapshot_bytes(slug, texts["read-back"]) if texts["read-back"] else None
     return money, paths, texts
 

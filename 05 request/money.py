@@ -12,6 +12,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "02 read"))
 import prices  # noqa: E402
+import grid_check  # noqa: E402
 
 CENT = Decimal("0.01")
 NO_PO = "none"
@@ -150,8 +151,11 @@ def checked_row(v, rb, epos, problems):
     return true_variance
 
 
-def variance_rows(text, rb_rows, epos, problems):
-    """Every variance row, each checked against Sam's read-back. Returns {(po, item): variance}."""
+def variance_rows(text, rb_rows, epos, problems, set_aside=frozenset()):
+    """Every variance row, each checked against Sam's read-back. Returns {(po, item): variance}.
+
+    set_aside: read-back row numbers the rule grid marks not comparable. They get no dollars.
+    """
     result = {}
     for r in section(tables(text), "rows"):
         v = {"po": po_key(column(r, "po number")), "item": column(r, "item").strip().lower(),
@@ -163,6 +167,10 @@ def variance_rows(text, rb_rows, epos, problems):
                             "'Not comparable, or left unpriced' list with no dollars, not in the Rows table")
             continue
         match = [rb for rb in rb_rows if rb["po"] == v["po"] and rb["item"] == v["item"]]
+        if len(match) == 1 and match[0]["num"] in set_aside:
+            problems.append(f"variance row '{v['item']}' ({v['po']}) is marked not comparable in the rule grid, "
+                            "so it belongs in the 'Not comparable' list with no dollars")
+            continue
         if len(match) != 1:
             problems.append(f"variance row '{v['item']}' ({v['po']}) matches {len(match)} read-back rows, not 1. "
                             "Every item, including one on no PO, must be a row in the read-back's Rows table "
@@ -170,7 +178,7 @@ def variance_rows(text, rb_rows, epos, problems):
             continue
         result[(v["po"], v["item"])] = checked_row(v, match[0], epos, problems)
     for rb in rb_rows:
-        if (rb["po"], rb["item"]) not in result and not unpriced(rb):
+        if (rb["po"], rb["item"]) not in result and not unpriced(rb) and rb["num"] not in set_aside:
             problems.append(f"read-back row {rb['num']} ('{rb['item']}') is missing from the variance")
     return result
 
@@ -213,16 +221,23 @@ def group_rate(po, rates, problems):
 def expected_request(records):
     """Everything the request must say, and every problem found on the way.
 
-    records: the read-back, variance and review texts, and "price-list", the bytes of the price
-    list snapshot the read-back names (None if it is missing).
+    records: the read-back, variance and review texts, "grid", the rule grid built for that
+    read-back (None if there is none), and "price-list", the bytes of the price list snapshot the
+    read-back names (None if it is missing).
     """
     problems = []
     for name in ("read-back", "review"):
         if not approved(records[name]):
             problems.append(f"the {name} does not carry Sam's approval (status: approved and his yes)")
     problems += prices.check_read_back(records["read-back"], records.get("price-list"))
+    grid_text = records.get("grid")
+    if grid_text is None:
+        problems.append("the read-back has no rule grid (run: python \"02 read/grid.py\" build <house>)")
+    else:
+        problems += grid_check.check_grid(records["read-back"], grid_text, records.get("price-list"), final=True)[0]
     rb_rows, rates, epos = read_back(records["read-back"])
-    variances = variance_rows(records["variance"], rb_rows, epos, problems)
+    set_aside = grid_check.not_comparable_rows(grid_text)
+    variances = variance_rows(records["variance"], rb_rows, epos, problems, set_aside)
     chosen = decisions(records["review"], variances, problems)
     groups = {}
     for (po, item), on in chosen.items():

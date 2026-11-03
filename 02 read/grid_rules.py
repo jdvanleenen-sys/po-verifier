@@ -151,6 +151,8 @@ def selection(row, _):
 
 
 def measured(row, _):
+    if item_state(row) == "unpriced":
+        return f"{NA}: not on the price list, so nothing is set against it"
     qty = measured_qty(row)
     return f"{PASS}: {show(qty)}" if qty is not None else f"{ASK_SAM}: no size or count read from his notes"
 

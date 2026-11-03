@@ -18,24 +18,49 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "05 request"))
 import money  # noqa: E402
 import verify  # noqa: E402
+import grid_read  # noqa: E402  (money puts 02 read on the path)
 
 HOUSE = "77-mockup-drive"
 RECORDS = {"read-back": ROOT / "02 read" / HOUSE / "read-back-1.md",
            "variance": ROOT / "03 compare" / HOUSE / "variance-1.md",
-           "review": ROOT / "04 review" / HOUSE / "review-1.md"}
+           "review": ROOT / "04 review" / HOUSE / "review-1.md",
+           "grid": ROOT / "02 read" / HOUSE / "grid-1.md"}
 SNAPSHOT = ROOT / "02 read" / HOUSE / "price-list-1.csv"
 REAL_PDF = ROOT / "05 request" / HOUSE / "vpo-request-1.pdf"
 NOTES_MARKER = "77 Mockup Dr / lot 24"
 
 
 def texts(**changes):
-    """77's three records and its price snapshot, with (old, new) replacements applied by name."""
+    """77's records and its price snapshot, with (old, new) replacements applied by name.
+
+    A changed read-back gets its grid rebuilt with the same answers, so a test plants one mistake.
+    """
     out = {k: money.read_text(p) for k, p in RECORDS.items()}
     out["price-list"] = SNAPSHOT.read_bytes()
     for key, (old, new) in changes.items():
         assert old in out[key], f"planted change not found in {key}: {old}"
         out[key] = out[key].replace(old, new, 1)
+    if "read-back" in changes and "grid" not in changes:
+        out["grid"] = regrid(out["read-back"], out["grid"], out["price-list"])
     return out
+
+
+def regrid(read_back_text, old_grid, snapshot):
+    """A fresh grid for a changed read-back, with each '?' answered as the old grid answered it."""
+    answers = {}
+    for heading in ("row grid", "po grid"):
+        header, rows = grid_read.table(grid_read.under(old_grid, heading))
+        answers.update({(r[0], h): c for r in rows for h, c in zip(header[1:], r[1:])})
+    lines, header = [], []
+    for line in grid_read.render(HOUSE, 1, read_back_text, snapshot).splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if line.startswith("| ") and cells[0] in ("#", "PO number"):
+            header = cells
+        elif line.startswith("| ") and "?" in cells:
+            cells = [answers.get((cells[0], header[i]), c) if c == "?" else c for i, c in enumerate(cells)]
+            line = "| " + " | ".join(cells) + " |"
+        lines.append(line)
+    return "\n".join(lines)
 
 
 def expected():
@@ -95,6 +120,20 @@ class Records(unittest.TestCase):
     def test_row_missing_from_variance_is_refused(self):
         line = next(l for l in texts()["variance"].splitlines() if "Railing, wood" in l)
         self.assertProblem("missing from the variance", variance=(line + "\n", ""))
+
+    def test_read_back_without_a_grid_is_refused(self):
+        records = texts()
+        records["grid"] = None
+        _, found = money.expected_request(records)
+        self.assertTrue(any("no rule grid" in p for p in found), found)
+
+    def test_grid_still_waiting_on_sam_is_refused(self):
+        self.assertProblem("still waiting on Sam", grid=("pass: 'prime 1' is one flat-rate wall prime",
+                                                         "ask Sam: prime or primer?"))
+
+    def test_not_comparable_row_with_dollars_is_refused(self):
+        self.assertProblem("marked not comparable", grid=("pass: 34 LF against PO qty 30",
+                                                          "not comparable: stringers are a lump sum here"))
 
     def test_utf16_and_bom_records_are_read(self):
         with tempfile.TemporaryDirectory() as tmp:
