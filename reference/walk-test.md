@@ -9,7 +9,8 @@ folder still needs.
 3. Does each stage's `CONTEXT.md` name its exact input, its job, its output file, and where Sam is
    asked?
 4. Can you tell where a house stands just by looking at which numbered files exist?
-5. Does `03 compare` read only the highest-numbered read-back and `reference/contractor.md`?
+5. Does `03 compare` read only the highest-numbered read-back, its rule grid and
+   `reference/contractor.md`, and is its variance written by `compare.py`, not by hand?
 6. Does every rate in the compare come from the read-back, with the price list date recorded in it?
 7. Is there any place where a stage could go on without Sam's written yes?
 8. Is any output overwritten instead of numbered?
@@ -21,3 +22,5 @@ folder still needs.
 13. Does each stage's output follow its form in `templates/`?
 14. Is the request PDF made by `05 request/build_request.py`, in `drafts/` first, and numbered only
     after all six checks pass?
+15. Does every read-back have a `grid-N.md` beside it that passes `grid.py check --final`, with its
+    `?` cells answered one rule at a time and no code cell changed?

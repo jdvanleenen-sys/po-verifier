@@ -1,5 +1,39 @@
 # Change log
 
+## 2026-11-02 (evening), the rule grid: every row checked against every rule, one cell each
+
+Jeff's ask: verify each line item against one rule at a time, to get rid of silent errors. The checks
+were a list the AI wrote ("pass: 7 of 7"), so a row that was never checked looked the same as one
+that passed.
+
+- **New: the rule grid.** `02 read/grid.py build <house>` writes `grid-N.md` beside `read-back-N.md`,
+  with one cell per row per rule (10 rules) and per PO per PO rule (5 rules). Code fills every cell
+  it can work out; the AI answers the rest one rule (one column) at a time. `grid.py check` refuses a
+  blank or `?` cell, a missing or extra row, a changed code cell, a `fail`, an at-risk row not named
+  under its trap in At risk, and a read-back changed after its grid was built. `--final` also
+  refuses `ask Sam`. Rules in `grid_rules.py`; reading in `grid_read.py`; checking in `grid_check.py`.
+- **New: `03 compare/compare.py` writes the variance by code.** It replaces a `compare.py` that each
+  run wrote in its own scratch space. It refuses a read-back without Sam's yes or a grid that fails
+  `--final`. Its arithmetic (`compare_rows.py`) is kept apart from the money gate on purpose.
+- **"Not comparable" is now marked in `02 read`**, in the grid's `count` column, so Sam sees it in the
+  table he says yes to. Before, compare marked it and the money gate demanded the row anyway.
+- **The money gate refuses a request with no grid or a grid that fails `--final`**, and no longer
+  demands a variance row for a row the grid marks not comparable.
+- **Fixed: a back charge against another trade was counted against Sam in the money gate.** 02 read
+  says it still pays Sam. Found when `compare.py`, written apart from the gate, disagreed with it. The
+  gate refused the house rather than pass it.
+- **Found by the grid in the test data:** the unpriced-row test added a $210 line to PO /027 without
+  changing its printed subtotal. The old checks never looked. The fixture is now an extra item on no PO.
+- **77 Mockup Drive** gets `02 read/77-mockup-drive/grid-1.md`, built 2026-11-02 after its read-back
+  was approved on 2026-10-17. Its code cells agree with the checks written then; its 23 judgment
+  cells were answered on 2026-11-02, one rule at a time. Its read-back and variance are unchanged;
+  `compare.py` gives the same variance to the cent.
+- A Python cache file that was committed before `.gitignore` listed it is no longer tracked.
+- Tests: 38 to 77 (grid 24, compare 12, gate 3 more, one fixture fixed).
+
+Not done: the six test houses have not been cold-run on the new grid yet, and an at-risk check only
+knows the three traps code can see (unit, selection, notes).
+
 ## 2026-11-02 (later), what the six cold runs found, fixed
 
 Six fresh agents each ran one test house from `tests/houses/` cold, with Jeff's session playing Sam.

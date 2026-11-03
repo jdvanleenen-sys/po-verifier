@@ -5,8 +5,8 @@ Using the rows Sam confirmed, work out the difference between what the builder's
 what the work Sam measured is worth at his agreed rates.
 
 ## What comes in
-- The highest-numbered `../02 read/<house>/read-back-N.md`, with Sam's yes written in it. Nothing
-  else from the house.
+- The highest-numbered `../02 read/<house>/read-back-N.md`, with Sam's yes written in it, and its
+  rule grid `grid-N.md` beside it. Nothing else from the house.
 - The thresholds for the calls, from `../reference/contractor.md`. If it is not approved, stop
   and ask Sam, unless it is marked as practice stand-ins; then use them and say so in the variance.
 
@@ -14,11 +14,18 @@ The agreed rates are the ones recorded in the read-back, the rates Sam confirmed
 price list again here. If the price list has changed since, that is a new read-back, not a quiet
 change in this stage.
 
-Before starting, check that the read-back carries Sam's yes, name and date, and that every row has
-a price list item and rate or is marked "not on the price list" by Sam. If not, stop and send the
-house back to `02 read`. Rows Sam left unpriced
-get no measured value and no call, are listed separately like "not comparable", and are not
-added into the variance.
+## How this stage runs
+Run `python "03 compare/compare.py" <house>`. It writes `<house>/variance-N.md` by code, in the form
+of `../templates/variance.md`. Do not write or edit a variance by hand, and do not change a number
+it wrote. If it stops, it says why; send the house back to `02 read` when the reason is there.
+
+It refuses to start unless the read-back carries Sam's yes and its grid passes
+`grid.py check <house> --final`, so every row has a price list item and rate, or is marked "not on
+the price list" by Sam. Rows Sam left unpriced get no measured value and no call, are listed
+separately like "not comparable", and are not added into the variance.
+
+Its arithmetic (`compare_rows.py`) is written apart from the money gate in `05 request` on purpose:
+the gate checks this file, and if both shared one calculation, a mistake in it would pass both.
 
 ## One row per item, per PO
 Every row carries its PO number. If the same item is on two POs, it is two rows, one for each
@@ -38,8 +45,9 @@ PO, because the builder fixes each PO separately. An item Sam measured that is o
 
 ## Rows that cannot be compared
 Some PO lines are not a count of anything Sam can measure, such as a quantity of 0.1 against a
-lump-sum price. Mark these "not comparable", show them to Sam, and give them no call. They are not
-added into the variance.
+lump-sum price. They are marked in `02 read`, in the grid's `count` column, so Sam sees them in the
+table he says yes to. Compare lists them apart with no call, and they are not added into the
+variance.
 
 ## The call on each row
 By the size of its variance, plus or minus, against the thresholds in `../reference/contractor.md`
@@ -56,11 +64,11 @@ no single row is. Sam then sees every row marked ignore or Sam's call, together,
 stage.
 
 ## How the sums are done
-Every number comes from a calculation, run and shown, never added up in the AI's head. Numbers
-are copied from the read-back, never read again from the documents.
+Every number comes from `compare.py`, never added up in the AI's head. Numbers are taken from the
+read-back, never read again from the documents.
 
 ## What goes out
-`<house>/variance-N.md`, copied from `../templates/variance.md`, holding:
+`<house>/variance-N.md`, written by `compare.py` in the form of `../templates/variance.md`, holding:
 - one table: PO number, item, unit, agreed rate, PO quantity, PO rate, PO amount, measured quantity,
   measured value, variance, why, call;
 - the rows marked not comparable, listed separately;

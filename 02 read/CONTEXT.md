@@ -99,9 +99,37 @@ not settle a warning item. Each one needs its own answer.
    every warning item is settled.
 8. `python "02 read/prices.py" check <house>` passes: every priced row's item, unit and rate is
    exactly as the snapshot has them.
+9. The rule grid passes: `python "02 read/grid.py" check <house>`. See "The rule grid" below.
 
 If check 1, 2, 3, 4 or 6 fails, say which PO and stop. If check 8 fails, fix the row from the
 snapshot and run it again; never change the snapshot.
+
+## The rule grid
+The grid is the record of the checks above: one cell for every row against every row rule, and
+every PO against every PO rule. Code fixes the number of cells before anyone checks anything, so a
+check that was skipped shows as a blank cell, and a blank cell is refused.
+
+1. When the read-back's tables are written, run `python "02 read/grid.py" build <house>`. It writes
+   `<house>/grid-N.md` beside `read-back-N.md`. Code fills every cell it can work out: line math,
+   the PO is read, the price, the unit, the selection, the measured quantity, the subtotal, the tax,
+   each PO once, and the vendor. The rest are `?`.
+2. Answer the `?` cells **one rule at a time**: take one column, answer it for every row from top
+   to bottom, then move to the next column. Do not answer one row across all its rules at once.
+   Checking one rule at a time keeps a rule from being missed while you attend to another.
+3. Each answer is a status, a colon, and what you looked at, such as `pass: 'railing 22 ft wood' is
+   railing, wood, per LF`. The grid's Rules table says who fills each rule; the statuses each rule
+   allows are in `02 read/grid_rules.py`. `ask Sam:` goes to Sam with the table. `at risk:` must be
+   named under "At risk for this house" on a line that names that trap (unit, selection or notes).
+   `not comparable:` is for a PO line that is not a count Sam can measure (see "Careful").
+4. Never change a cell code filled. If a code cell is wrong, the read-back is wrong: fix the row,
+   rebuild the grid with `--replace` (only while the read-back is a draft), and answer it again.
+5. Run `python "02 read/grid.py" check <house>`. It refuses a blank or `?` cell, a missing or extra
+   row, a changed code cell, any `fail`, an at-risk row not under At risk, and a read-back whose POs
+   read, Rows or Extra items changed after the grid was built.
+
+The house leaves this stage only when `grid.py check <house> --final` passes, which also refuses
+any cell still marked `ask Sam`. Sam's answers go into a new numbered read-back with its own grid.
+The grid is not Sam's to approve; it is the record of what was checked before he saw the table.
 
 ## At risk for this house
 Above the table Sam confirms, list each trap from "Careful" below and from "Careful" in
@@ -116,7 +144,7 @@ right number and the AI writes a new numbered read-back with that row fixed, the
 again. Only a plain yes closes this stage (see "What counts as Sam's yes" in `../CONTEXT.md`).
 
 ## What goes out
-One file per house in this folder, `<house>/read-back-N.md` (N starts at 1), holding the confirmed
+For each attempt, `<house>/grid-N.md`, the rule grid, and `<house>/read-back-N.md` (N starts at 1), holding the confirmed
 rows, Sam's answer to each warning item, Sam's yes, his name, and the date. Each row that matched
 the price list also records the item name, unit and rate exactly as read. The date the price list
 was read is recorded once, at the top, because it is read once per read-back. Those are the rates
@@ -131,7 +159,8 @@ It never changes the files in intake. Nothing is priced or compared here.
 These come from real builder POs.
 - **The lines add up to the subtotal, not the total.** The total includes tax.
 - **A quantity is not always a count.** One PO had a quantity of 0.1 against a lump-sum price.
-  Copy it as printed.
+  Copy it as printed, and answer the grid's `count` cell `not comparable:` with why. Sam sees it in
+  the table he says yes to; compare lists it apart with no dollars.
 - **The unit can be wrong.** One PO said EA on a line that was plainly priced per square foot.
   Copy the unit as printed and say so in the table.
 - **The quantity and the selection can disagree.** One line had a quantity of 721 and a selection

@@ -42,6 +42,8 @@ Each is also a row in the Rows table above, PO number `none`. Name them here by 
 -
 
 ## Checks run
+The record of the checks is `grid-N.md`, built by `02 read/grid.py`. Write here only what the grid
+does not cover, such as Sam's answer under check 6.
 - <check>: pass / fail: ... / cannot check: ...
 
 ## Sam's yes

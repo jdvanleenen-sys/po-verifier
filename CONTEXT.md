@@ -11,6 +11,8 @@ difference. This is a practice build. The data is made up and nothing is ever se
 | `CLAUDE.md`, `the-page.md` | Where to start, and who this is for and why |
 | `reference/price-list.md` | Where the price list lives and how to read it |
 | `reference/price-list.csv` | The price list, the only one. Sam keeps it in Excel |
+| `02 read/grid.py` | The rule grid: every read-back row and PO against every rule, one cell each. Code fills what it can; the AI answers the rest one rule at a time. Its helpers: `grid_rules.py` (the rules), `grid_read.py`, `grid_check.py` |
+| `03 compare/compare.py` | Writes the variance by code from the approved read-back and its grid. Its arithmetic is `compare_rows.py`, kept apart from the money gate |
 | `02 read/prices.py` | Checks the price list, freezes a copy per read-back (`price-list-N.csv`), and checks every rate in the read-back against it |
 | `reference/contractor.md` | Who the contractor is and his settings, written by `00 setup` |
 | `reference/walk-test.md` | The checklist for testing this folder cold |
@@ -22,7 +24,7 @@ difference. This is a practice build. The data is made up and nothing is ever se
 | `04 review/` | Sam's decisions |
 | `05 request/` | The request for the site super, checked before Sam sees it |
 | `05 request/build_request.py` | Prints the request, merges the proof, runs the six checks on the PDF, and numbers only a request that passed. Its helpers: `money.py` (works out what the request must say from Sam's approved records), `verify.py` (the six checks), `printing.py` (the browser) |
-| `tests/` | Planted mistakes the money gate and the price check must refuse: `python -m unittest discover -s tests` |
+| `tests/` | Planted mistakes the money gate, the price check and the rule grid must refuse, and the variance code checked against the gate: `python -m unittest discover -s tests` |
 | `tests/houses/` | Six test houses with POs, site notes, Sam's answers and the key; `tests/cold_run.py` runs one cold and scores it. For testing the folder, not for the agent doing the job |
 | `05 request/drafts/` | The workbench for a request before it passes. Not the record |
 | `06 outcome/` | What the builder paid against each request |
@@ -101,5 +103,6 @@ Step 8 on `the-page.md`, building the invoice on the checked totals, has no stag
 ## What must never happen
 - Nothing in `01 intake` is ever changed.
 - No dollar amount is written by judgment. Every one comes from a calculation.
+- No check counts as passed unless its cell in the rule grid says so.
 - The AI never makes a call for Sam and never sends anything.
 - If something is unclear, stop and ask Sam. Never guess.

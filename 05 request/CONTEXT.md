@@ -39,7 +39,8 @@ and rows Sam left off are not on the request.
 ## How the sums are done
 Every difference is copied from the compare, never worked out again. The tax and the totals come
 from a calculation, run and shown. The script then works them all out again on its own, from Sam's
-approved read-back and review, and refuses a request where any figure differs (`money.py`).
+approved read-back and review, and refuses a request where any figure differs (`money.py`). It
+also refuses one whose read-back has no rule grid, or a grid that fails `grid.py check --final`.
 
 Write each row's item exactly as the variance names it (the price list's name), and print every
 difference with its sign and a dollar sign (`+$300.00`, `-$170.00`): the script finds them that way.
