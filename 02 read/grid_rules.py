@@ -1,0 +1,227 @@
+"""The rules every read-back row and every PO is checked against, one cell per rule.
+
+Code fills every cell it can work out exactly. A cell code cannot decide is left as "?" for the AI,
+who answers it one rule (one column) at a time across every row. grid.py builds and checks the grid.
+
+A cell is a status, a colon, and what was looked at, such as "pass: 7 x 60.00 = 420.00".
+"""
+import re
+from decimal import Decimal, InvalidOperation
+
+import prices
+
+ASK = "?"
+PASS, FAIL, NA, AT_RISK, ASK_SAM, NOT_COMPARABLE = (
+    "pass", "fail", "n/a", "at risk", "ask Sam", "not comparable")
+STATUSES = (PASS, FAIL, NA, AT_RISK, ASK_SAM, NOT_COMPARABLE)
+NO_PO = "none"
+SELECTION = re.compile(r"selection:\s*([0-9][0-9.]*(?:e[+\-]?\d+)?)", re.I)
+NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?")
+MONEY = re.compile(r"\$\s*[\d,]+(?:\.\d+)?")
+
+# Rule id: (question, filled by, the statuses the AI may answer with)
+ROW_RULES = {
+    "line-math": ("PO qty x unit price = line total, as printed", "code", ()),
+    "po-read": ("The row's PO is in POs read, or a no-PO row is named under Extra items", "code", ()),
+    "price": ("Item, unit and rate are exactly as on the price list snapshot", "code", ()),
+    "unit": ("The unit printed on the PO is the price list unit (if not: At risk)", "code", ()),
+    "selection": ("The selection printed under the line agrees with the PO qty (if not: At risk)", "code", ()),
+    "measured": ("A size or count was read from Sam's notes", "code", ()),
+    "po-line-match": ("The PO line, as printed, is this price list item", "AI", (PASS, ASK_SAM)),
+    "note-match": ("Sam's note, read with the price list only, is this price list item", "AI", (PASS, ASK_SAM)),
+    "line-notes": ("The notes under the line do not change what it covers (if they do: At risk)",
+                   "code finds notes, AI answers", (PASS, AT_RISK)),
+    "count": ("Sam's quantity can be set against the PO qty (not a lump sum or a part)", "AI",
+              (PASS, NOT_COMPARABLE)),
+}
+PO_RULES = {
+    "lines-subtotal": ("The line totals add up to the printed subtotal", "code", ()),
+    "tax-total": ("Subtotal plus the tax lines equals the printed total", "code", ()),
+    "once": ("The PO number appears once in POs read", "code", ()),
+    "vendor": ("Every PO is to the same vendor", "code", ()),
+    "address": ("The job address matches the address Sam gave", "AI", (PASS, FAIL)),
+}
+
+
+def number(cell):
+    """A plain number as printed: 7, 2.75, $1,000.00 or 1.000000000000000e+000. None if not one."""
+    text = (cell or "").strip().replace("$", "").replace(",", "")
+    try:
+        return Decimal(text) if text else None
+    except InvalidOperation:
+        return None
+
+
+def show(value):
+    """A Decimal without trailing zeros or exponent: 3020, 2.75, 1."""
+    return f"{value.normalize():f}" if value is not None else "?"
+
+
+def cell(row, start):
+    """The cell whose header starts with these words."""
+    return next((v for k, v in row.items() if k.startswith(start)), "")
+
+
+def po_of(row):
+    return NO_PO if cell(row, "po number").strip().lower() in ("", NO_PO) else cell(row, "po number").strip()
+
+
+def item_state(row):
+    item = " ".join(row.get("price list item", "").split()).lower()
+    if item.startswith(prices.PENDING):
+        return "pending"
+    return "unpriced" if item.startswith(prices.UNPRICED) or not item else "priced"
+
+
+def measured_qty(row):
+    """Sam's size or count: the first number after his quoted words, or in the second ';' part."""
+    text = cell(row, "sam measured")
+    if '"' in text:
+        rest = text[text.rindex('"') + 1:]
+    else:
+        parts = text.split(";")
+        rest = parts[1] if len(parts) > 1 else parts[0]
+    found = NUMBER.search(rest)
+    return Decimal(found.group(0).replace(",", "")) if found else None
+
+
+def no_item_yet(row):
+    state = item_state(row)
+    if state == "priced":
+        return None
+    return f"{NA}: waiting on Sam's pick (see price)" if state == "pending" else f"{NA}: not on the price list"
+
+
+def line_math(row, _):
+    if po_of(row) == NO_PO:
+        return f"{NA}: on no PO"
+    qty, price, total = (number(cell(row, k)) for k in ("po qty", "unit price", "line total"))
+    if None in (qty, price, total):
+        return f"{FAIL}: PO qty, unit price or line total is not a number"
+    sign = "=" if qty * price == total else "is not"
+    status = PASS if sign == "=" else FAIL
+    return f"{status}: {show(qty)} x {show(price)} {sign} {show(total)}"
+
+
+def po_read(row, house):
+    po, num = po_of(row), row.get("#", "").strip()
+    if po != NO_PO:
+        found = po in house["po_numbers"]
+        return f"{PASS}: {po} is in POs read" if found else f"{FAIL}: {po} is not in POs read"
+    if re.search(rf"\brow {re.escape(num)}\b", house["extras"], re.I):
+        return f"{PASS}: on no PO, named under Extra items"
+    return f"{FAIL}: on no PO, but row {num} is not named under Extra items"
+
+
+def price(row, house):
+    state = item_state(row)
+    if state == "pending":
+        return f"{ASK_SAM}: waiting on his pick one"
+    if state == "unpriced":
+        return f"{NA}: not on the price list; Sam's answer is in the warning table"
+    problems = prices.check_price_row(row, house["prices"])
+    if problems:
+        return f"{FAIL}: " + "; ".join(p.split(": ", 1)[-1] for p in problems)
+    return f"{PASS}: {row.get('unit', '').strip()} at {row.get('rate', '').strip()} on the snapshot"
+
+
+def unit(row, _):
+    if po_of(row) == NO_PO:
+        return f"{NA}: on no PO"
+    waiting = no_item_yet(row)
+    if waiting:
+        return waiting
+    printed = cell(row, "unit as printed").split("(")[0].strip()
+    listed = row.get("unit", "").strip()
+    if printed == listed:
+        return f"{PASS}: printed {printed}, price list {listed}"
+    return f"{AT_RISK}: printed {printed or 'blank'} on a line the price list prices per {listed}"
+
+
+def selection(row, _):
+    if po_of(row) == NO_PO:
+        return f"{NA}: on no PO"
+    found = SELECTION.search(cell(row, "special option info"))
+    if not found:
+        return f"{NA}: no selection printed"
+    chosen, qty = number(found.group(1)), number(cell(row, "po qty"))
+    if chosen is not None and chosen == qty:
+        return f"{PASS}: selection {show(chosen)}, qty {show(qty)}"
+    return f"{AT_RISK}: qty {show(qty)}, selection {show(chosen)}; both recorded"
+
+
+def measured(row, _):
+    qty = measured_qty(row)
+    return f"{PASS}: {show(qty)}" if qty is not None else f"{ASK_SAM}: no size or count read from his notes"
+
+
+def po_line_match(row, _):
+    if po_of(row) == NO_PO:
+        return f"{NA}: on no PO"
+    return no_item_yet(row) or ASK
+
+
+def note_match(row, _):
+    if measured_qty(row) is None:
+        return f"{NA}: nothing measured (see measured)"
+    return no_item_yet(row) or ASK
+
+
+def line_notes(row, _):
+    if po_of(row) == NO_PO:
+        return f"{NA}: on no PO"
+    return ASK if "notes:" in cell(row, "special option info").lower() else f"{NA}: no notes under the line"
+
+
+def count(row, _):
+    if po_of(row) == NO_PO:
+        return f"{NA}: on no PO, set against 0"
+    return no_item_yet(row) or ASK
+
+
+ROW_CHECKS = {"line-math": line_math, "po-read": po_read, "price": price, "unit": unit,
+              "selection": selection, "measured": measured, "po-line-match": po_line_match,
+              "note-match": note_match, "line-notes": line_notes, "count": count}
+
+
+def money_sum(text):
+    return sum((number(m.group(0)) for m in MONEY.finditer(text or "")), Decimal(0))
+
+
+def lines_subtotal(po_row, house):
+    po = po_row["po number"].strip()
+    totals = [number(cell(r, "line total")) for r in house["rows"] if po_of(r) == po]
+    subtotal = number(cell(po_row, "subtotal"))
+    if not totals or None in totals or subtotal is None:
+        return f"{FAIL}: no line totals or no subtotal read for {po}"
+    added = sum(totals, Decimal(0))
+    shown = " + ".join(show(t) for t in totals)
+    status, sign = (PASS, "=") if added == subtotal else (FAIL, "is not")
+    return f"{status}: {shown} {sign} {show(subtotal)}"
+
+
+def tax_total(po_row, _):
+    subtotal, total = number(cell(po_row, "subtotal")), number(cell(po_row, "total"))
+    if subtotal is None or total is None:
+        return f"{FAIL}: no subtotal or total read"
+    tax = money_sum(cell(po_row, "tax lines"))
+    status, sign = (PASS, "=") if subtotal + tax == total else (FAIL, "is not")
+    return f"{status}: {show(subtotal)} + {show(tax)} {sign} {show(total)}"
+
+
+def once(po_row, house):
+    times = house["po_numbers"].count(po_row["po number"].strip())
+    return f"{PASS}: listed once" if times == 1 else f"{FAIL}: listed {times} times; stop and ask Sam"
+
+
+def vendor(po_row, house):
+    names = {" ".join(cell(r, "vendor").split()) for r in house["pos"]}
+    return f"{PASS}: every PO is to {names.pop()}" if len(names) == 1 else f"{FAIL}: vendors differ"
+
+
+def address(_, __):
+    return ASK
+
+
+PO_CHECKS = {"lines-subtotal": lines_subtotal, "tax-total": tax_total, "once": once,
+             "vendor": vendor, "address": address}
