@@ -1,5 +1,5 @@
 {
-  "about": "Six made-up test houses. Each one sets a different trap. make_houses.py writes each house's intake files from this; test_houses.py recomputes every expected number from reference/price-list.csv. Nothing here is a real job.",
+  "about": "Nine made-up test houses. Each one sets a different trap. make_houses.py writes each house's intake files from this; test_houses.py recomputes every expected number from reference/price-list.csv. Nothing here is a real job.",
   "houses": [
     {
       "slug": "21-clean-court",
@@ -248,6 +248,143 @@
       "expected": {"total": "330.00", "house_flagged": true,
                    "on": [["MKR-02402422/027", "8' doors and trim"]],
                    "request": {"before": "180.00", "tax": "9.00", "total": "189.00"}}
+    },
+    {
+      "slug": "14-photo-notes-close",
+      "trap": "Notes arrive as one phone photo of a handwritten page. A door count is crossed out and rewritten (12 struck, 13 kept). One item is on no PO. It must read the kept number, not the struck one, and ask rather than guess at anything it cannot read.",
+      "address": "14 Photo Close", "lot": "12", "block": "7", "job": "MKR-02402425",
+      "community": "Mockup Ridge Single Family", "plan": "BIRCH-001 - Birch", "elevation": "L",
+      "measured": "2026-10-30", "dropped": "2026-11-01",
+      "pos": [
+        {"number": "MKR-02402425/012", "cost_code": "PAIN-005", "needed": "09/08/2026", "submitted": "09/01/2026  8:41:02 AM",
+         "lines": [["09900/005S - Wall Prime", "EA", "1", "1000.00"]]},
+        {"number": "MKR-02402425/027", "cost_code": "PAIN-010", "needed": "09/25/2026", "submitted": "09/16/2026  11:12:40 AM",
+         "lines": [["09900/010S - Interior Paint & Stain - Finished Areas", "EA", "2840", "2.75", "Garage not included (added separately if selected)"],
+                   ["09900/030S - 8' Doors & Trim", "EA", "10", "60.00"],
+                   ["09900/020S - Interior Railing - Wood", "LF", "18", "38.00"],
+                   ["09900/025S - Stair Stringers", "LF", "24", "9.00"]]},
+        {"number": "MKR-02402425/041", "cost_code": "PAIN-020", "needed": "10/20/2026", "submitted": "10/13/2026  3:05:51 PM",
+         "lines": [["09900/500S - Interior Paint Touchup", "EA", "1", "500.00"]]}
+      ],
+      "epos": [],
+      "notes_form": "photo",
+      "photos": [
+        {"lines": ["14 Photo Cl.   lot 12 blk 7", "Oct 30", "", "prime 1", "2840 sf", "8' drs  [[12]]  13", "rail 18 wood", "stringers 24", "touch up 1", "furnace rm floor 1 - super asked"]}
+      ],
+      "sam_answers": [
+        ["If it asks whether the doors are 12 or 13", "13. I crossed out 12 when I recounted."],
+        ["If it asks about the furnace room floor", "I did it, the super asked me on site. It's not on any PO."],
+        ["If it asks for a clearer photo", "That's the only one I took."],
+        ["If it asks what a number measures, or its unit", "Railing and stringers are in feet. Square footage is floor area, the same kind of number as the plan. Doors are 8' doors and trim unless I say otherwise."],
+        ["When it shows the read-back table", "Yes, to the whole table."],
+        ["At review", "Chase the doors and the furnace room floor. Yes, to the table with those decisions."],
+        ["If it asks whether to attach your site notes", "Yes, attach them."],
+        ["When it asks if this is the request he will send", "Yes, but this is practice, so it is not being sent. Write sent: no."]
+      ],
+      "rows": [
+        {"po": "MKR-02402425/012", "item": "Wall prime, flat rate", "po_qty": "1", "po_rate": "1000", "measured": "1"},
+        {"po": "MKR-02402425/027", "item": "Basic SF Painting, prime and 2 coat, SINGLE FAMILY", "po_qty": "2840", "po_rate": "2.75", "measured": "2840"},
+        {"po": "MKR-02402425/027", "item": "8' doors and trim", "po_qty": "10", "po_rate": "60", "measured": "13"},
+        {"po": "MKR-02402425/027", "item": "Railing, wood", "po_qty": "18", "po_rate": "38", "measured": "18"},
+        {"po": "MKR-02402425/027", "item": "Stringer, inside or outside", "po_qty": "24", "po_rate": "9", "measured": "24"},
+        {"po": "MKR-02402425/041", "item": "Interior paint touch-up, flat rate", "po_qty": "1", "po_rate": "500", "measured": "1"},
+        {"po": "none", "item": "Furnace room floor", "measured": "1"}
+      ],
+      "must_happen": ["Doors are read as 13, never the crossed-out 12.", "The furnace room floor is priced from the price list as work on no PO.", "Nothing it cannot read is guessed; it asks Sam."],
+      "expected": {"total": "480.00", "house_flagged": true,
+                   "on": [["MKR-02402425/027", "8' doors and trim"], ["none", "Furnace room floor"]],
+                   "request": {"before": "480.00", "tax": "24.00", "total": "504.00"}}
+    },
+    {
+      "slug": "27-voice-memo-way",
+      "trap": "Notes arrive as a voice memo the phone transcribed: numbers in words, 'for' where Sam said four, a correction mid-sentence (four, no, fourteen doors), and an accent wall on no PO. It must use 14, read 'thirty two sixty' as 3,260, and ask when the words could mean two numbers.",
+      "address": "27 Voice Memo Way", "lot": "9", "block": "2", "job": "MKR-02402426",
+      "community": "Mockup Ridge Single Family", "plan": "CEDAR-002 - Cedar", "elevation": "R",
+      "measured": "2026-10-31", "dropped": "2026-11-01",
+      "pos": [
+        {"number": "MKR-02402426/012", "cost_code": "PAIN-005", "needed": "09/10/2026", "submitted": "09/03/2026  9:20:13 AM",
+         "lines": [["09900/005S - Wall Prime", "EA", "1", "1000.00"]]},
+        {"number": "MKR-02402426/027", "cost_code": "PAIN-010", "needed": "09/28/2026", "submitted": "09/18/2026  1:48:09 PM",
+         "lines": [["09900/010S - Interior Paint & Stain - Finished Areas", "EA", "3260", "2.75", "Garage not included (added separately if selected)"],
+                   ["09900/030S - 8' Doors & Trim", "EA", "11", "60.00"],
+                   ["09900/020S - Interior Railing - Wood", "LF", "22", "38.00"],
+                   ["09900/025S - Stair Stringers", "LF", "28", "9.00"]]},
+        {"number": "MKR-02402426/041", "cost_code": "PAIN-020", "needed": "10/22/2026", "submitted": "10/15/2026  10:31:27 AM",
+         "lines": [["09900/500S - Interior Paint Touchup", "EA", "1", "500.00"]]}
+      ],
+      "epos": [],
+      "notes_form": "voice",
+      "notes": "Voice memo, transcribed by phone. Nov 1, 2026 at 6:12 PM. Length 0:48.\n\nOkay this is 27 voice memo way lot 9 block 2 measured October 31st. Prime one. Square footage thirty two sixty. 8 foot doors I got for no wait 14 14 doors I missed the closet ones on the first pass. Railing 22 feet wood. Stringers twenty eight. Touch up one. Oh and the accent wall in the master the homeowner wanted it the super signed off so one accent wall. That's it for this one.\n",
+      "notes_meant": "27 Voice Memo Way lot 9 block 2, Oct 31\nprime 1\n3260 sf\n8' doors 14\nrailing 22 wood\nstringers 28\ntouch up 1\naccent wall 1 (master, super signed off)\n",
+      "sam_answers": [
+        ["If it asks how many doors (4 or 14)", "14. I started to say four, it's fourteen."],
+        ["If it asks what 'thirty two sixty' means", "3,260 square feet."],
+        ["If it asks about the accent wall", "One accent wall in the master. It's not on any PO."],
+        ["If it asks what a number measures, or its unit", "Railing and stringers are in feet. Square footage is floor area, the same kind of number as the plan. Doors are 8' doors and trim unless I say otherwise."],
+        ["When it shows the read-back table", "Yes, to the whole table."],
+        ["At review", "Chase the doors and the accent wall. Yes, to the table with those decisions."],
+        ["If it asks whether to attach your site notes", "Yes, attach them."],
+        ["When it asks if this is the request he will send", "Yes, but this is practice, so it is not being sent. Write sent: no."]
+      ],
+      "rows": [
+        {"po": "MKR-02402426/012", "item": "Wall prime, flat rate", "po_qty": "1", "po_rate": "1000", "measured": "1"},
+        {"po": "MKR-02402426/027", "item": "Basic SF Painting, prime and 2 coat, SINGLE FAMILY", "po_qty": "3260", "po_rate": "2.75", "measured": "3260"},
+        {"po": "MKR-02402426/027", "item": "8' doors and trim", "po_qty": "11", "po_rate": "60", "measured": "14"},
+        {"po": "MKR-02402426/027", "item": "Railing, wood", "po_qty": "22", "po_rate": "38", "measured": "22"},
+        {"po": "MKR-02402426/027", "item": "Stringer, inside or outside", "po_qty": "28", "po_rate": "9", "measured": "28"},
+        {"po": "MKR-02402426/041", "item": "Interior paint touch-up, flat rate", "po_qty": "1", "po_rate": "500", "measured": "1"},
+        {"po": "none", "item": "Accent wall", "measured": "1"}
+      ],
+      "must_happen": ["Doors are 14, never 4.", "Square footage is 3260.", "The accent wall is priced from the price list as work on no PO."],
+      "expected": {"total": "405.00", "house_flagged": true,
+                   "on": [["MKR-02402426/027", "8' doors and trim"], ["none", "Accent wall"]],
+                   "request": {"before": "405.00", "tax": "20.25", "total": "425.25"}}
+    },
+    {
+      "slug": "36-two-photos-lane",
+      "trap": "Notes arrive as two phone photos, front and back. The back is shot sideways, and glare covers part of the railing line. It must read both pages, turn the second, and ask about any number the glare hides instead of guessing.",
+      "address": "36 Two Photos Lane", "lot": "4", "block": "11", "job": "MKR-02402427",
+      "community": "Mockup Ridge Single Family", "plan": "ASPEN-003 - Aspen", "elevation": "L",
+      "measured": "2026-11-01", "dropped": "2026-11-02",
+      "pos": [
+        {"number": "MKR-02402427/012", "cost_code": "PAIN-005", "needed": "09/12/2026", "submitted": "09/05/2026  8:02:44 AM",
+         "lines": [["09900/005S - Wall Prime", "EA", "1", "1000.00"]]},
+        {"number": "MKR-02402427/027", "cost_code": "PAIN-010", "needed": "09/30/2026", "submitted": "09/21/2026  2:15:36 PM",
+         "lines": [["09900/010S - Interior Paint & Stain - Finished Areas", "EA", "2960", "2.75", "Garage not included (added separately if selected)"],
+                   ["09900/030S - 8' Doors & Trim", "EA", "12", "60.00"],
+                   ["09900/020S - Interior Railing - Wood", "LF", "16", "38.00"],
+                   ["09900/025S - Stair Stringers", "LF", "22", "9.00"]]},
+        {"number": "MKR-02402427/041", "cost_code": "PAIN-020", "needed": "10/24/2026", "submitted": "10/17/2026  11:57:03 AM",
+         "lines": [["09900/500S - Interior Paint Touchup", "EA", "1", "500.00"]]}
+      ],
+      "epos": [],
+      "notes_form": "photo",
+      "photos": [
+        {"lines": ["36 Two Photos Ln", "lot 4 blk 11    Nov 1", "", "prime 1", "2960 sf", "drs 12", "", "(over)"]},
+        {"lines": ["rail 19 wood", "stringers 22", "touch up 1"], "turn": 90, "glare": {"line": 0, "over": "19"}}
+      ],
+      "sam_answers": [
+        ["If it asks what the railing number is", "19 feet, wood."],
+        ["If it asks whether there is a second page", "Yes, two photos, front and back."],
+        ["If it asks for a clearer photo", "Those are the only two I took."],
+        ["If it asks what a number measures, or its unit", "Railing and stringers are in feet. Square footage is floor area, the same kind of number as the plan. Doors are 8' doors and trim unless I say otherwise."],
+        ["When it shows the read-back table", "Yes, to the whole table."],
+        ["At review", "Chase the railing. Yes, to the table with that decision."],
+        ["If it asks whether to attach your site notes", "Yes, attach them."],
+        ["When it asks if this is the request he will send", "Yes, but this is practice, so it is not being sent. Write sent: no."]
+      ],
+      "rows": [
+        {"po": "MKR-02402427/012", "item": "Wall prime, flat rate", "po_qty": "1", "po_rate": "1000", "measured": "1"},
+        {"po": "MKR-02402427/027", "item": "Basic SF Painting, prime and 2 coat, SINGLE FAMILY", "po_qty": "2960", "po_rate": "2.75", "measured": "2960"},
+        {"po": "MKR-02402427/027", "item": "8' doors and trim", "po_qty": "12", "po_rate": "60", "measured": "12"},
+        {"po": "MKR-02402427/027", "item": "Railing, wood", "po_qty": "16", "po_rate": "38", "measured": "19"},
+        {"po": "MKR-02402427/027", "item": "Stringer, inside or outside", "po_qty": "22", "po_rate": "9", "measured": "22"},
+        {"po": "MKR-02402427/041", "item": "Interior paint touch-up, flat rate", "po_qty": "1", "po_rate": "500", "measured": "1"}
+      ],
+      "must_happen": ["Both photos are read; the sideways page is not skipped.", "The railing is 19, read or asked, never guessed.", "Nothing else is chased: every other line matches."],
+      "expected": {"total": "114.00", "house_flagged": true,
+                   "on": [["MKR-02402427/027", "Railing, wood"]],
+                   "request": {"before": "114.00", "tax": "5.70", "total": "119.70"}}
     }
   ]
 }

@@ -19,6 +19,8 @@ ROOT = Path(__file__).resolve().parent.parent
 HOUSES = ROOT / "tests" / "houses"
 sys.path.insert(0, str(ROOT / "02 read"))
 import prices  # noqa: E402
+sys.path.insert(0, str(HOUSES))
+import make_houses  # noqa: E402
 
 SPEC = json.loads((HOUSES / "houses.json").read_text(encoding="utf-8"))["houses"]
 PRICE_LIST = prices.parse(prices.SOURCE.read_bytes())[0]
@@ -95,7 +97,7 @@ class House(unittest.TestCase):
         return rates
 
     def check_rows(self, h):
-        notes = (HOUSES / h["slug"] / "intake" / "site-notes.txt").read_text(encoding="utf-8").replace(",", "")
+        notes = make_houses.notes_text(h).replace(",", "")
         variances = {}
         for row in h["rows"]:
             self.assertIn(row["measured"], notes, f"{h['slug']}: measured {row['measured']} is not in the notes")

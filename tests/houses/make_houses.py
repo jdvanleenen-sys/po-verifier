@@ -12,6 +12,8 @@ import sys
 from decimal import Decimal
 from pathlib import Path
 
+import handwriting
+
 HERE = Path(__file__).resolve().parent
 GST = Decimal("0.05")
 CENT = Decimal("0.01")
@@ -130,6 +132,33 @@ def sam_answers(h):
     return "\n".join(lines) + "\n"
 
 
+def notes_form(h):
+    return h.get("notes_form", "typed")
+
+
+def notes_text(h):
+    """What Sam's notes say, as text: typed notes as written, a voice memo as he meant it, a photo
+    as the page reads with crossed-out words dropped. The answer key is checked against this."""
+    if notes_form(h) == "photo":
+        return "\n".join(handwriting.plain_text(p) for p in h["photos"])
+    if notes_form(h) == "voice":
+        return h["notes_meant"]
+    return h["notes"]
+
+
+def write_notes(h, folder):
+    """Typed notes as site-notes.txt, a voice memo as the phone transcribed it, or photo pages."""
+    for old in list(folder.glob("site-notes*")) + list(folder.glob("voice-memo*")):
+        old.unlink()
+    if notes_form(h) == "photo":
+        for number, page in enumerate(h["photos"], start=1):
+            handwriting.draw_page(page, f"{h['slug']}-{number}", folder / f"site-notes-photo-{number}.jpg")
+    elif notes_form(h) == "voice":
+        (folder / "voice-memo-transcript.txt").write_text(h["notes"], encoding="utf-8", newline="\n")
+    else:
+        (folder / "site-notes.txt").write_text(h["notes"], encoding="utf-8", newline="\n")
+
+
 def write_house(h):
     folder = HERE / h["slug"] / "intake"
     folder.mkdir(parents=True, exist_ok=True)
@@ -138,7 +167,7 @@ def write_house(h):
         (folder / name).write_text(po_html(h, po), encoding="utf-8", newline="\n")
     for e in h["epos"]:
         (folder / e["file"]).write_text(epo_html(h, e), encoding="utf-8", newline="\n")
-    (folder / "site-notes.txt").write_text(h["notes"], encoding="utf-8", newline="\n")
+    write_notes(h, folder)
     (folder / "house-info.md").write_text(house_info(h), encoding="utf-8", newline="\n")
     (HERE / h["slug"] / "sam-answers.md").write_text(sam_answers(h), encoding="utf-8", newline="\n")
     return folder

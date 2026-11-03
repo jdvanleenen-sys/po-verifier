@@ -1,5 +1,18 @@
 # Change log
 
+## 2026-11-03, three messy-input test houses
+
+- **Added:** `14-photo-notes-close` (one handwritten photo, a crossed-out count, work on no PO),
+  `27-voice-memo-way` (a phone voice-memo transcript) and `36-two-photos-lane` (two photos, one
+  sideways, glare over a number). `tests/houses/handwriting.py` draws the photos from the text in
+  `houses.json`, so the key always matches the page. `make_houses.py` writes photo, voice or typed
+  notes; `test_houses.py` checks the key against the notes' text.
+- **Cold runs:** two PASS, one FAIL on the request step. Every money figure matched. The runs used a
+  copy from before the rule grid, so they still need a run on this branch. Results and open
+  findings in `tests/houses/results-2026-11-03.md`.
+- **Not fixed yet:** `05 request/build_request.py` cannot attach photo or voice notes.
+Why: a real painter sends phone photos of handwritten notes, and maybe voice memos, not typed notes.
+
 ## 2026-11-02 (evening), the rule grid: every row checked against every rule, one cell each
 
 Jeff's ask: verify each line item against one rule at a time, to get rid of silent errors. The checks

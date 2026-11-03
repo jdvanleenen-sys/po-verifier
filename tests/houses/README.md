@@ -1,6 +1,6 @@
 # Test houses
 
-Six made-up houses, each built to catch one kind of mistake. Every one has builder POs, Sam's site
+Nine made-up houses, each built to catch one kind of mistake. Every one has builder POs, Sam's site
 notes in his own shorthand, and the answers Sam gives when the folder asks. The answer key is
 `houses.json`; `tests/test_houses.py` re-prices it from the price list so a wrong key fails first.
 
@@ -12,6 +12,11 @@ notes in his own shorthand, and the answers Sam gives when the folder asks. The 
 | `9-trap-way` | Multi family rate, handrail vs railing, garage on painted area, "2,615" | $120.00 + $6.00 = $126.00 |
 | `30-not-listed-road` | Items on no price list row, a note that fits two rows | $56.00 + $2.80 = $58.80 |
 | `62-messy-notes-bay` | A recount, a number with no unit, a misspelling, a double touch-up, a back charge | $180.00 + $9.00 = $189.00 |
+| `14-photo-notes-close` | Notes as a handwritten phone photo, a crossed-out count, work on no PO | $480.00 + $24.00 = $504.00 |
+| `27-voice-memo-way` | Notes as a phone voice-memo transcript: numbers in words, "for" for four, a correction mid-sentence | $405.00 + $20.25 = $425.25 |
+| `36-two-photos-lane` | Notes as two photos, one sideways, glare over the railing number | $114.00 + $5.70 = $119.70 |
+
+The last three draw their photos with `handwriting.py` from the text in `houses.json`.
 
 ## Run one cold
 1. `python tests/cold_run.py prepare <house> <new folder outside this repo>`
