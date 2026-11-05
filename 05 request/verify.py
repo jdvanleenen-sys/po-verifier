@@ -79,6 +79,8 @@ GROUP_END = re.compile(r"(?:epo requested for this po|credit back to the builder
                        + MONEY.pattern)
 PO_HEADING = re.compile(r"\bpo ([a-z]+-\d+/\d+)(?!\S*:)")
 NO_PO_HEADING = "no po work done"
+# The main box's label: what is owed to the trade, or, when the house nets to a credit, what goes back.
+OWED_TOTAL, CREDIT_TOTAL = "total requested", "total credit to the builder"
 
 
 def first_amount_after(text, label):
@@ -91,13 +93,13 @@ def first_amount_after(text, label):
 
 
 def group_key(block):
-    """The heading a group block starts under: its PO number, or "none" for the no-PO block."""
-    heads = [(m.start(), m.group(1)) for m in PO_HEADING.finditer(block)]
-    no_po = block.rfind(NO_PO_HEADING)
-    last_po = heads[-1][0] if heads else -1
-    if no_po > last_po:
+    """The heading a group block starts under: its PO number, or "none" for the no-PO block.
+    The heading is the first one in the block; a PO named later, in a row's wording, is not it."""
+    first_po = PO_HEADING.search(block)
+    no_po = block.find(NO_PO_HEADING)
+    if no_po >= 0 and (first_po is None or no_po < first_po.start()):
         return "none", no_po
-    return (heads[-1][1], last_po) if heads else (None, 0)
+    return (first_po.group(1), first_po.start()) if first_po else (None, 0)
 
 
 def printed_groups(request):
@@ -138,7 +140,8 @@ def check_tax(request, expected):
 def check_house(request, expected):
     """The three boxes at the top, each read from its own label, in order, sign included."""
     text, house, problems, at = normalise(request), expected["house"], [], 0
-    for key, label in (("before", "before tax"), ("tax", "tax"), ("total", "total requested")):
+    total_label = CREDIT_TOTAL if house["total"] < 0 else OWED_TOTAL
+    for key, label in (("before", "before tax"), ("tax", "tax"), ("total", total_label)):
         index = text.find(label, at)
         value = first_amount_after(text[index:], label) if index >= 0 else None
         at = index + len(label) if index >= 0 else at

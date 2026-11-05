@@ -17,6 +17,10 @@ Write down his words; do not tidy them into something he did not say.
 6. At what difference do you always chase? (the flag line) Anything in between is your call.
 7. Should a house be flagged when its small differences add up past the flag line?
 8. What does a finished request look like to you? What does done mean, in your words?
+9. How do you write your measurements? For railing and stringers, is a bare number feet? When you
+   write square feet, is it floor area, like the plan? Which door is a bare "door"?
+10. For each price list line priced per square foot (a garage, walls, ceilings): is the number the
+   floor area or the painted surface?
 
 This folder holds one contractor. A second contractor is a second copy of the folder.
 

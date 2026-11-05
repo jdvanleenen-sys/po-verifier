@@ -61,10 +61,23 @@ class SignedHouseTotals(unittest.TestCase):
     def test_credit_house_printed_as_owed_fails(self):
         credit = expected([(CREDIT_PO, "-720.00", "-36.00")])
         groups = [MIXED_GROUPS[1]]
-        clean = request_text("-$720.00", "-$36.00", "-$756.00", groups)
+        clean = request_text("-$720.00", "-$36.00", "-$756.00", groups).replace(
+            "TOTAL REQUESTED", "TOTAL CREDIT TO THE BUILDER")
         self.assertTrue(passes(verify.check_house(clean, credit)), verify.check_house(clean, credit))
-        flipped = request_text("$720.00", "$36.00", "$756.00", groups)
+        flipped = request_text("$720.00", "$36.00", "$756.00", groups).replace(
+            "TOTAL REQUESTED", "TOTAL CREDIT TO THE BUILDER")
         self.assertFalse(passes(verify.check_house(flipped, credit)))
+
+    def test_all_credit_request_with_credit_label_passes(self):
+        credit = expected([(CREDIT_PO, "-720.00", "-36.00")])
+        text = request_text("-$720.00", "-$36.00", "-$756.00", [MIXED_GROUPS[1]])
+        text = text.replace("TOTAL REQUESTED", "TOTAL CREDIT TO THE BUILDER")
+        self.assertTrue(passes(verify.check_house(text, credit)), verify.check_house(text, credit))
+
+    def test_credit_label_on_a_house_that_is_owed_money_fails(self):
+        text = request_text("$112.00", "$5.60", "$117.60", MIXED_GROUPS).replace(
+            "TOTAL REQUESTED", "TOTAL CREDIT TO THE BUILDER")
+        self.assertFalse(passes(verify.check_house(text, MIXED)))
 
     def test_right_number_in_the_wrong_box_fails(self):
         # 117.60 is printed (in a group line) but the Total requested box says 112.00.
@@ -99,6 +112,13 @@ class SignedGroupTax(unittest.TestCase):
         groups[1] = ("PO " + CREDIT_PO + " Doors.", "-$720.00", "-$36.00", "Refund owed for this PO\n-$756.00")
         text = request_text("$112.00", "$5.60", "$117.60", groups)
         self.assertFalse(passes(verify.check_tax(text, MIXED)))
+
+    def test_a_group_that_names_another_po_in_its_wording_still_reads_right(self):
+        groups = list(MIXED_GROUPS)
+        groups[1] = ("PO " + CREDIT_PO + " Credit back. The same 12 doors as PO " + PO + ", ordered twice.",
+                     "-$720.00", "-$36.00", "Credit back to the builder for this PO\n-$756.00")
+        text = request_text("$112.00", "$5.60", "$117.60", groups)
+        self.assertTrue(passes(verify.check_tax(text, MIXED)), verify.check_tax(text, MIXED))
 
     def test_a_missing_group_fails(self):
         text = request_text("$112.00", "$5.60", "$117.60", MIXED_GROUPS[:2])

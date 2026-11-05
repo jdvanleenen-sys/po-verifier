@@ -18,6 +18,8 @@ Stand-in answers for the practice build. Not a real contractor. A real one is wr
 | Flag line | $100 and up. $50 to under $100 is Sam's call. |
 | Flag the house when small rows add up | Yes, when the house total is $100 or more, plus or minus |
 | Done, in his words | Not asked yet |
+| How he writes measurements | Railing and stringers are in feet. Square footage is floor area, the same kind of number as the plan. Doors are 8' doors and trim unless he says otherwise. (Stand-in, from the test houses' scripted answers.) |
+| Square-foot price lines | The garage is priced on its floor area; ceiling and walls are in the rate. Other per-SF lines: not asked yet. (Stand-in.) |
 
 ## Sam's yes
 - Answer: yes (relayed by Jeff in chat)

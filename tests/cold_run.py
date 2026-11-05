@@ -20,7 +20,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 HOUSES = ROOT / "tests" / "houses"
-LEAVE_OUT = shutil.ignore_patterns(".git", "tests", "__pycache__", "_for-testers", "drafts")
+LEAVE_OUT = shutil.ignore_patterns(".git", "tests", "__pycache__", "_for-testers", "drafts", "README.md")
 
 
 def spec(slug):
