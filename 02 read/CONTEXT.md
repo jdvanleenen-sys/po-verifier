@@ -39,6 +39,14 @@ still pays Sam. Sam confirms the direction with the rest of the table.
 One row per thing he measured, in his own words: what it is, its size or count, the colour, and
 anything else he wrote.
 
+The rule grid puts some numbers to Sam by code before anything is priced, because each has cost real
+money in testing: a number that may be a thousands figure written with a dot for a comma ("3.016"
+for 3,016), a number ten times or more off its PO line, a 0 against a PO line (the whole line becomes
+a credit), and the same item, quantity and price on two different POs (probably ordered twice). Ask
+him. When he answers, write the number he gave in the row's "Sam measured" cell, after his own
+words, and end that cell with "Sam confirmed". Never write "Sam confirmed" for a row he was not
+asked about.
+
 ## What each document is evidence for
 Each document is good evidence for one thing only. Read each for its own job.
 

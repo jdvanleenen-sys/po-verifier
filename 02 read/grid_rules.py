@@ -18,6 +18,9 @@ NO_PO = "none"
 SELECTION = re.compile(r"selection:\s*([0-9][0-9.]*(?:e[+\-]?\d+)?)", re.I)
 NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?")
 MONEY = re.compile(r"\$\s*[\d,]+(?:\.\d+)?")
+DOT_FOR_COMMA = re.compile(r"\d{1,3}\.\d{3}")
+CONFIRMED = "sam confirmed"
+TEN_TIMES = Decimal(10)
 
 # Rule id: (question, filled by, the statuses the AI may answer with)
 ROW_RULES = {
@@ -73,8 +76,8 @@ def item_state(row):
     return "unpriced" if item.startswith(prices.UNPRICED) or not item else "priced"
 
 
-def measured_qty(row):
-    """Sam's size or count: the first number after his quoted words, or in the second ';' part."""
+def measured_text(row):
+    """Sam's size or count as written: the first number after his quoted words, or in the second ';' part."""
     text = cell(row, "sam measured")
     if '"' in text:
         rest = text[text.rindex('"') + 1:]
@@ -82,7 +85,17 @@ def measured_qty(row):
         parts = text.split(";")
         rest = parts[1] if len(parts) > 1 else parts[0]
     found = NUMBER.search(rest)
-    return Decimal(found.group(0).replace(",", "")) if found else None
+    return found.group(0) if found else None
+
+
+def measured_qty(row):
+    text = measured_text(row)
+    return Decimal(text.replace(",", "")) if text else None
+
+
+def confirmed(row):
+    """Sam was asked about this row's number and confirmed it; the read-back says so on the row."""
+    return CONFIRMED in cell(row, "sam measured").lower()
 
 
 def no_item_yet(row):
@@ -154,7 +167,24 @@ def measured(row, _):
     if item_state(row) == "unpriced":
         return f"{NA}: not on the price list, so nothing is set against it"
     qty = measured_qty(row)
-    return f"{PASS}: {show(qty)}" if qty is not None else f"{ASK_SAM}: no size or count read from his notes"
+    if qty is None:
+        return f"{ASK_SAM}: no size or count read from his notes"
+    doubt = None if confirmed(row) else size_doubt(row, qty)
+    return f"{ASK_SAM}: {doubt}; once he answers, write 'Sam confirmed' on the row" if doubt else f"{PASS}: {show(qty)}"
+
+
+def size_doubt(row, qty):
+    """Why a measured number needs Sam before it is priced, or None. Each of these has cost real money."""
+    if DOT_FOR_COMMA.fullmatch(measured_text(row)):
+        return f"'{measured_text(row)}' may be a thousands number written with a dot for a comma"
+    po_qty = number(cell(row, "po qty")) if po_of(row) != NO_PO else None
+    if not po_qty:
+        return None
+    if qty == 0:
+        return f"0 measured against a PO qty of {show(po_qty)}: the whole line becomes a credit"
+    if qty >= po_qty * TEN_TIMES or qty * TEN_TIMES <= po_qty:
+        return f"{show(qty)} is ten times or more off the PO qty of {show(po_qty)}"
+    return None
 
 
 def po_line_match(row, _):
@@ -175,10 +205,24 @@ def line_notes(row, _):
     return ASK if "notes:" in cell(row, "special option info").lower() else f"{NA}: no notes under the line"
 
 
-def count(row, _):
+def count(row, house):
     if po_of(row) == NO_PO:
         return f"{NA}: on no PO, set against 0"
+    twin = None if confirmed(row) else ordered_twice(row, house.get("rows", []))
+    if twin:
+        return (f"{ASK_SAM}: the same item, qty and price is also on PO {twin}; ordered twice? "
+                "Once he answers, write 'Sam confirmed' on the row")
     return no_item_yet(row) or ASK
+
+
+def ordered_twice(row, rows):
+    """Another PO carrying this row's item at the same qty and price, or None."""
+    key = lambda r: (" ".join(r.get("price list item", "").split()).lower(),
+                     number(cell(r, "po qty")), number(cell(r, "unit price")))
+    for other in rows:
+        if po_of(other) not in (NO_PO, po_of(row)) and key(other) == key(row) and key(row)[1]:
+            return po_of(other)
+    return None
 
 
 ROW_CHECKS = {"line-math": line_math, "po-read": po_read, "price": price, "unit": unit,
