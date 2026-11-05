@@ -180,21 +180,50 @@ def check_proof(proof_pages, proof):
     return line(5, "Every proof document attached", problems, evidence)
 
 
-def check_pages(request_pages):
+JOB_LINE = re.compile(r"\bjob (?!name)(.*?) builder\b")
+DOCUMENT = re.compile(r"\bvr-(\d+)\b")
+
+
+def header_problems(request_pages, header):
+    """The job line carries exactly the house's address and lot numbers, every PO's job name is in
+    the header, and the only document number printed is the one the commit will give."""
+    text = normalise(" ".join(request_pages))
+    head = text[:text.find("before tax")] if "before tax" in text else text
+    problems, job = [], JOB_LINE.search(head)
+    if header["job_numbers"] is not None:
+        printed = sorted(re.findall(r"\d+", job.group(1))) if job else None
+        if printed != sorted(header["job_numbers"]):
+            problems.append(f"the job line reads '{job.group(1) if job else ''}'; house-info gives the numbers "
+                            + ", ".join(header["job_numbers"]))
+    for name in header["job_names"]:
+        if normalise(name) not in head:
+            problems.append(f"the PO's job name {name} is not in the header")
+    want = int(header["document"].split("-")[1])
+    found = sorted({int(n) for n in DOCUMENT.findall(text)})
+    if found != [want]:
+        problems.append(f"the document number must be {header['document']} (the number this commit gives); "
+                        f"the request prints {', '.join(f'VR-{n:04d}' for n in found) or 'none'}")
+    return problems
+
+
+def check_pages(request_pages, header=None):
+    """Page count and footer; with a header spec from build_request, the job and document number too."""
     first = request_pages[0] if request_pages else ""
     printed = re.search(r"page 1 of (\d+)", first)
-    problems = []
+    problems = header_problems(request_pages, header) if header else []
     if FOOTER_TEXT not in request_pages[-1]:
         problems.append("no sign-off footer found")
     if not printed:
         problems.append("no 'page 1 of N' on page 1")
     elif int(printed.group(1)) != len(request_pages):
         problems.append(f"prints 'page 1 of {printed.group(1)}'; the request has {len(request_pages)} page(s)")
-    return line(6, "Page count printed equals actual pages, footer on the last page", problems,
-                f"prints 'page 1 of {len(request_pages)}', footer on page {len(request_pages)}")
+    evidence = f"prints 'page 1 of {len(request_pages)}', footer on page {len(request_pages)}"
+    if header:
+        evidence = f"{header['document']}, job {', '.join(header['job_names']) or '(no PO job name)'}; " + evidence
+    return line(6, "Job, document number and page count printed right, footer on the last page", problems, evidence)
 
 
-def run_checks(pdf_path, expected, proof):
+def run_checks(pdf_path, expected, proof, header=None):
     """All six lines for one PDF. A file that is not a real PDF fails every check."""
     pages = pdf_pages(pdf_path)
     if pages is None:
@@ -203,4 +232,4 @@ def run_checks(pdf_path, expected, proof):
     request_pages, proof_pages = split_request(pages)
     request = " ".join(request_pages)
     return [check_rows(request, expected), check_differences(request, expected), check_tax(request, expected),
-            check_house(request, expected), check_proof(proof_pages, proof), check_pages(request_pages)]
+            check_house(request, expected), check_proof(proof_pages, proof), check_pages(request_pages, header)]

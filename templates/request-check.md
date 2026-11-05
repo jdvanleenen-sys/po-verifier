@@ -17,7 +17,7 @@ Sam's yes to send, below.
 - 3. Subtotal, tax and total per PO, from its own block:
 - 4. House totals add up:
 - 5. Every proof document attached:
-- 6. Page count printed equals actual pages, footer on the last page:
+- 6. Job, document number and page count printed right, footer on the last page:
 
 Site notes attached as proof: yes / no
 

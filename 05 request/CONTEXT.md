@@ -97,8 +97,9 @@ machine with `python -m unittest discover -s tests` from the folder root.
 5. Every PO and EPO in the read-back is attached, each notes page Sam named is attached, and no
    page he left out is. A PO counts only from its own page; its number on an EPO or notes page
    does not.
-6. The page count printed on the request equals its actual pages, and the footer is on the last
-   page.
+6. The header names the right job (the address and lot numbers in `house-info.md`, and each PO's
+   job name) and the document number this commit gives (`VR-0002` for a house's second request);
+   the page count printed equals the actual pages, and the footer is on the last page.
 
 Each line reads `pass: <evidence>` or `fail: <what is on the PDF, and what was expected>`. If any
 check fails, nothing is numbered and Sam does not see the request.

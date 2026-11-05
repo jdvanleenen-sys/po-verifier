@@ -22,6 +22,7 @@ Set the BROWSER environment variable to the browser's path if it is somewhere un
 """
 import argparse
 import hashlib
+import html
 import re
 import shutil
 import sys
@@ -118,6 +119,27 @@ def proof_spec(expected, attached, notes):
             "notes_attached": names, "notes_left_out": [p.name for p in notes if p.name not in names]}
 
 
+JOB_NAME = re.compile(r"JOB NAME:\s*(.*?)\s+JOB ADDRESS:")
+
+
+def document_text(path):
+    """A PO or EPO file's text: tags dropped from HTML, the text layer of a PDF."""
+    if path.suffix.lower() == ".pdf":
+        return " ".join(verify.pdf_pages(path) or [])
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", money.read_text(path))))
+
+
+def header_spec(house, n):
+    """What the request's header must say: the document number this commit gives, the numbers in
+    house-info's address and lot (None if house-info has neither), and each PO's job name."""
+    folder = ROOT / "01 intake" / house
+    info = money.read_text(folder / "house-info.md") if (folder / "house-info.md").is_file() else ""
+    fields = [m.group(1) for f in ("address", "lot") if (m := re.search(rf"^- {f}:\s*(.+)$", info, re.I | re.M))]
+    names = {m.group(1).strip() for p in intake(house)[0] if (m := JOB_NAME.search(document_text(p)))}
+    return {"document": f"VR-{n:04d}", "job_numbers": [x for f in fields for x in re.findall(r"\d+", f)] if fields else None,
+            "job_names": sorted(names)}
+
+
 def expected_or_stop(house):
     expected, problems = money.expected_request(records(house))
     if problems:
@@ -145,7 +167,8 @@ def build(house, notes_choice):
     printing.merge(request_pdf, proofs, merged)
     for tmp in draft.glob("_proof-*.pdf"):
         tmp.unlink()
-    lines = verify.run_checks(merged, expected, proof_spec(expected, attached, notes))
+    lines = verify.run_checks(merged, expected, proof_spec(expected, attached, notes),
+                              header_spec(house, next_number(STAGE / house)))
     left_out = [p.name for p in notes if p not in attached]
     report = [f"# {house}, script checks", "", *[f"- {l}" for l in lines], "",
               f"notes: {notes_choice}", *[f"not attached: {o}" for o in others],
@@ -179,10 +202,11 @@ def commit(house):
     expected = expected_or_stop(house)
     _, notes, _ = intake(house)
     attached = choose_notes(notes, choice.group(1))
-    lines = verify.run_checks(pdf, expected, proof_spec(expected, attached, notes))
+    house_dir = STAGE / house
+    lines = verify.run_checks(pdf, expected, proof_spec(expected, attached, notes),
+                              header_spec(house, next_number(house_dir)))
     if not all(": pass:" in l for l in lines):
         sys.exit("A check failed, so nothing was numbered:\n" + "\n".join(lines))
-    house_dir = STAGE / house
     house_dir.mkdir(exist_ok=True)
     if hashlib.sha256(pdf.read_bytes()).hexdigest() in numbered_hashes(house_dir):
         sys.exit("This exact request is already numbered. Nothing was numbered.")
