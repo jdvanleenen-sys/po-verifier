@@ -161,6 +161,19 @@ class RowBoundDifferences(unittest.TestCase):
         invented = row("Paint garage door", "60.00", "0", "0.00", "1", "60.00", "500.00")
         self.assertFalse(passes(self.check(block(PO_A, [DOORS, invented], "300.00"), exp)))
 
+    def test_unsigned_extra_row_of_real_figures_fails(self):
+        """A row Sam never saw, printed without a sign, every amount a real figure: after or before."""
+        exp = expected([(PO_A, [DOORS])])
+        ghost = edit(edit(DOORS, 0, "Paint garage door"), 8, "$300.00")
+        for rows in ([DOORS, ghost], [ghost, DOORS]):
+            with self.subTest(first=rows[0][1][0]):
+                self.assertFalse(passes(self.check(block(PO_A, rows, "300.00"), exp)))
+
+    def test_why_with_one_amount_passes(self):
+        exp = expected([(PO_A, [DOORS])])
+        text = block(PO_A, [edit(DOORS, 9, "Amount includes EPO 01, $120.00 for 2 doors.")], "300.00")
+        self.assertTrue(passes(self.check(text, exp)), self.check(text, exp))
+
     def test_approved_row_printed_twice_fails(self):
         exp = expected([(PO_A, [DOORS])])
         text = block(PO_A, [DOORS, edit(DOORS, 8, "+$999.00")], "300.00")

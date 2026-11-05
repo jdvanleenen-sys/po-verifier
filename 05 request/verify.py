@@ -170,6 +170,7 @@ def printed_groups(request):
 
 
 # What follows an item's name on its own row: the unit, the agreed rate, then a quantity.
+ROW_SHAPE = re.compile(r"\$\s?[\d,]+\.\d\d\s+\d[\d,.]*\s+[(+\-−]?\$")
 ROW_CELLS = re.compile(r"\s*\S+\s+\$\s?[\d,]+\.\d\d\s+\d")
 
 
@@ -256,19 +257,41 @@ def rows_by_po(rows):
     return out
 
 
+def difference_end(segment):
+    """Where a row's cells end: just after its first signed amount (its difference)."""
+    for _, signed, span in marked_amounts(segment, spans=True):
+        if signed:
+            return span[1]
+    return len(segment)
+
+
+def stray_rows(po, block, first, stop, covered):
+    """Anything shaped like a row (an amount, a quantity, an amount) outside the approved rows'
+    own cells: a row Sam never saw, even one printed without a sign."""
+    edges = [first] + [x for span in sorted(covered) for x in span] + [stop]
+    outside = [block[a:b] for a, b in zip(edges[::2], edges[1::2])]
+    if any(ROW_SHAPE.search(piece) for piece in outside):
+        return [f"PO {po}: its block prints a row that is not one Sam approved"]
+    return []
+
+
 def block_problems(po, rows, block):
     """One PO block: each approved row read from its own row, and no other row in the block.
     Every row prints its difference with a sign, so the block holds one signed amount per row."""
     starts, stop = row_starts(block, [r["item"] for r in rows])
-    ends, problems = sorted(starts.values()) + [stop], []
+    ends, problems, covered = sorted(starts.values()) + [stop], [], []
     for row in rows:
         name = normalise(row["item"])
         if name not in starts:
             problems.append(f"{row['item']} ({row['po']}): no row for it in its PO's block")
             continue
         at = starts[name]
-        problems += row_problems(row, *read_row(block[at + len(name):next(e for e in ends if e > at)]))
+        segment = block[at + len(name):next(e for e in ends if e > at)]
+        covered.append((at, at + len(name) + difference_end(segment)))
+        problems += row_problems(row, *read_row(segment))
     head = block.find(COLUMN_HEADINGS)
+    first = head + len(COLUMN_HEADINGS) if head >= 0 else 0
+    problems += stray_rows(rows[0]["po"], block, first, stop, covered)
     printed = sum(1 for _, signed in marked_amounts(block[max(head, 0):stop]) if signed)
     if printed != len(rows):
         problems.append(f"PO {rows[0]['po']}: its block prints {printed} row difference(s); Sam approved {len(rows)} row(s)")
