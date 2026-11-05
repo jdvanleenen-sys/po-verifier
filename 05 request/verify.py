@@ -12,7 +12,8 @@ from decimal import Decimal
 
 from request_text import (  # noqa: F401  (pdf_pages, split_request, normalise: used by callers)
     BOX_NOTE, FOOTER_TEXT, amounts, first_amount_after, group_blocks, normalise, pdf_pages,
-    printed_groups, shown, split_request)
+    SUBTOTAL, printed_groups, shown, split_request)
+from header_checks import header_problems
 from row_checks import block_problems, rows_by_po
 
 D0 = Decimal(0)
@@ -97,14 +98,39 @@ def end_label(po, total):
     return "credit back to the builder for this po" if total < 0 else "epo requested for this po"
 
 
+PERCENT = re.compile(r"(\d+(?:\.\d+)?)\s?%")
+
+
+def group_name(key):
+    """A group as the request names it: its PO number, or "No PO"."""
+    return "No PO" if key == "none" else key.upper()
+
+
+def percents(text):
+    return [Decimal(p) for p in PERCENT.findall(text)]
+
+
+def rate_problems(blocks, expected):
+    """The percentages on a group's tax lines add up to that PO's own rate (5% for GST alone)."""
+    problems = []
+    for key, (block, _) in blocks.items():
+        rate = next((r for po, r in expected.get("rates", {}).items() if po.lower() == key), None)
+        printed = percents(block[block.find(SUBTOTAL):]) if SUBTOTAL in block else []
+        if rate is not None and sum(printed, D0) != rate * 100:
+            problems.append(f"{group_name(key)}: its tax line prints {' + '.join(f'{p}%' for p in printed) or 'no rate'}; "
+                            f"the PO's rate is {(rate * 100).normalize():f}%")
+    return problems
+
+
 def check_tax(request, expected):
     """Each PO's subtotal, tax and total, read from that PO's own block, sign included, and its
     last line worded by what the group is."""
     found, problems = printed_groups(request), []
+    problems += rate_problems(group_blocks(request)[0], expected)
     for key, (_, line_text) in group_blocks(request)[0].items():
         group = next((g for po, g in expected["groups"].items() if po.lower() == key), None)
         if group and not line_text.startswith(end_label(key, group["total"])):
-            problems.append(f"{'No PO' if key == 'none' else key.upper()}: its last line reads '{line_text}'; it must start "
+            problems.append(f"{group_name(key)}: its last line reads '{line_text}'; it must start "
                             f"'{end_label(key, group['total'])}'")
     for po, g in expected["groups"].items():
         got = found.get(po.lower())
@@ -135,6 +161,27 @@ def box_note_problems(text, expected):
     return problems
 
 
+def box_text_problems(text, expected):
+    """The boxes' own notes: the item count matches the approved rows ("2 items: 1 on a PO, 1 on no
+    PO", the split only where it is written that way), and every percentage in the tax box is one a
+    group's tax line prints."""
+    start, end = text.find("before tax"), text.find(OWED_TOTAL if OWED_TOTAL in text else CREDIT_TOTAL)
+    if start < 0 or end < start:
+        return []
+    box, rows, problems = text[start:end], expected.get("rows_on"), []
+    on_po = sum(1 for r in rows or [] if r["po"] != "none")
+    counts = [] if rows is None else [(r"(\d+) items?\b", len(rows), "items"),
+                                      (r"(\d+) on (?:a )?po\b", on_po, "on a PO"),
+                                      (r"(\d+) on no po\b", len(rows) - on_po, "on no PO")]
+    for pattern, want, what in counts:
+        m = re.search(pattern, box)
+        if m and int(m.group(1)) != want:
+            problems.append(f"the before-tax box says {m.group(1)} {what}; Sam approved {want}")
+    lines = [p for block, _ in group_blocks(text)[0].values() for p in percents(block[block.find(SUBTOTAL):])]
+    problems += [f"the tax box prints {p}%, which no group's tax line prints" for p in percents(box) if p not in lines]
+    return problems
+
+
 def check_house(request, expected):
     """The three boxes at the top, each read from its own label, in order, sign included."""
     text, house, problems, at = normalise(request), expected["house"], [], 0
@@ -145,7 +192,7 @@ def check_house(request, expected):
         at = index + len(label) if index >= 0 else at
         if value != house[key]:
             problems.append(f"house {key} ('{label}' box): expected ${house[key]:.2f}, the PDF shows {shown(value)}")
-    problems += box_note_problems(text, expected)
+    problems += box_note_problems(text, expected) + box_text_problems(text, expected)
     return line(4, "House totals add up", problems,
                 f"${house['before']:.2f} before tax + ${house['tax']:.2f} tax = ${house['total']:.2f}")
 
@@ -178,32 +225,6 @@ def check_proof(proof_pages, proof):
     evidence = (f"{len(proof['po_numbers'])} PO(s), {len(proof['epo_names'])} EPO(s), site notes: {notes}; "
                 f"{len(proof_pages)} proof page(s)")
     return line(5, "Every proof document attached", problems, evidence)
-
-
-JOB_LINE = re.compile(r"\bjob (?!name)(.*?) builder\b")
-DOCUMENT = re.compile(r"\bvr-(\d+)\b")
-
-
-def header_problems(request_pages, header):
-    """The job line carries exactly the house's address and lot numbers, every PO's job name is in
-    the header, and the only document number printed is the one the commit will give."""
-    text = normalise(" ".join(request_pages))
-    head = text[:text.find("before tax")] if "before tax" in text else text
-    problems, job = [], JOB_LINE.search(head)
-    if header["job_numbers"] is not None:
-        printed = sorted(re.findall(r"\d+", job.group(1))) if job else None
-        if printed != sorted(header["job_numbers"]):
-            problems.append(f"the job line reads '{job.group(1) if job else ''}'; house-info gives the numbers "
-                            + ", ".join(header["job_numbers"]))
-    for name in header["job_names"]:
-        if normalise(name) not in head:
-            problems.append(f"the PO's job name {name} is not in the header")
-    want = int(header["document"].split("-")[1])
-    found = sorted({int(n) for n in DOCUMENT.findall(text)})
-    if found != [want]:
-        problems.append(f"the document number must be {header['document']} (the number this commit gives); "
-                        f"the request prints {', '.join(f'VR-{n:04d}' for n in found) or 'none'}")
-    return problems
 
 
 def check_pages(request_pages, header=None):

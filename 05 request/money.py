@@ -260,8 +260,10 @@ def expected_request(records):
     house = [Decimal(0), Decimal(0)]
     for po, rows in groups.items():
         before = sum((v["difference"] for _, v in rows), Decimal(0))
-        tax = (before * group_rate(po, rates, problems)).quantize(CENT, ROUND_HALF_UP)
+        rate = group_rate(po, rates, problems)
+        tax = (before * rate).quantize(CENT, ROUND_HALF_UP)
         out["groups"][po] = {"before": before, "tax": tax, "total": before + tax}
+        out.setdefault("rates", {})[po] = rate
         out["rows_on"] += [{"po": po, "item": i, **v} for i, v in rows]
         house[0] += before
         house[1] += tax

@@ -136,8 +136,9 @@ def header_spec(house, n):
     info = money.read_text(folder / "house-info.md") if (folder / "house-info.md").is_file() else ""
     fields = [m.group(1) for f in ("address", "lot") if (m := re.search(rf"^- {f}:\s*(.+)$", info, re.I | re.M))]
     names = {m.group(1).strip() for p in intake(house)[0] if (m := JOB_NAME.search(document_text(p)))}
+    measured = re.search(r"^- date measured:\s*(\d{4}-\d{2}-\d{2})\s*$", info, re.I | re.M)
     return {"document": f"VR-{n:04d}", "job_numbers": [x for f in fields for x in re.findall(r"\d+", f)] if fields else None,
-            "job_names": sorted(names)}
+            "job_names": sorted(names), "measured": measured.group(1) if measured else None}
 
 
 def expected_or_stop(house):

@@ -91,14 +91,16 @@ machine with `python -m unittest discover -s tests` from the folder root.
    its own PO's block, equal the figures worked out from Sam's read-back. A right number printed
    somewhere else on the page does not count.
 3. Each PO group's difference before tax, tax and total, read from that group's own lines with
-   their sign, match Sam's records. A credit must print with its minus sign.
+   their sign, match Sam's records, and the rate printed on its tax line is that PO's own. A credit
+   must print with its minus sign.
 4. The three boxes at the top (before tax, tax, total requested), each read from its own label
-   with its sign, match the groups, and each per-PO total named in the box note is that PO's own.
+   with its sign, match the groups; each per-PO total named in the box note is that PO's own, and
+   the item count in the before-tax box is the number of rows Sam approved.
 5. Every PO and EPO in the read-back is attached, each notes page Sam named is attached, and no
    page he left out is. A PO counts only from its own page; its number on an EPO or notes page
    does not.
 6. The header names the right job (the address and lot numbers in `house-info.md`, and each PO's
-   job name) and the document number this commit gives (`VR-0002` for a house's second request);
+   job name, and the date measured in `house-info.md`) and the document number this commit gives (`VR-0002` for a house's second request);
    the page count printed equals the actual pages, and the footer is on the last page.
 
 Each line reads `pass: <evidence>` or `fail: <what is on the PDF, and what was expected>`. If any
