@@ -44,8 +44,10 @@ also refuses one whose read-back has no rule grid, or a grid that fails `grid.py
 
 Write each row's item exactly as the variance names it (the price list's name), and print every
 difference with its sign and a dollar sign (`+$300.00`, `-$170.00`): the script finds them that way.
-Copy each row's agreed rate and PO amount from the compare too; the measured value is the measured
-quantity times the agreed rate. A no-PO row prints its PO amount as `$0.00`, never blank. The
+Copy each row's agreed rate, PO qty, PO amount and measured qty from the compare too; the measured
+value is the measured quantity times the agreed rate. Each quantity is one plain number (`12`,
+`2,615.5`): the PO's own count, `0` on a no-PO row, and the PO amount includes any EPO already
+issued for the row (say so in the why). A no-PO row prints its PO amount as `$0.00`, never blank. The
 script reads every one of these from the row it belongs to.
 
 ## Filling in the header
@@ -83,7 +85,7 @@ machine with `python -m unittest discover -s tests` from the folder root.
 
 ## The six checks (the script runs them; nobody writes them by hand)
 1. Every row on it is a row Sam approved in the review, and no row he left off is on it.
-2. Each row's agreed rate, PO amount, measured value and difference, read from that row inside
+2. Each row's agreed rate, PO qty, PO amount, measured qty, measured value and difference, read from that row inside
    its own PO's block, equal the figures worked out from Sam's read-back. A right number printed
    somewhere else on the page does not count.
 3. Each PO group's difference before tax, tax and total, read from that group's own lines with

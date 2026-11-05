@@ -13,7 +13,8 @@ from decimal import Decimal
 import pymupdf
 
 FOOTER_TEXT = "Checked and approved by"
-MONEY = re.compile(r"(\()?([+\-−])?\s?\$\s?([\d,]+\.\d\d)")
+MONEY = re.compile(r"(\()?([+\-−])?\s?\$\s?((?:\d{1,3}(?:,\d{3})+|\d+)\.\d\d)(?!\d)")
+QTY = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?")
 
 
 def normalise(text):
@@ -22,14 +23,15 @@ def normalise(text):
     return re.sub(r"\s+", " ", text).strip().lower()
 
 
-def marked_amounts(text):
-    """Every dollar amount printed, as (value, printed with a sign). '-$170.00' and '($170.00)'
-    are both -170.00, signed; '+$300.00' is signed; a plain '$60.00' is not."""
+def marked_amounts(text, spans=False):
+    """Every dollar amount printed, as (value, printed with a sign), plus its (start, end) if spans.
+    '-$170.00' and '($170.00)' are both -170.00, signed; '+$300.00' is signed; '$60.00' is not."""
     found = []
     for m in MONEY.finditer(text):
         value = Decimal(m.group(3).replace(",", ""))
         negative = bool(m.group(1)) or m.group(2) in ("-", "−")
-        found.append((-value if negative else value, bool(m.group(1) or m.group(2))))
+        item = (-value if negative else value, bool(m.group(1) or m.group(2)))
+        found.append(item + (m.span(),) if spans else item)
     return found
 
 
@@ -147,17 +149,44 @@ def row_starts(block, items):
 
 
 def read_row(segment):
-    """One printed row after its item name: (plain amounts before the difference, the difference).
-    The difference is the first amount printed with a sign. The plain amounts before it are the
-    agreed rate, the PO rate (blank on a no-PO row), the PO amount and the measured value."""
-    marks = marked_amounts(segment)
-    for i, (value, signed) in enumerate(marks):
+    """One printed row after its item name: (plain amounts before the difference, the difference,
+    the text between each pair of those plain amounts). The difference is the first amount printed
+    with a sign. The plain amounts before it are the agreed rate, the PO rate (blank on a no-PO row),
+    the PO amount and the measured value; the PO qty sits after the rate, the measured qty before
+    the measured value."""
+    plain, spans = [], []
+    for value, signed, span in marked_amounts(segment, spans=True):
         if signed:
-            return [v for v, _ in marks[:i]], value
-    return [v for v, _ in marks], None
+            return plain, value, gaps(segment, spans)
+        plain.append(value)
+        spans.append(span)
+    return plain, None, gaps(segment, spans)
 
 
-def row_problems(row, plain, difference):
+def gaps(text, spans):
+    return [text[a[1]:b[0]] for a, b in zip(spans, spans[1:])]
+
+
+def quantity(gap):
+    """The one number printed in a gap between two amounts: '12', '2,615.5'; blank reads as 0."""
+    found = QTY.findall(gap)
+    if not found:
+        return Decimal(0)
+    return Decimal(found[0].replace(",", "")) if len(found) == 1 else None
+
+
+def quantity_problems(where, row, between):
+    if "po_qty" not in row:
+        return []
+    out = []
+    for label, want, got in (("PO qty", row["po_qty"], quantity(between[0]) if between else None),
+                             ("measured qty", row["measured_qty"], quantity(between[-1]) if between else None)):
+        if got != want:
+            out.append(f"{where}: {label} expected {want}, its row shows {'nothing clear' if got is None else got}")
+    return out
+
+
+def row_problems(row, plain, difference, between=()):
     """Each figure on one printed row against the one worked out from Sam's read-back."""
     where, out = f"{row['item']} ({row['po']})", []
     if difference != row["difference"]:
@@ -171,7 +200,7 @@ def row_problems(row, plain, difference):
                              ("measured value", row["measured_value"], plain[-1] if full else None)):
         if got != want:
             out.append(f"{where}: {label} expected ${want:.2f}, its row shows {shown(got)}")
-    return out
+    return out + (quantity_problems(where, row, between) if full else [])
 
 
 def rows_by_po(rows):

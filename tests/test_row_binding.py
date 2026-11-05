@@ -23,8 +23,8 @@ HEADINGS = "ITEM\nUNIT\nAGREED RATE\nPO QTY\nPO RATE\nPO AMOUNT\nMEASURED QTY\nM
 
 def row(item, rate, po_qty, po_amount, qty, value, diff):
     """One expected row and its printed cells."""
-    expected = {"item": item, "rate": D(rate), "po_amount": D(po_amount),
-                "measured_value": D(value), "difference": D(diff)}
+    expected = {"item": item, "rate": D(rate), "po_qty": D(po_qty.replace(",", "")), "po_amount": D(po_amount),
+                "measured_qty": D(qty.replace(",", "")), "measured_value": D(value), "difference": D(diff)}
     sign = "+" if D(diff) >= 0 else "-"
     cells = [item, "EA", f"${rate}", po_qty, f"${rate}", f"${po_amount}", qty, f"${value}",
              f"{sign}${abs(D(diff)):.2f}", "Short of the site count."]
@@ -122,6 +122,19 @@ class RowBoundDifferences(unittest.TestCase):
         wrong = block(PO_A, [DOORS, edit(DOORS_SHORT, 8, "+$300.00")], "520.00")
         self.assertFalse(passes(self.check(wrong, exp)))
 
+    def test_wrong_po_qty_or_measured_qty_on_the_row_fails(self):
+        exp = expected([(PO_A, [DOORS])])
+        for index, value in ((3, "9"), (6, "14")):
+            with self.subTest(cell=index):
+                result = self.check(block(PO_A, [edit(DOORS, index, value)], "300.00"), exp)
+                self.assertFalse(passes(result), result)
+
+    def test_quantity_written_with_a_comma_or_decimal_passes(self):
+        big = row("Prime and paint", "1.60", "2,400", "3840.00", "2,615.5", "4184.80", "344.80")
+        exp = expected([(PO_A, [big])])
+        result = self.check(block(PO_A, [big], "344.80"), exp)
+        self.assertTrue(passes(result), result)
+
     def test_extra_row_no_record_gives_fails(self):
         """A row Sam never saw, printed in an approved PO's block, subtotal left alone."""
         exp = expected([(PO_A, [DOORS])])
@@ -157,10 +170,10 @@ class CommittedSamplePdf(unittest.TestCase):
     """The committed 77 Mockup Drive request, as Chrome printed it."""
     PDF = ROOT / "05 request" / "77-mockup-drive" / "vpo-request-1.pdf"
     EXP = {"rows_on": [
-        {"po": "MKR-02402401/027", "item": "8' doors and trim", "rate": D("60.00"), "po_amount": D("420.00"),
-         "measured_value": D("720.00"), "difference": D("300.00")},
-        {"po": "none", "item": "Prime and paint garage, including ceiling", "rate": D("1.60"),
-         "po_amount": D("0"), "measured_value": D("672.00"), "difference": D("672.00")}],
+        {"po": "MKR-02402401/027", "item": "8' doors and trim", "rate": D("60.00"), "po_qty": D("7"),
+         "po_amount": D("420.00"), "measured_qty": D("12"), "measured_value": D("720.00"), "difference": D("300.00")},
+        {"po": "none", "item": "Prime and paint garage, including ceiling", "rate": D("1.60"), "po_qty": D("0"),
+         "po_amount": D("0"), "measured_qty": D("420"), "measured_value": D("672.00"), "difference": D("672.00")}],
         "rows_off": [],
         "groups": {"MKR-02402401/027": {"before": D("300"), "tax": D("15.00"), "total": D("315.00")},
                    "none": {"before": D("672"), "tax": D("33.60"), "total": D("705.60")}}}
@@ -172,6 +185,15 @@ class CommittedSamplePdf(unittest.TestCase):
         text = self.request()
         for check in (verify.check_differences, verify.check_tax):
             self.assertTrue(passes(check(text, self.EXP)), check(text, self.EXP))
+
+    def test_sample_with_a_quantity_changed_fails(self):
+        text = self.request()
+        for old, new in (("$60.00 7 $60.00", "$60.00 9 $60.00"), ("$420.00 12 $720.00", "$420.00 14 $720.00"),
+                         ("0 $0.00 420 $672.00", "0 $0.00 520 $672.00")):
+            with self.subTest(old=old):
+                spaced = " ".join(text.split())
+                self.assertIn(old, spaced)
+                self.assertFalse(passes(verify.check_differences(spaced.replace(old, new, 1), self.EXP)))
 
     def test_sample_with_the_row_changed_fails(self):
         text = self.request()

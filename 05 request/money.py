@@ -139,7 +139,8 @@ def epo_amount(rb_row, epos):
 
 def checked_row(v, rb, epos, problems):
     """One variance row, recomputed from its read-back row. Returns the row's true figures:
-    {"rate", "po_amount", "measured_value", "difference"}, every one from the read-back."""
+    {"rate", "po_qty", "po_amount", "measured_qty", "measured_value", "difference"}. PO qty is the
+    PO's own count (0 on no PO); the PO amount includes any EPO already issued for the row."""
     where = f"variance row '{v['item']}' ({v['po']})"
     if v["rate"] != rb["rate"]:
         problems.append(f"{where}: agreed rate {v['rate']}, read-back says {rb['rate']}")
@@ -156,7 +157,8 @@ def checked_row(v, rb, epos, problems):
         problems.append(f"{where}: says PO amount {v['po_amount']} and variance {v['variance']}; "
                         f"the read-back gives {po_amount} and {true_variance}")
     rate = rb["rate"] or Decimal(0)
-    return {"rate": rate, "po_amount": po_amount, "measured_value": (v["measured_qty"] or 0) * rate,
+    return {"rate": rate, "po_qty": rb["po_qty"] or Decimal(0), "po_amount": po_amount,
+            "measured_qty": v["measured_qty"] or Decimal(0), "measured_value": (v["measured_qty"] or 0) * rate,
             "difference": true_variance}
 
 
