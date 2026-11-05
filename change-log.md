@@ -3,7 +3,8 @@
 ## 2026-11-04, the break-it loop: 3 rounds, 15 cold runs, 2 sealed houses
 Ten new attack houses and two sealed ones (written by a separate agent, opened only in round 3).
 Money matched the key on all 15 runs; every run made its PDF from round 2 on. Full record, PDFs and
-the honest close: `C:\GitHub\po-verifier-runs6-11-04_loopesults.md` (outside this folder).
+the honest close: `C:/GitHub/po-verifier-runs/2026-11-04_loop/results.md` (outside this folder).
+esults.md` (outside this folder).
 - Checks 3 and 4 read each labelled line with its sign. A credit printed as money owed used to pass.
 - Photo and voice-memo notes attach; Sam can name only some pages; check 5 refuses a page he left out.
 - The rule grid asks Sam, by code, about a dot-for-comma number, a tenfold miss, a 0 against a PO
