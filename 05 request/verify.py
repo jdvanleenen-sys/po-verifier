@@ -74,22 +74,74 @@ def check_differences(request, expected):
                 ", ".join(f"{r['difference']:+.2f}" for r in expected["rows_on"]))
 
 
+GROUP_END = re.compile(r"(?:epo requested for this po|new po or epo requested)\s*" + MONEY.pattern)
+PO_HEADING = re.compile(r"\bpo ([a-z]+-\d+/\d+)(?!\S*:)")
+NO_PO_HEADING = "no po work done"
+
+
+def first_amount_after(text, label):
+    """The signed amount printed right after a label, or None if the label or amount is missing."""
+    at = text.find(label)
+    if at < 0:
+        return None
+    found = amounts(text[at + len(label):])
+    return found[0] if found else None
+
+
+def group_key(block):
+    """The heading a group block starts under: its PO number, or "none" for the no-PO block."""
+    heads = [(m.start(), m.group(1)) for m in PO_HEADING.finditer(block)]
+    no_po = block.rfind(NO_PO_HEADING)
+    last_po = heads[-1][0] if heads else -1
+    if no_po > last_po:
+        return "none", no_po
+    return (heads[-1][1], last_po) if heads else (None, 0)
+
+
+def printed_groups(request):
+    """Each group block on the request, by its heading: {po: (difference before tax, tax, total)}."""
+    text, out, start = normalise(request), {}, 0
+    for end in GROUP_END.finditer(text):
+        block, start = text[start:end.start()], end.end()
+        key, at = group_key(block)
+        if key is None:
+            continue
+        block = block[at:]
+        tail = block[block.find("difference before tax"):] if "difference before tax" in block else ""
+        values, total = amounts(tail), amounts(end.group(0))
+        out[key] = (values[0] if values else None, values[1] if len(values) > 1 else None,
+                    total[0] if total else None)
+    return out
+
+
+def shown(value):
+    return "nothing" if value is None else f"${value:.2f}"
+
+
 def check_tax(request, expected):
-    printed = [abs(a) for a in amounts(request)]
-    problems = []
+    """Each PO's tax and requested total, read from that PO's own block, sign included."""
+    found, problems = printed_groups(request), []
     for po, g in expected["groups"].items():
-        for label in ("tax", "total"):
-            if abs(g[label]) not in printed:
-                problems.append(f"{po} group {label}: expected ${g[label]:.2f}, not on the PDF")
+        got = found.get(po.lower())
+        if got is None:
+            problems.append(f"{po}: no group block on the PDF")
+            continue
+        for label, value in (("tax", got[1]), ("total", got[2])):
+            if value != g[label]:
+                problems.append(f"{po} group {label}: expected ${g[label]:.2f}, the PDF shows {shown(value)}")
     evidence = "; ".join(f"{po}: tax ${g['tax']:.2f}, total ${g['total']:.2f}" for po, g in expected["groups"].items())
     return line(3, "Tax per PO, from its own printed rate", problems, evidence)
 
 
 def check_house(request, expected):
-    printed = amounts(request)
-    house = expected["house"]
-    problems = [f"house {k}: expected ${house[k]:.2f}, not on the PDF" for k in ("before", "tax", "total")
-                if house[k] not in printed and abs(house[k]) not in [abs(a) for a in printed]]
+    """The three boxes at the top, each read from its own label, in order, sign included."""
+    text, house, problems, at = normalise(request), expected["house"], [], 0
+    for key, label in (("before", "before tax"), ("tax", "tax"), ("total", "total requested")):
+        index = text.find(label, at)
+        value = first_amount_after(text[index:], label) if index >= 0 else None
+        at = index + len(label) if index >= 0 else at
+        if value != house[key]:
+            problems.append(f"house {key} ('{label}' box): expected ${house[key]:.2f}, the PDF shows {shown(value)}")
     return line(4, "House totals add up", problems,
                 f"${house['before']:.2f} before tax + ${house['tax']:.2f} tax = ${house['total']:.2f}")
 
