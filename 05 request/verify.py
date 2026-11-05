@@ -10,55 +10,12 @@ and what was expected>". A request with any fail line is never numbered.
 import re
 from decimal import Decimal
 
-import pymupdf
+from request_text import (  # noqa: F401  (pdf_pages, split_request, normalise: used by callers)
+    BOX_NOTE, FOOTER_TEXT, amounts, first_amount_after, group_blocks, normalise, pdf_pages,
+    printed_groups, shown, split_request)
+from row_checks import block_problems, rows_by_po
 
 D0 = Decimal(0)
-
-FOOTER_TEXT = "Checked and approved by"
-MONEY = re.compile(r"(\()?([+\-−])?\s?\$\s?((?:\d{1,3}(?:,\d{3})+|\d+)\.\d\d)(?!\d)")
-QTY = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?")
-
-
-def normalise(text):
-    """Lower case, one space between words, plain quotes: so a wrapped line still matches."""
-    text = text.replace("’", "'").replace("‘", "'").replace("′", "'").replace("−", "-")
-    return re.sub(r"\s+", " ", text).strip().lower()
-
-
-def marked_amounts(text, spans=False):
-    """Every dollar amount printed, as (value, printed with a sign), plus its (start, end) if spans.
-    '-$170.00' and '($170.00)' are both -170.00, signed; '+$300.00' is signed; '$60.00' is not."""
-    found = []
-    for m in MONEY.finditer(text):
-        value = Decimal(m.group(3).replace(",", ""))
-        negative = bool(m.group(1)) or m.group(2) in ("-", "−")
-        item = (-value if negative else value, bool(m.group(1) or m.group(2)))
-        found.append(item + (m.span(),) if spans else item)
-    return found
-
-
-def amounts(text):
-    """Every dollar amount printed, signed: '-$170.00' and '($170.00)' are both -170.00."""
-    return [value for value, _ in marked_amounts(text)]
-
-
-def pdf_pages(path):
-    """The text of every page, or None if the file is not a PDF that opens."""
-    try:
-        with pymupdf.open(path) as doc:
-            if not doc.is_pdf or doc.page_count == 0:
-                return None
-            return [page.get_text() for page in doc]
-    except Exception:
-        return None
-
-
-def split_request(pages):
-    """The request runs from page 1 to the page with the sign-off footer; the proof follows."""
-    for i, text in enumerate(pages):
-        if FOOTER_TEXT in text:
-            return pages[: i + 1], pages[i + 1:]
-    return pages, []
 
 
 def line(num, name, problems, evidence):
@@ -112,190 +69,8 @@ def check_rows(request, expected):
                 f"{len(expected['rows_on'])} approved row(s) printed, {len(expected['rows_off'])} left off")
 
 
-# The last line of every group block, exactly as reference/request-layout.html words it.
-GROUP_END = re.compile(r"(?:epo requested for this po|credit back to the builder for this po|new po or epo requested)\s*"
-                       + MONEY.pattern)
-PO_HEADING = re.compile(r"\bpo ([a-z]+-\d+/\d+)(?!\S*:)")
-NO_PO_HEADING = "no po work done"
-SUBTOTAL = "difference before tax"
-BOX_NOTE = re.compile(r"(?:\bpo ([a-z]+-\d+/\d+)|\bno po): " + MONEY.pattern)
-COLUMN_HEADINGS = "difference why"
 # The main box's label: what is owed to the trade, or, when the house nets to a credit, what goes back.
 OWED_TOTAL, CREDIT_TOTAL = "total requested", "total credit to the builder"
-
-
-def first_amount_after(text, label):
-    """The signed amount printed right after a label, or None if the label or amount is missing."""
-    at = text.find(label)
-    if at < 0:
-        return None
-    found = amounts(text[at + len(label):])
-    return found[0] if found else None
-
-
-def group_key(block):
-    """The heading a group block starts under: its PO number, or "none" for the no-PO block.
-    The heading is the first one in the block; a PO named later, in a row's wording, is not it."""
-    first_po = PO_HEADING.search(block)
-    no_po = block.find(NO_PO_HEADING)
-    if no_po >= 0 and (first_po is None or no_po < first_po.start()):
-        return "none", no_po
-    return (first_po.group(1), first_po.start()) if first_po else (None, 0)
-
-
-def group_blocks(request):
-    """Each group block on the request, by its heading: ({po: (block from its heading, end line)},
-    [each PO whose heading is printed more than once])."""
-    text, out, twice, start = normalise(request), {}, [], 0
-    for end in GROUP_END.finditer(text):
-        block, start = text[start:end.start()], end.end()
-        key, at = group_key(block)
-        if key is None:
-            continue
-        if key in out:
-            twice.append(key)
-        out[key] = (block[at:], end.group(0))
-    return out, twice
-
-
-def printed_groups(request):
-    """Each group block on the request, by its heading: {po: (difference before tax, tax, total)}."""
-    out = {}
-    for key, (block, end_line) in group_blocks(request)[0].items():
-        tail = block[block.find(SUBTOTAL):] if SUBTOTAL in block else ""
-        values, total = amounts(tail), amounts(end_line)
-        out[key] = (values[0] if values else None, values[1] if len(values) > 1 else None,
-                    total[0] if total else None)
-    return out
-
-
-# What follows an item's name on its own row: the unit, the agreed rate, then a quantity.
-ROW_SHAPE = re.compile(r"\$\s?[\d,]+\.\d\d\s+\d[\d,.]*\s+[(+\-−]?\$")
-ROW_CELLS = re.compile(r"\s*\S+\s+\$\s?[\d,]+\.\d\d\s+\d")
-
-
-def row_starts(block, items):
-    """Where each item's row starts in its group block: after the column headings, before the
-    subtotal. A name that is part of a longer item's name is not found inside that longer name.
-    A name that a row's why mentions is passed over for the place where the row's cells follow it."""
-    head = block.find(COLUMN_HEADINGS)
-    first = head + len(COLUMN_HEADINGS) if head >= 0 else 0
-    stop = block.find(SUBTOTAL) if SUBTOTAL in block else len(block)
-    taken, starts = [], {}
-    for name in sorted({normalise(i) for i in items}, key=len, reverse=True):
-        free, at = [], block.find(name, first)
-        while 0 <= at < stop:
-            if not any(a <= at < b for a, b in taken):
-                free.append(at)
-            at = block.find(name, at + 1)
-        rows = [a for a in free if ROW_CELLS.match(block, a + len(name))]
-        if rows or free:
-            starts[name] = (rows or free)[0]
-            taken.append((starts[name], starts[name] + len(name)))
-    return starts, stop
-
-
-def read_row(segment):
-    """One printed row after its item name: (plain amounts before the difference, the difference,
-    the text between each pair of those plain amounts). The difference is the first amount printed
-    with a sign. The plain amounts before it are the agreed rate, the PO rate (blank on a no-PO row),
-    the PO amount and the measured value; the PO qty sits after the rate, the measured qty before
-    the measured value."""
-    plain, spans = [], []
-    for value, signed, span in marked_amounts(segment, spans=True):
-        if signed:
-            return plain, value, gaps(segment, spans)
-        plain.append(value)
-        spans.append(span)
-    return plain, None, gaps(segment, spans)
-
-
-def gaps(text, spans):
-    return [text[a[1]:b[0]] for a, b in zip(spans, spans[1:])]
-
-
-def quantity(gap):
-    """The one number printed in a gap between two amounts: '12', '2,615.5'; blank reads as 0."""
-    found = QTY.findall(gap)
-    if not found:
-        return Decimal(0)
-    return Decimal(found[0].replace(",", "")) if len(found) == 1 else None
-
-
-def quantity_problems(where, row, between):
-    if "po_qty" not in row:
-        return []
-    out = []
-    for label, want, got in (("PO qty", row["po_qty"], quantity(between[0]) if between else None),
-                             ("measured qty", row["measured_qty"], quantity(between[-1]) if between else None)):
-        if got != want:
-            out.append(f"{where}: {label} expected {want}, its row shows {'nothing clear' if got is None else got}")
-    return out
-
-
-def row_problems(row, plain, difference, between=()):
-    """Each figure on one printed row against the one worked out from Sam's read-back."""
-    where, out = f"{row['item']} ({row['po']})", []
-    if difference != row["difference"]:
-        out.append(f"{where}: difference expected {row['difference']:+.2f}, its row shows "
-                   + ("no signed amount" if difference is None else f"{difference:+.2f}"))
-    if "po_amount" not in row:
-        return out
-    full = len(plain) >= 3
-    for label, want, got in (("agreed rate", row["rate"], plain[0] if plain else None),
-                             ("PO amount", row["po_amount"], plain[-2] if full else None),
-                             ("measured value", row["measured_value"], plain[-1] if full else None)):
-        if got != want:
-            out.append(f"{where}: {label} expected ${want:.2f}, its row shows {shown(got)}")
-    return out + (quantity_problems(where, row, between) if full else [])
-
-
-def rows_by_po(rows):
-    out = {}
-    for row in rows:
-        out.setdefault(row["po"].lower(), []).append(row)
-    return out
-
-
-def difference_end(segment):
-    """Where a row's cells end: just after its first signed amount (its difference)."""
-    for _, signed, span in marked_amounts(segment, spans=True):
-        if signed:
-            return span[1]
-    return len(segment)
-
-
-def stray_rows(po, block, first, stop, covered):
-    """Anything shaped like a row (an amount, a quantity, an amount) outside the approved rows'
-    own cells: a row Sam never saw, even one printed without a sign."""
-    edges = [first] + [x for span in sorted(covered) for x in span] + [stop]
-    outside = [block[a:b] for a, b in zip(edges[::2], edges[1::2])]
-    if any(ROW_SHAPE.search(piece) for piece in outside):
-        return [f"PO {po}: its block prints a row that is not one Sam approved"]
-    return []
-
-
-def block_problems(po, rows, block):
-    """One PO block: each approved row read from its own row, and no other row in the block.
-    Every row prints its difference with a sign, so the block holds one signed amount per row."""
-    starts, stop = row_starts(block, [r["item"] for r in rows])
-    ends, problems, covered = sorted(starts.values()) + [stop], [], []
-    for row in rows:
-        name = normalise(row["item"])
-        if name not in starts:
-            problems.append(f"{row['item']} ({row['po']}): no row for it in its PO's block")
-            continue
-        at = starts[name]
-        segment = block[at + len(name):next(e for e in ends if e > at)]
-        covered.append((at, at + len(name) + difference_end(segment)))
-        problems += row_problems(row, *read_row(segment))
-    head = block.find(COLUMN_HEADINGS)
-    first = head + len(COLUMN_HEADINGS) if head >= 0 else 0
-    problems += stray_rows(rows[0]["po"], block, first, stop, covered)
-    printed = sum(1 for _, signed in marked_amounts(block[max(head, 0):stop]) if signed)
-    if printed != len(rows):
-        problems.append(f"PO {rows[0]['po']}: its block prints {printed} row difference(s); Sam approved {len(rows)} row(s)")
-    return problems
 
 
 def check_differences(request, expected):
@@ -313,10 +88,6 @@ def check_differences(request, expected):
         problems += block_problems(po, rows, blocks[po][0])
     return line(2, "Each row's figures match the variance, on that row", problems,
                 ", ".join(f"{r['item']} {r['difference']:+.2f}" for r in expected["rows_on"]))
-
-
-def shown(value):
-    return "nothing" if value is None else f"${value:.2f}"
 
 
 def end_label(po, total):
