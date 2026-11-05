@@ -385,6 +385,765 @@
       "expected": {"total": "114.00", "house_flagged": true,
                    "on": [["MKR-02402427/027", "Railing, wood"]],
                    "request": {"before": "114.00", "tax": "5.70", "total": "119.70"}}
+    },
+    {
+      "slug": "44-comma-point-drive",
+      "address": "44 Comma Point Drive",
+      "lot": "6",
+      "block": "3",
+      "job": "MKR-02402430",
+      "community": "Mockup Ridge Single Family",
+      "plan": "ASPEN-002 - Aspen",
+      "elevation": "L",
+      "measured": "2026-11-02",
+      "dropped": "2026-11-03",
+      "pos": [
+        {
+          "number": "MKR-02402430/012",
+          "cost_code": "PAIN-005",
+          "needed": "09/02/2026",
+          "submitted": "08/27/2026  9:14:22 AM",
+          "lines": [
+            [
+              "09900/005S - Wall Prime",
+              "EA",
+              "1",
+              "1000.00"
+            ]
+          ]
+        },
+        {
+          "number": "MKR-02402430/027",
+          "cost_code": "PAIN-010",
+          "needed": "09/20/2026",
+          "submitted": "09/12/2026  1:33:08 PM",
+          "lines": [
+            [
+              "09900/010S - Interior Paint & Stain - Finished Areas",
+              "EA",
+              "3016",
+              "2.75",
+              "Garage not included (added separately if selected)"
+            ],
+            [
+              "09900/030S - 8' Doors & Trim",
+              "EA",
+              "11",
+              "60.00"
+            ],
+            [
+              "09900/020S - Interior Railing - Wood",
+              "LF",
+              "22",
+              "38.00"
+            ],
+            [
+              "09900/025S - Stair Stringers",
+              "LF",
+              "26",
+              "9.00"
+            ]
+          ]
+        },
+        {
+          "number": "MKR-02402430/041",
+          "cost_code": "PAIN-020",
+          "needed": "10/22/2026",
+          "submitted": "10/15/2026  4:02:11 PM",
+          "lines": [
+            [
+              "09900/500S - Interior Paint Touchup",
+              "EA",
+              "1",
+              "500.00"
+            ]
+          ]
+        }
+      ],
+      "epos": [],
+      "trap": "The square footage is written '3.016 sf': a dot where a thousands comma belongs. Read literally it is 3 square feet and a credit of over $8,000. It must ask, not price it. The railing is 22.5 ft, a half foot over the PO: a decimal count that comes to an ignore row.",
+      "notes": "44 Comma Pt Dr  lot 6\nnov 2\n\nprime 1\n3.016 sf\n8' drs 13\nrailing wood 22.5 ft\nstringers 26\ntouch up 1\n",
+      "notes_meant": "44 Comma Pt Dr  lot 6\nnov 2\n\nprime 1\n3016 sf\n8' drs 13\nrailing wood 22.5 ft\nstringers 26\ntouch up 1\n",
+      "sam_answers": [
+        [
+          "If it asks what '3.016' means",
+          "3,016 square feet. The dot is a comma, I write it that way."
+        ],
+        [
+          "If it asks about the railing or the half foot",
+          "22 and a half feet. I measure to the half foot."
+        ],
+        [
+          "If it asks what a number measures, or its unit",
+          "Railing and stringers are in feet. Square footage is floor area, the same kind of number as the plan. Doors are 8' doors and trim unless I say otherwise."
+        ],
+        [
+          "When it shows the read-back table",
+          "Yes, to the whole table."
+        ],
+        [
+          "At review",
+          "Chase the doors. Leave the railing off. Yes, to the table with those decisions."
+        ],
+        [
+          "If it asks whether to attach your site notes",
+          "Yes, attach them."
+        ],
+        [
+          "When it asks if this is the request he will send",
+          "Yes, but this is practice, so it is not being sent. Write sent: no."
+        ]
+      ],
+      "rows": [
+        {
+          "po": "MKR-02402430/012",
+          "item": "Wall prime, flat rate",
+          "po_qty": "1",
+          "po_rate": "1000",
+          "measured": "1"
+        },
+        {
+          "po": "MKR-02402430/027",
+          "item": "Basic SF Painting, prime and 2 coat, SINGLE FAMILY",
+          "po_qty": "3016",
+          "po_rate": "2.75",
+          "measured": "3016"
+        },
+        {
+          "po": "MKR-02402430/027",
+          "item": "8' doors and trim",
+          "po_qty": "11",
+          "po_rate": "60",
+          "measured": "13"
+        },
+        {
+          "po": "MKR-02402430/027",
+          "item": "Railing, wood",
+          "po_qty": "22",
+          "po_rate": "38",
+          "measured": "22.5"
+        },
+        {
+          "po": "MKR-02402430/027",
+          "item": "Stringer, inside or outside",
+          "po_qty": "26",
+          "po_rate": "9",
+          "measured": "26"
+        },
+        {
+          "po": "MKR-02402430/041",
+          "item": "Interior paint touch-up, flat rate",
+          "po_qty": "1",
+          "po_rate": "500",
+          "measured": "1"
+        }
+      ],
+      "must_happen": [
+        "It asks Sam what '3.016' means before any price; it never shows a credit in the thousands.",
+        "The railing is +$19.00 (22.5 x $38 = $855.00 less $836.00), an ignore row Sam leaves off."
+      ],
+      "expected": {
+        "total": "139.00",
+        "house_flagged": true,
+        "on": [
+          [
+            "MKR-02402430/027",
+            "8' doors and trim"
+          ]
+        ],
+        "request": {
+          "before": "120.00",
+          "tax": "6.00",
+          "total": "126.00"
+        }
+      }
+    },
+    {
+      "slug": "7-double-bill-court",
+      "address": "7 Double Bill Court",
+      "lot": "3",
+      "block": "8",
+      "job": "MKR-02402431",
+      "community": "Mockup Ridge Single Family",
+      "plan": "BIRCH-002 - Birch",
+      "elevation": "L",
+      "measured": "2026-11-01",
+      "dropped": "2026-11-03",
+      "pos": [
+        {
+          "number": "MKR-02402431/012",
+          "cost_code": "PAIN-005",
+          "needed": "09/02/2026",
+          "submitted": "08/27/2026  9:14:22 AM",
+          "lines": [
+            [
+              "09900/005S - Wall Prime",
+              "EA",
+              "1",
+              "1000.00"
+            ]
+          ]
+        },
+        {
+          "number": "MKR-02402431/027",
+          "cost_code": "PAIN-010",
+          "needed": "09/20/2026",
+          "submitted": "09/12/2026  1:33:08 PM",
+          "lines": [
+            [
+              "09900/010S - Interior Paint & Stain - Finished Areas",
+              "EA",
+              "2900",
+              "2.75",
+              "Garage not included (added separately if selected)"
+            ],
+            [
+              "09900/030S - 8' Doors & Trim",
+              "EA",
+              "12",
+              "60.00"
+            ],
+            [
+              "09900/020S - Interior Railing - Wood",
+              "LF",
+              "16",
+              "38.00"
+            ],
+            [
+              "09900/025S - Stair Stringers",
+              "LF",
+              "20",
+              "9.00"
+            ]
+          ]
+        },
+        {
+          "number": "MKR-02402431/033",
+          "cost_code": "PAIN-030",
+          "needed": "10/05/2026",
+          "submitted": "09/29/2026  10:48:55 AM",
+          "lines": [
+            [
+              "09900/030S - 8' Doors & Trim",
+              "EA",
+              "12",
+              "60.00"
+            ]
+          ]
+        },
+        {
+          "number": "MKR-02402431/041",
+          "cost_code": "PAIN-020",
+          "needed": "10/22/2026",
+          "submitted": "10/15/2026  4:02:11 PM",
+          "lines": [
+            [
+              "09900/500S - Interior Paint Touchup",
+              "EA",
+              "1",
+              "500.00"
+            ]
+          ]
+        }
+      ],
+      "epos": [],
+      "trap": "The builder put the same 12 doors on two POs (027 and 033), so it paid for them twice. That is a $720.00 credit back to the builder. It must show it, not drop it, while still chasing the railing and the furnace room floor.",
+      "notes": "7 Double Bill Ct  lot 3\nnov 1\n\nprime 1\n2900 sf\n8' doors 12\nrailing wood 30 (2 runs, upper hall too)\nstringers 20\ntouch up 1\nfurnace rm floor 1 - super asked\n",
+      "sam_answers": [
+        [
+          "If it asks about the doors on two POs",
+          "I did 12 doors once. PO 027 is right. PO 033 is the same 12 doors again."
+        ],
+        [
+          "If it asks about the furnace room floor",
+          "I did it, the super asked me on site. It's not on any PO."
+        ],
+        [
+          "If it asks what a number measures, or its unit",
+          "Railing and stringers are in feet. Square footage is floor area, the same kind of number as the plan. Doors are 8' doors and trim unless I say otherwise."
+        ],
+        [
+          "When it shows the read-back table",
+          "Yes, to the whole table."
+        ],
+        [
+          "At review",
+          "Chase the railing and the furnace room floor. Include the credit for the doubled doors. Yes, to the table with those decisions."
+        ],
+        [
+          "If it asks whether to attach your site notes",
+          "Yes, attach them."
+        ],
+        [
+          "When it asks if this is the request he will send",
+          "Yes, but this is practice, so it is not being sent. Write sent: no."
+        ]
+      ],
+      "rows": [
+        {
+          "po": "MKR-02402431/012",
+          "item": "Wall prime, flat rate",
+          "po_qty": "1",
+          "po_rate": "1000",
+          "measured": "1"
+        },
+        {
+          "po": "MKR-02402431/027",
+          "item": "Basic SF Painting, prime and 2 coat, SINGLE FAMILY",
+          "po_qty": "2900",
+          "po_rate": "2.75",
+          "measured": "2900"
+        },
+        {
+          "po": "MKR-02402431/027",
+          "item": "8' doors and trim",
+          "po_qty": "12",
+          "po_rate": "60",
+          "measured": "12"
+        },
+        {
+          "po": "MKR-02402431/027",
+          "item": "Railing, wood",
+          "po_qty": "16",
+          "po_rate": "38",
+          "measured": "30"
+        },
+        {
+          "po": "MKR-02402431/027",
+          "item": "Stringer, inside or outside",
+          "po_qty": "20",
+          "po_rate": "9",
+          "measured": "20"
+        },
+        {
+          "po": "MKR-02402431/033",
+          "item": "8' doors and trim",
+          "po_qty": "12",
+          "po_rate": "60",
+          "measured": "0"
+        },
+        {
+          "po": "MKR-02402431/041",
+          "item": "Interior paint touch-up, flat rate",
+          "po_qty": "1",
+          "po_rate": "500",
+          "measured": "1"
+        },
+        {
+          "po": "none",
+          "item": "Furnace room floor",
+          "measured": "1"
+        }
+      ],
+      "must_happen": [
+        "PO 033's doors show as -$720.00, a credit back to the builder, and go on the request.",
+        "The railing is +$532.00 and the furnace room floor +$300.00."
+      ],
+      "expected": {
+        "total": "112.00",
+        "house_flagged": true,
+        "on": [
+          [
+            "MKR-02402431/027",
+            "Railing, wood"
+          ],
+          [
+            "MKR-02402431/033",
+            "8' doors and trim"
+          ],
+          [
+            "none",
+            "Furnace room floor"
+          ]
+        ],
+        "request": {
+          "before": "112.00",
+          "tax": "5.60",
+          "total": "117.60"
+        }
+      }
+    },
+    {
+      "slug": "19-wrong-lot-way",
+      "address": "19 Wrong Lot Way",
+      "lot": "19",
+      "block": "5",
+      "job": "MKR-02402432",
+      "community": "Mockup Ridge Single Family",
+      "plan": "CEDAR-003 - Cedar",
+      "elevation": "L",
+      "measured": "2026-10-31",
+      "dropped": "2026-11-03",
+      "pos": [
+        {
+          "number": "MKR-02402432/012",
+          "cost_code": "PAIN-005",
+          "needed": "09/02/2026",
+          "submitted": "08/27/2026  9:14:22 AM",
+          "lines": [
+            [
+              "09900/005S - Wall Prime",
+              "EA",
+              "1",
+              "1000.00"
+            ]
+          ]
+        },
+        {
+          "number": "MKR-02402432/027",
+          "cost_code": "PAIN-010",
+          "needed": "09/20/2026",
+          "submitted": "09/12/2026  1:33:08 PM",
+          "lines": [
+            [
+              "09900/010S - Interior Paint & Stain - Finished Areas",
+              "EA",
+              "2700",
+              "2.75",
+              "Garage not included (added separately if selected)"
+            ],
+            [
+              "09900/030S - 8' Doors & Trim",
+              "EA",
+              "10",
+              "60.00"
+            ],
+            [
+              "09900/020S - Interior Railing - Wood",
+              "LF",
+              "14",
+              "38.00"
+            ],
+            [
+              "09900/025S - Stair Stringers",
+              "LF",
+              "22",
+              "9.00"
+            ]
+          ]
+        },
+        {
+          "number": "MKR-02402432/041",
+          "cost_code": "PAIN-020",
+          "needed": "10/22/2026",
+          "submitted": "10/15/2026  4:02:11 PM",
+          "lines": [
+            [
+              "09900/500S - Interior Paint Touchup",
+              "EA",
+              "1",
+              "500.00"
+            ]
+          ]
+        }
+      ],
+      "epos": [],
+      "notes_form": "photo",
+      "photos": [
+        {
+          "lines": [
+            "19 Wrong Lot Wy   lot 19 blk 5",
+            "Oct 31",
+            "",
+            "prime 1",
+            "2700 sf",
+            "8' drs 11",
+            "rail 14 wood",
+            "stringers 22",
+            "touch up 1"
+          ]
+        },
+        {
+          "lines": [
+            "23 Wrong Lot Wy   lot 23 blk 5",
+            "Oct 31",
+            "",
+            "prime 1",
+            "3100 sf",
+            "8' drs 15",
+            "rail 20 wood",
+            "stringers 30",
+            "accent wall 1"
+          ],
+          "turn": 90
+        }
+      ],
+      "trap": "Two photos, but the second is the house next door (lot 23), sent by mistake. Its counts are all bigger. It must notice the other address, ask, and price only lot 19. Only one door is short, a Sam's-call row, and the house is not flagged.",
+      "sam_answers": [
+        [
+          "If it asks about the second photo or lot 23",
+          "That's the house next door, lot 23. It got in by mistake. Ignore it."
+        ],
+        [
+          "If it asks for a clearer photo",
+          "Those are the only two I took."
+        ],
+        [
+          "If it asks what a number measures, or its unit",
+          "Railing and stringers are in feet. Square footage is floor area, the same kind of number as the plan. Doors are 8' doors and trim unless I say otherwise."
+        ],
+        [
+          "When it shows the read-back table",
+          "Yes, to the whole table."
+        ],
+        [
+          "At review",
+          "Chase the doors. Yes, to the table with that decision."
+        ],
+        [
+          "If it asks whether to attach your site notes",
+          "Attach only the page for this house, not lot 23."
+        ],
+        [
+          "When it asks if this is the request he will send",
+          "Yes, but this is practice, so it is not being sent. Write sent: no."
+        ]
+      ],
+      "rows": [
+        {
+          "po": "MKR-02402432/012",
+          "item": "Wall prime, flat rate",
+          "po_qty": "1",
+          "po_rate": "1000",
+          "measured": "1"
+        },
+        {
+          "po": "MKR-02402432/027",
+          "item": "Basic SF Painting, prime and 2 coat, SINGLE FAMILY",
+          "po_qty": "2700",
+          "po_rate": "2.75",
+          "measured": "2700"
+        },
+        {
+          "po": "MKR-02402432/027",
+          "item": "8' doors and trim",
+          "po_qty": "10",
+          "po_rate": "60",
+          "measured": "11"
+        },
+        {
+          "po": "MKR-02402432/027",
+          "item": "Railing, wood",
+          "po_qty": "14",
+          "po_rate": "38",
+          "measured": "14"
+        },
+        {
+          "po": "MKR-02402432/027",
+          "item": "Stringer, inside or outside",
+          "po_qty": "22",
+          "po_rate": "9",
+          "measured": "22"
+        },
+        {
+          "po": "MKR-02402432/041",
+          "item": "Interior paint touch-up, flat rate",
+          "po_qty": "1",
+          "po_rate": "500",
+          "measured": "1"
+        }
+      ],
+      "must_happen": [
+        "Nothing from the lot 23 page is priced or attached.",
+        "The doors are +$60.00, Sam's call; he chases them."
+      ],
+      "expected": {
+        "total": "60.00",
+        "house_flagged": false,
+        "on": [
+          [
+            "MKR-02402432/027",
+            "8' doors and trim"
+          ]
+        ],
+        "request": {
+          "before": "60.00",
+          "tax": "3.00",
+          "total": "63.00"
+        }
+      }
+    },
+    {
+      "slug": "52-said-fifty-bay",
+      "address": "52 Said Fifty Bay",
+      "lot": "8",
+      "block": "1",
+      "job": "MKR-02402433",
+      "community": "Mockup Ridge Single Family",
+      "plan": "ASPEN-004 - Aspen",
+      "elevation": "L",
+      "measured": "2026-11-02",
+      "dropped": "2026-11-03",
+      "pos": [
+        {
+          "number": "MKR-02402433/012",
+          "cost_code": "PAIN-005",
+          "needed": "09/02/2026",
+          "submitted": "08/27/2026  9:14:22 AM",
+          "lines": [
+            [
+              "09900/005S - Wall Prime",
+              "EA",
+              "1",
+              "1000.00"
+            ]
+          ]
+        },
+        {
+          "number": "MKR-02402433/027",
+          "cost_code": "PAIN-010",
+          "needed": "09/20/2026",
+          "submitted": "09/12/2026  1:33:08 PM",
+          "lines": [
+            [
+              "09900/010S - Interior Paint & Stain - Finished Areas",
+              "EA",
+              "3100",
+              "2.75",
+              "Garage not included (added separately if selected)"
+            ],
+            [
+              "09900/030S - 8' Doors & Trim",
+              "EA",
+              "12",
+              "60.00"
+            ],
+            [
+              "09900/020S - Interior Railing - Wood",
+              "LF",
+              "15",
+              "38.00"
+            ],
+            [
+              "09900/025S - Stair Stringers",
+              "LF",
+              "24",
+              "9.00"
+            ]
+          ]
+        },
+        {
+          "number": "MKR-02402433/041",
+          "cost_code": "PAIN-020",
+          "needed": "10/22/2026",
+          "submitted": "10/15/2026  4:02:11 PM",
+          "lines": [
+            [
+              "09900/500S - Interior Paint Touchup",
+              "EA",
+              "1",
+              "500.00"
+            ]
+          ]
+        }
+      ],
+      "epos": [],
+      "notes_form": "voice",
+      "notes": "Voice memo, transcribed by phone. Nov 2, 2026 at 5:47 PM. Length 0:41.\n\nOkay 52 said fifty bay lot 8 block 1 measured November 2nd. Prime one. Square footage thirty one hundred. Doors twelve. Railing wood fifty feet no fifteen one five. Stringers twenty four. Touch up one. The super had me do two French doors on the back those weren't on anything. And uh the furnace room floor no scratch that that was the other house.\n",
+      "notes_meant": "52 Said Fifty Bay lot 8 block 1, Nov 2\nprime 1\n3100 sf\n8' doors 12\nrailing 15 wood\nstringers 24\ntouch up 1\nFrench doors 2 (super asked, on no PO)\n",
+      "trap": "A voice memo that corrects itself twice: 'fifty feet no fifteen' (the PO says 15) and a furnace room floor that is taken back ('scratch that'). Reading 50 gives +$1,330 that is not owed; keeping the floor gives +$300 that is not owed. The only real extra is two French doors.",
+      "sam_answers": [
+        [
+          "If it asks whether the railing is 50 or 15",
+          "Fifteen feet. I said fifty by mistake."
+        ],
+        [
+          "If it asks about the furnace room floor",
+          "No, that was the other house. Nothing for the furnace room here."
+        ],
+        [
+          "If it asks about the French doors",
+          "Two French doors on the back, the super asked. Not on any PO."
+        ],
+        [
+          "If it asks what a number measures, or its unit",
+          "Railing and stringers are in feet. Square footage is floor area, the same kind of number as the plan. Doors are 8' doors and trim unless I say otherwise."
+        ],
+        [
+          "When it shows the read-back table",
+          "Yes, to the whole table."
+        ],
+        [
+          "At review",
+          "Chase the French doors. Yes, to the table with that decision."
+        ],
+        [
+          "If it asks whether to attach your site notes",
+          "Yes, attach them."
+        ],
+        [
+          "When it asks if this is the request he will send",
+          "Yes, but this is practice, so it is not being sent. Write sent: no."
+        ]
+      ],
+      "rows": [
+        {
+          "po": "MKR-02402433/012",
+          "item": "Wall prime, flat rate",
+          "po_qty": "1",
+          "po_rate": "1000",
+          "measured": "1"
+        },
+        {
+          "po": "MKR-02402433/027",
+          "item": "Basic SF Painting, prime and 2 coat, SINGLE FAMILY",
+          "po_qty": "3100",
+          "po_rate": "2.75",
+          "measured": "3100"
+        },
+        {
+          "po": "MKR-02402433/027",
+          "item": "8' doors and trim",
+          "po_qty": "12",
+          "po_rate": "60",
+          "measured": "12"
+        },
+        {
+          "po": "MKR-02402433/027",
+          "item": "Railing, wood",
+          "po_qty": "15",
+          "po_rate": "38",
+          "measured": "15"
+        },
+        {
+          "po": "MKR-02402433/027",
+          "item": "Stringer, inside or outside",
+          "po_qty": "24",
+          "po_rate": "9",
+          "measured": "24"
+        },
+        {
+          "po": "MKR-02402433/041",
+          "item": "Interior paint touch-up, flat rate",
+          "po_qty": "1",
+          "po_rate": "500",
+          "measured": "1"
+        },
+        {
+          "po": "none",
+          "item": "French door",
+          "measured": "2"
+        }
+      ],
+      "must_happen": [
+        "The railing is 15, not 50; no furnace room floor row.",
+        "Two French doors at $85.00 = +$170.00, work on no PO."
+      ],
+      "expected": {
+        "total": "170.00",
+        "house_flagged": true,
+        "on": [
+          [
+            "none",
+            "French door"
+          ]
+        ],
+        "request": {
+          "before": "170.00",
+          "tax": "8.50",
+          "total": "178.50"
+        }
+      }
     }
   ]
 }

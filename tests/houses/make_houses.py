@@ -143,7 +143,7 @@ def notes_text(h):
         return "\n".join(handwriting.plain_text(p) for p in h["photos"])
     if notes_form(h) == "voice":
         return h["notes_meant"]
-    return h["notes"]
+    return h.get("notes_meant", h["notes"])
 
 
 def write_notes(h, folder):
