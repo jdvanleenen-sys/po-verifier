@@ -36,13 +36,25 @@ DOORS_SHORT = row("8' doors", "55.00", "2", "110.00", "6", "330.00", "220.00")
 RAIL = row("Stain railing", "12.00", "16", "192.00", "19", "228.00", "36.00")
 
 
-def block(po, rows, subtotal):
-    """One PO group block: heading, column headings, rows, subtotal, tax, total."""
+def money(value, sign=False):
+    """$60.00, or with sign=True +$60.00; a minus always prints -$60.00."""
+    value = D(value)
+    mark = "-" if value < 0 else ("+" if sign else "")
+    return f"{mark}${abs(value):,.2f}"
+
+
+def block(po, rows, subtotal, ask=None):
+    """One PO group block: heading, column headings, rows, subtotal, tax, and the closing line,
+    worded by what the group is unless ask gives other wording."""
     body = "".join("\n".join(cells) + "\n" for _, cells in rows)
     tax = (D(subtotal) * D("0.05")).quantize(D("0.01"))
-    return (f"PO {po} Interior paint and stain. One EPO for this PO.\n" + HEADINGS + body +
-            f"Difference before tax\n+${subtotal}\nGST/HST 5%, from this PO's own tax line\n${tax}\n"
-            f"EPO requested for this PO\n${D(subtotal) + tax}\n")
+    if po == "none":
+        heading, label = "No PO Work done on site that is on no PO.", "New PO or EPO requested"
+    else:
+        heading = f"PO {po} Interior paint and stain. One EPO for this PO."
+        label = "Credit back to the builder for this PO" if D(subtotal) + tax < 0 else "EPO requested for this PO"
+    return (heading + "\n" + HEADINGS + body + f"Difference before tax\n{money(subtotal, True)}\n"
+            f"GST/HST 5%, from this PO's own tax line\n{money(tax)}\n{ask or label}\n{money(D(subtotal) + tax)}\n")
 
 
 def expected(groups):
@@ -163,6 +175,45 @@ class RowBoundDifferences(unittest.TestCase):
         exp = expected([(PO_A, [DOORS])])
         text = block(PO_A, [DOORS], "300.00") + block(PO_A, [DOORS], "300.00")
         self.assertFalse(passes(self.check(text, exp)))
+
+
+class RowsLeftOff(unittest.TestCase):
+    def test_left_off_name_inside_an_approved_name_passes(self):
+        exp = expected([(PO_A, [DOORS])])
+        exp["rows_off"] = ["8' doors"]
+        text = block(PO_A, [DOORS], "300.00")
+        self.assertTrue(passes(verify.check_rows(text, exp)), verify.check_rows(text, exp))
+
+    def test_left_off_row_printed_fails(self):
+        exp = expected([(PO_A, [DOORS])])
+        exp["rows_off"] = ["8' doors"]
+        text = block(PO_A, [DOORS, DOORS_SHORT], "520.00")
+        self.assertFalse(passes(verify.check_rows(text, exp)))
+
+
+class GroupEndLabel(unittest.TestCase):
+    """The last line of a group says what it is: an EPO for a PO, a credit back, or a new PO or EPO."""
+    def test_money_owed_worded_as_a_credit_fails(self):
+        exp = expected([(PO_A, [DOORS])])
+        clean = block(PO_A, [DOORS], "300.00")
+        self.assertTrue(passes(verify.check_tax(clean, exp)), verify.check_tax(clean, exp))
+        wrong = clean.replace("EPO requested for this PO", "Credit back to the builder for this PO")
+        self.assertFalse(passes(verify.check_tax(wrong, exp)))
+
+    def test_credit_worded_as_an_epo_request_fails(self):
+        credit = row("8' doors and trim", "60.00", "12", "720.00", "0", "0.00", "-720.00")
+        exp = expected([(PO_A, [credit])])
+        clean = block(PO_A, [credit], "-720.00")
+        self.assertTrue(passes(verify.check_tax(clean, exp)), verify.check_tax(clean, exp))
+        wrong = block(PO_A, [credit], "-720.00", ask="EPO requested for this PO")
+        self.assertFalse(passes(verify.check_tax(wrong, exp)))
+
+    def test_no_po_group_worded_as_an_epo_for_a_po_fails(self):
+        exp = expected([("none", [DOORS])])
+        clean = block("none", [DOORS], "300.00")
+        self.assertTrue(passes(verify.check_tax(clean, exp)), verify.check_tax(clean, exp))
+        wrong = block("none", [DOORS], "300.00", ask="EPO requested for this PO")
+        self.assertFalse(passes(verify.check_tax(wrong, exp)))
 
 
 class GroupSubtotal(unittest.TestCase):

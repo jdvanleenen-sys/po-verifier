@@ -65,10 +65,23 @@ def line(num, name, problems, evidence):
     return f"{num}. {name}: pass: {evidence}"
 
 
+def without_names(text, names):
+    """The text with each name blanked out, longest first, so a shorter name is not found inside it."""
+    for name in sorted({normalise(n) for n in names}, key=len, reverse=True):
+        text = text.replace(name, " ")
+    return text
+
+
+def names_holding(item, rows_on):
+    """The approved items whose names hold this one ("8' doors and trim" holds "8' doors")."""
+    return [r["item"] for r in rows_on if normalise(item) in normalise(r["item"])]
+
+
 def check_rows(request, expected):
     text = normalise(request)
     missing = [r["item"] for r in expected["rows_on"] if normalise(r["item"]) not in text]
-    present = [item for item in expected["rows_off"] if normalise(item) in text]
+    present = [item for item in expected["rows_off"]
+               if normalise(item) in without_names(text, names_holding(item, expected["rows_on"]))]
     problems = [f"missing from the PDF: {m}" for m in missing]
     problems += [f"on the PDF but Sam chose it off: {p}" for p in present]
     return line(1, "Only approved rows, and all of them", problems,
@@ -258,9 +271,22 @@ def shown(value):
     return "nothing" if value is None else f"${value:.2f}"
 
 
+def end_label(po, total):
+    """How a group's last line must start: the no-PO group, a PO that nets to a credit, or an EPO."""
+    if po == "none":
+        return "new po or epo requested"
+    return "credit back to the builder for this po" if total < 0 else "epo requested for this po"
+
+
 def check_tax(request, expected):
-    """Each PO's tax and requested total, read from that PO's own block, sign included."""
+    """Each PO's subtotal, tax and total, read from that PO's own block, sign included, and its
+    last line worded by what the group is."""
     found, problems = printed_groups(request), []
+    for key, (_, line_text) in group_blocks(request)[0].items():
+        group = next((g for po, g in expected["groups"].items() if po.lower() == key), None)
+        if group and not line_text.startswith(end_label(key, group["total"])):
+            problems.append(f"{'No PO' if key == 'none' else key.upper()}: its last line reads '{line_text}'; it must start "
+                            f"'{end_label(key, group['total'])}'")
     for po, g in expected["groups"].items():
         got = found.get(po.lower())
         if got is None:
