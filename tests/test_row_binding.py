@@ -135,6 +135,14 @@ class RowBoundDifferences(unittest.TestCase):
         result = self.check(block(PO_A, [big], "344.80"), exp)
         self.assertTrue(passes(result), result)
 
+    def test_why_that_names_a_later_item_with_an_amount_passes(self):
+        """A why may name another row's item and a price; that row is still read from its own row."""
+        exp = expected([(PO_A, [DOORS, RAIL])])
+        text = block(PO_A, [edit(DOORS, 9, "Stain railing is $15.00 a foot."), RAIL], "336.00")
+        self.assertTrue(passes(self.check(text, exp)), self.check(text, exp))
+        wrong = block(PO_A, [edit(DOORS, 9, "Stain railing is $15.00 a foot."), edit(RAIL, 8, "+$99.00")], "336.00")
+        self.assertFalse(passes(self.check(wrong, exp)))
+
     def test_extra_row_no_record_gives_fails(self):
         """A row Sam never saw, printed in an approved PO's block, subtotal left alone."""
         exp = expected([(PO_A, [DOORS])])

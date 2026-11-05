@@ -131,20 +131,28 @@ def printed_groups(request):
     return out
 
 
+# What follows an item's name on its own row: the unit, the agreed rate, then a quantity.
+ROW_CELLS = re.compile(r"\s*\S+\s+\$\s?[\d,]+\.\d\d\s+\d")
+
+
 def row_starts(block, items):
     """Where each item's row starts in its group block: after the column headings, before the
-    subtotal. A name that is part of a longer item's name is not found inside that longer name."""
+    subtotal. A name that is part of a longer item's name is not found inside that longer name.
+    A name that a row's why mentions is passed over for the place where the row's cells follow it."""
     head = block.find(COLUMN_HEADINGS)
     first = head + len(COLUMN_HEADINGS) if head >= 0 else 0
     stop = block.find(SUBTOTAL) if SUBTOTAL in block else len(block)
     taken, starts = [], {}
     for name in sorted({normalise(i) for i in items}, key=len, reverse=True):
-        at = block.find(name, first)
-        while 0 <= at < stop and any(a <= at < b for a, b in taken):
+        free, at = [], block.find(name, first)
+        while 0 <= at < stop:
+            if not any(a <= at < b for a, b in taken):
+                free.append(at)
             at = block.find(name, at + 1)
-        if 0 <= at < stop:
-            starts[name] = at
-            taken.append((at, at + len(name)))
+        rows = [a for a in free if ROW_CELLS.match(block, a + len(name))]
+        if rows or free:
+            starts[name] = (rows or free)[0]
+            taken.append((starts[name], starts[name] + len(name)))
     return starts, stop
 
 
