@@ -44,7 +44,7 @@ def expected(groups):
 MIXED = expected([(PO, "532.00", "26.60"), (CREDIT_PO, "-720.00", "-36.00"), ("none", "300.00", "15.00")])
 MIXED_GROUPS = [
     ("PO " + PO + " Interior paint and stain. One EPO for this PO.", "+$532.00", "$26.60", "EPO requested for this PO\n$558.60"),
-    ("PO " + CREDIT_PO + " Doors. A credit back to the builder.", "-$720.00", "-$36.00", "EPO requested for this PO\n-$756.00"),
+    ("PO " + CREDIT_PO + " Doors. A credit back to the builder.", "-$720.00", "-$36.00", "Credit back to the builder for this PO\n-$756.00"),
     ("No PO Work done on site that is on no PO.", "+$300.00", "$15.00", "New PO or EPO requested\n$315.00"),
 ]
 
@@ -91,6 +91,12 @@ class SignedGroupTax(unittest.TestCase):
             MIXED_GROUPS[1],
             ("No PO Work done on site that is on no PO.", "+$300.00", "$26.60", "New PO or EPO requested\n$558.60"),
         ]
+        text = request_text("$112.00", "$5.60", "$117.60", groups)
+        self.assertFalse(passes(verify.check_tax(text, MIXED)))
+
+    def test_a_group_ending_in_made_up_words_fails(self):
+        groups = list(MIXED_GROUPS)
+        groups[1] = ("PO " + CREDIT_PO + " Doors.", "-$720.00", "-$36.00", "Refund owed for this PO\n-$756.00")
         text = request_text("$112.00", "$5.60", "$117.60", groups)
         self.assertFalse(passes(verify.check_tax(text, MIXED)))
 

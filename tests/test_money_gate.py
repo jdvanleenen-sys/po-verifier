@@ -27,7 +27,7 @@ RECORDS = {"read-back": ROOT / "02 read" / HOUSE / "read-back-1.md",
            "grid": ROOT / "02 read" / HOUSE / "grid-1.md"}
 SNAPSHOT = ROOT / "02 read" / HOUSE / "price-list-1.csv"
 REAL_PDF = ROOT / "05 request" / HOUSE / "vpo-request-1.pdf"
-NOTES_MARKER = "77 Mockup Dr / lot 24"
+NOTES_FILE = "site-notes.txt"
 
 
 def texts(**changes):
@@ -71,8 +71,9 @@ def expected():
 
 def proof(notes=True):
     exp = expected()
-    return {"po_numbers": exp["po_numbers"], "epo_names": exp["epo_names"], "notes": notes,
-            "notes_marker": NOTES_MARKER}
+    attached = [NOTES_FILE] if notes else []
+    return {"po_numbers": exp["po_numbers"], "epo_names": exp["epo_names"], "notes_attached": attached,
+            "notes_left_out": [] if notes else [NOTES_FILE]}
 
 
 def page_texts(path=REAL_PDF):

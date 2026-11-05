@@ -10,6 +10,10 @@
   - "Why" is one short sentence, about ten words at most.
   - A tax line of $0.00 (for example PST $0.00) is not shown. The tax note says which taxes were $0.
   - Keep the last group and the footer inside <div class="keep"> so the footer never splits from it.
+  - The last line of a group is worded exactly one of three ways, so the script can read it:
+    "EPO requested for this PO", "Credit back to the builder for this PO" (a PO group that nets to a
+    credit, printed with its minus sign, e.g. -$756.00), or "New PO or EPO requested" (the no-PO group).
+    A minus amount always prints as -$0.00, never in brackets and never without its sign.
 -->
 <style>
   @page { size: 11in 8.5in; margin: 0.5in; }

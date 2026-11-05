@@ -53,13 +53,16 @@ difference with its sign and a dollar sign (`+$300.00`, `-$170.00`): the script 
 
 ## Ask Sam one thing before the build
 "Attach your site notes to the request as proof?" His notes are his own scribbles, so they go to
-the builder only if he says yes. Write his answer into the proof list on the request.
+the builder only if he says yes. Notes can be typed, a phone photo (.jpg, .png) or a voice-memo
+transcript, and there can be several pages. If there is more than one, ask which: all of them, or
+only the pages he names. A page that is not for this house is never attached. Write his answer into
+the proof list on the request.
 
 ## How the PDF is made: draft first, number only what passes
 The PDF is never written straight into the record. A print that goes wrong must cost nothing.
 1. Copy the layout to `drafts/<house>/request.html` and fill it in from the review and variance.
-2. Run `python "05 request/build_request.py" build <house> --notes yes` (or `--notes no`, Sam's
-   answer) from the folder root. Before printing, it checks that Sam's read-back and review are
+2. Run `python "05 request/build_request.py" build <house> --notes yes` (or `--notes no`, or
+   `--notes only:<file>,<file>` for just the pages he named; Sam's answer) from the folder root. Before printing, it checks that Sam's read-back and review are
    approved and that the variance agrees with them; then it prints the request with "page 1 of N"
    from the real count, attaches each PO and EPO once (a file saved twice goes once), adds the
    notes only if Sam said yes, and names any other file it did not attach. Then it runs all six
@@ -78,9 +81,12 @@ machine with `python -m unittest discover -s tests` from the folder root.
 ## The six checks (the script runs them; nobody writes them by hand)
 1. Every row on it is a row Sam approved in the review, and no row he left off is on it.
 2. Each row's difference equals the figure worked out from Sam's read-back.
-3. Each PO group's tax uses that PO's own printed rate, and the group adds up.
-4. The house total before tax, the tax and the total add up from the groups.
-5. Every PO and EPO in the read-back is attached, and the notes only if Sam said so.
+3. Each PO group's tax and total, read from that group's own lines with their sign, match Sam's
+   records. A credit must print with its minus sign.
+4. The three boxes at the top (before tax, tax, total requested), each read from its own label
+   with its sign, match the groups.
+5. Every PO and EPO in the read-back is attached, each notes page Sam named is attached, and no
+   page he left out is.
 6. The page count printed on the request equals its actual pages, and the footer is on the last
    page.
 

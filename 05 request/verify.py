@@ -74,7 +74,9 @@ def check_differences(request, expected):
                 ", ".join(f"{r['difference']:+.2f}" for r in expected["rows_on"]))
 
 
-GROUP_END = re.compile(r"(?:epo requested for this po|new po or epo requested)\s*" + MONEY.pattern)
+# The last line of every group block, exactly as reference/request-layout.html words it.
+GROUP_END = re.compile(r"(?:epo requested for this po|credit back to the builder for this po|new po or epo requested)\s*"
+                       + MONEY.pattern)
 PO_HEADING = re.compile(r"\bpo ([a-z]+-\d+/\d+)(?!\S*:)")
 NO_PO_HEADING = "no po work done"
 
@@ -147,6 +149,8 @@ def check_house(request, expected):
 
 
 def check_proof(proof_pages, proof):
+    """Every PO and EPO attached; each notes page Sam named attached; each one he left out absent.
+    A notes page is found by its file name, printed as the heading of its proof page."""
     text = normalise(" ".join(proof_pages))
     problems = []
     if not proof_pages:
@@ -154,14 +158,15 @@ def check_proof(proof_pages, proof):
     for name in proof["po_numbers"] + proof["epo_names"]:
         if normalise(name) not in text:
             problems.append(f"not attached: {name}")
-    if proof["notes_marker"]:
-        notes_in = normalise(proof["notes_marker"]) in text
-        if proof["notes"] and not notes_in:
-            problems.append("Sam said attach his site notes; they are not attached")
-        if not proof["notes"] and notes_in:
-            problems.append("Sam said not to attach his site notes; they are attached")
-    evidence = (f"{len(proof['po_numbers'])} PO(s), {len(proof['epo_names'])} EPO(s), site notes "
-                f"{'attached' if proof['notes'] else 'not attached (Sam said no)'}; {len(proof_pages)} proof page(s)")
+    for name in proof["notes_attached"]:
+        if normalise(name) not in text:
+            problems.append(f"Sam said attach {name}; it is not attached")
+    for name in proof["notes_left_out"]:
+        if normalise(name) in text:
+            problems.append(f"Sam left {name} out; it is attached")
+    notes = ", ".join(proof["notes_attached"]) or "none (Sam said no)"
+    evidence = (f"{len(proof['po_numbers'])} PO(s), {len(proof['epo_names'])} EPO(s), site notes: {notes}; "
+                f"{len(proof_pages)} proof page(s)")
     return line(5, "Every proof document attached", problems, evidence)
 
 

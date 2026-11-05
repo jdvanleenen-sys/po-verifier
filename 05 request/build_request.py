@@ -35,8 +35,10 @@ import printing  # noqa: E402
 import verify  # noqa: E402
 
 DOCS = (".html", ".htm", ".pdf")
-NOTES = (".txt", ".md")
+NOTES = (".txt", ".md", ".jpg", ".jpeg", ".png")
+NOTES_NAMES = ("note", "voice-memo")
 NOT_PROOF = ("house-info.md",)
+ONLY = "only:"
 
 
 def latest(folder, stem):
@@ -85,20 +87,35 @@ def intake(house):
             else:
                 seen[digest] = p.name
                 docs.append(p)
-        elif p.suffix.lower() in NOTES and "note" in p.name.lower():
+        elif p.suffix.lower() in NOTES and any(n in p.name.lower() for n in NOTES_NAMES):
             notes.append(p)
         elif p.name.lower() not in NOT_PROOF:
             others.append(f"{p.name} (not a PO, EPO or notes file, not attached)")
     return docs, notes, others
 
 
-def proof_spec(expected, notes_choice, notes):
-    marker = ""
-    if notes:
-        lines = [l for l in notes[0].read_text(encoding="utf-8", errors="replace").splitlines() if l.strip()]
-        marker = lines[0] if lines else ""
+def choose_notes(notes, choice):
+    """Sam's answer to "attach your notes?": yes (all of them), no, or only:<file>,<file>."""
+    if choice == "yes":
+        return list(notes)
+    if choice == "no":
+        return []
+    if not choice.startswith(ONLY):
+        sys.exit("--notes must be yes, no, or only:<file name>,<file name>. Nothing was built.")
+    names = [n.strip() for n in choice[len(ONLY):].split(",") if n.strip()]
+    by_name = {p.name: p for p in notes}
+    missing = [n for n in names if n not in by_name]
+    if missing or not names:
+        sys.exit(f"Sam named notes that are not in intake: {', '.join(missing) or '(none named)'}. "
+                 f"The notes files are: {', '.join(by_name) or 'none'}. Nothing was built.")
+    return [by_name[n] for n in names]
+
+
+def proof_spec(expected, attached, notes):
+    """What must be in the proof, and the notes pages Sam left out, which must not be."""
+    names = [p.name for p in attached]
     return {"po_numbers": expected["po_numbers"], "epo_names": expected["epo_names"],
-            "notes": notes_choice, "notes_marker": marker}
+            "notes_attached": names, "notes_left_out": [p.name for p in notes if p.name not in names]}
 
 
 def expected_or_stop(house):
@@ -116,20 +133,23 @@ def build(house, notes_choice):
         sys.exit(f"Put the filled-in layout at 05 request/drafts/{house}/request.html first.")
     expected = expected_or_stop(house)
     docs, notes, others = intake(house)
-    if notes_choice and not notes:
+    if notes_choice != "no" and not notes:
         sys.exit("Sam said attach his site notes, but there is no notes file in intake.")
+    attached = choose_notes(notes, notes_choice)
     for old in ("vpo-request.pdf", "request-only.pdf", "script-checks.md"):
         (draft / old).unlink(missing_ok=True)
     browser = printing.find_browser()
     request_pdf = printing.print_request(browser, draft)
-    proofs = [printing.proof_pdf(browser, p, draft) for p in docs + (notes[:1] if notes_choice else [])]
+    proofs = [printing.proof_pdf(browser, p, draft) for p in docs + attached]
     merged = draft / "vpo-request.pdf"
     printing.merge(request_pdf, proofs, merged)
     for tmp in draft.glob("_proof-*.pdf"):
         tmp.unlink()
-    lines = verify.run_checks(merged, expected, proof_spec(expected, notes_choice, notes))
+    lines = verify.run_checks(merged, expected, proof_spec(expected, attached, notes))
+    left_out = [p.name for p in notes if p not in attached]
     report = [f"# {house}, script checks", "", *[f"- {l}" for l in lines], "",
-              f"notes: {'yes' if notes_choice else 'no'}", *[f"not attached: {o}" for o in others]]
+              f"notes: {notes_choice}", *[f"not attached: {o}" for o in others],
+              *[f"not attached: {n} (Sam left it out)" for n in left_out]]
     (draft / "script-checks.md").write_text("\n".join(report) + "\n", encoding="utf-8")
     print("\n".join(lines + [f"Not attached: {o}" for o in others]))
     print(f"Draft: {merged.relative_to(ROOT)}")
@@ -153,12 +173,13 @@ def commit(house):
         sys.exit("Run build first. Nothing was numbered.")
     if pdf.stat().st_mtime < (draft / "request.html").stat().st_mtime:
         sys.exit("request.html changed after the last build. Build again. Nothing was numbered.")
-    choice = re.search(r"^notes:\s*(yes|no)\s*$", money.read_text(checks), re.M)
+    choice = re.search(r"^notes:\s*(yes|no|only:\S.*?)\s*$", money.read_text(checks), re.M)
     if not choice:
         sys.exit("script-checks.md does not record Sam's notes answer. Build again. Nothing was numbered.")
     expected = expected_or_stop(house)
     _, notes, _ = intake(house)
-    lines = verify.run_checks(pdf, expected, proof_spec(expected, choice.group(1) == "yes", notes))
+    attached = choose_notes(notes, choice.group(1))
+    lines = verify.run_checks(pdf, expected, proof_spec(expected, attached, notes))
     if not all(": pass:" in l for l in lines):
         sys.exit("A check failed, so nothing was numbered:\n" + "\n".join(lines))
     house_dir = STAGE / house
@@ -185,12 +206,13 @@ def main():
     parser = argparse.ArgumentParser(description="Build, check and number a VPO request.")
     parser.add_argument("command", choices=["build", "commit"])
     parser.add_argument("house")
-    parser.add_argument("--notes", choices=["yes", "no"], help="Sam's answer: attach his site notes?")
+    parser.add_argument("--notes", help="Sam's answer: attach his site notes? yes, no, or only:<file>,<file>")
     args = parser.parse_args()
     if args.command == "build":
         if args.notes is None:
-            sys.exit("Ask Sam first: attach your site notes as proof? Then add --notes yes or --notes no.")
-        return build(args.house, args.notes == "yes")
+            sys.exit("Ask Sam first: attach your site notes as proof? Then add --notes yes, --notes no, "
+                     "or --notes only:<file name> for just the pages he names.")
+        return build(args.house, args.notes.strip())
     return commit(args.house)
 
 

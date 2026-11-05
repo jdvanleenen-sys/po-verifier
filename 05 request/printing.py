@@ -90,15 +90,30 @@ def proof_pdf(browser, path, draft):
     if path.suffix.lower() in (".html", ".htm"):
         print_pdf(browser, path, out)
         return out
-    text = path.read_text(encoding="utf-8", errors="replace")
-    safe = text.replace("&", "&amp;").replace("<", "&lt;")
     page = draft / f"_proof-{path.stem}.html"
-    page.write_text(f"<!doctype html><meta charset='utf-8'><title>{path.name}</title>"
-                    f"<h3 style='font-family:Arial'>{path.name}</h3>"
-                    f"<pre style='font-size:13px'>{safe}</pre>", encoding="utf-8")
+    page.write_text(notes_page_html(path), encoding="utf-8")
     print_pdf(browser, page, out)
     page.unlink(missing_ok=True)
     return out
+
+
+IMAGES = (".jpg", ".jpeg", ".png")
+
+
+def notes_page_html(path):
+    """One notes file as a printable page, headed by its file name so check 5 can find it.
+    A photo is shown whole on the page as Sam took it; text is shown as written."""
+    head = (f"<!doctype html><meta charset='utf-8'><title>{escape(path.name)}</title>"
+            f"<h3 style='font-family:Arial'>{escape(path.name)}</h3>")
+    if path.suffix.lower() in IMAGES:
+        return head + (f"<img src='{path.resolve().as_uri()}' "
+                       "style='max-width:100%;max-height:8.5in;object-fit:contain'>")
+    text = path.read_text(encoding="utf-8", errors="replace")
+    return head + f"<pre style='font-size:13px;white-space:pre-wrap'>{escape(text)}</pre>"
+
+
+def escape(text):
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
 def merge(request_pdf, proofs, out_pdf):
