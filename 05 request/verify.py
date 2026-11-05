@@ -181,26 +181,38 @@ def rows_by_po(rows):
     return out
 
 
+def block_problems(po, rows, block):
+    """One PO block: each approved row read from its own row, and no other row in the block.
+    Every row prints its difference with a sign, so the block holds one signed amount per row."""
+    starts, stop = row_starts(block, [r["item"] for r in rows])
+    ends, problems = sorted(starts.values()) + [stop], []
+    for row in rows:
+        name = normalise(row["item"])
+        if name not in starts:
+            problems.append(f"{row['item']} ({row['po']}): no row for it in its PO's block")
+            continue
+        at = starts[name]
+        problems += row_problems(row, *read_row(block[at + len(name):next(e for e in ends if e > at)]))
+    head = block.find(COLUMN_HEADINGS)
+    printed = sum(1 for _, signed in marked_amounts(block[max(head, 0):stop]) if signed)
+    if printed != len(rows):
+        problems.append(f"PO {rows[0]['po']}: its block prints {printed} row difference(s); Sam approved {len(rows)} row(s)")
+    return problems
+
+
 def check_differences(request, expected):
     """Each approved row's figures, read from that row inside its own PO's block, never from
-    anywhere else on the page."""
+    anywhere else on the page; no block or row the records do not give."""
     blocks, twice = group_blocks(request)
     problems = [f"PO {po} has more than one group block" for po in twice]
-    for po, rows in rows_by_po(expected["rows_on"]).items():
+    by_po = rows_by_po(expected["rows_on"])
+    problems += [f"PO {po.upper()}: a group block is printed, but Sam approved no row on it"
+                 for po in blocks if po not in by_po]
+    for po, rows in by_po.items():
         if po not in blocks:
             problems += [f"{r['item']} ({r['po']}): its PO has no group block on the PDF" for r in rows]
             continue
-        block = blocks[po][0]
-        starts, stop = row_starts(block, [r["item"] for r in rows])
-        ends = sorted(starts.values()) + [stop]
-        for row in rows:
-            name = normalise(row["item"])
-            if name not in starts:
-                problems.append(f"{row['item']} ({row['po']}): no row for it in its PO's block")
-                continue
-            at = starts[name]
-            segment = block[at + len(name):next(e for e in ends if e > at)]
-            problems += row_problems(row, *read_row(segment))
+        problems += block_problems(po, rows, blocks[po][0])
     return line(2, "Each row's figures match the variance, on that row", problems,
                 ", ".join(f"{r['item']} {r['difference']:+.2f}" for r in expected["rows_on"]))
 

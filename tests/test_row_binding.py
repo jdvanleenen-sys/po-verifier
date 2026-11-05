@@ -122,6 +122,22 @@ class RowBoundDifferences(unittest.TestCase):
         wrong = block(PO_A, [DOORS, edit(DOORS_SHORT, 8, "+$300.00")], "520.00")
         self.assertFalse(passes(self.check(wrong, exp)))
 
+    def test_extra_row_no_record_gives_fails(self):
+        """A row Sam never saw, printed in an approved PO's block, subtotal left alone."""
+        exp = expected([(PO_A, [DOORS])])
+        invented = row("Paint garage door", "60.00", "0", "0.00", "1", "60.00", "500.00")
+        self.assertFalse(passes(self.check(block(PO_A, [DOORS, invented], "300.00"), exp)))
+
+    def test_approved_row_printed_twice_fails(self):
+        exp = expected([(PO_A, [DOORS])])
+        text = block(PO_A, [DOORS, edit(DOORS, 8, "+$999.00")], "300.00")
+        self.assertFalse(passes(self.check(text, exp)))
+
+    def test_group_for_a_po_with_no_approved_row_fails(self):
+        exp = expected([(PO_A, [DOORS])])
+        text = block(PO_A, [DOORS], "300.00") + block(PO_B, [RAIL], "36.00")
+        self.assertFalse(passes(self.check(text, exp)))
+
     def test_po_heading_printed_twice_fails(self):
         exp = expected([(PO_A, [DOORS])])
         text = block(PO_A, [DOORS], "300.00") + block(PO_A, [DOORS], "300.00")
