@@ -1,5 +1,32 @@
 # Change log
 
+## 2026-11-05, test loop on the request checks: 13 holes found and closed
+A build-test loop (8 cycles, every probe's expected result written down before it ran) attacked the
+six PDF checks after the peer-test fix below. Each hole was reproduced first, then fixed with a test
+that failed before the fix. Every fix was also run against the 13 numbered requests that agents made
+in the 2026-11-04 cold runs: the same 11 pass before and after (the other 2 fail for reasons recorded
+on 11-04), so no fix refuses a request an agent drafted correctly. What now gets refused:
+- A row the records do not give: an extra row, an approved row printed twice, a block for a PO with
+  no approved row, or a row printed without a sign (check 2).
+- A wrong PO qty or measured qty on a row; a malformed amount such as `$1,02,0.60` (check 2).
+- Any dollar amount no record gives, anywhere on the request: an invented figure in a why or a
+  box note (check 1). The box note's per-PO totals must be each PO's own (check 4).
+- A group whose last line is worded for the wrong kind: money owed worded as a credit, a credit
+  worded as an EPO request, the no-PO group worded as a PO's EPO (check 3).
+- A tax rate on a group's tax line that is not that PO's own; an item count in the before-tax box
+  that is not the number of approved rows (checks 3, 4).
+- A PO missing from the proof whose number appears only on its EPO's page (check 5; reproduced on a
+  real build of 40 Larch Crescent with its PO 027 file removed).
+- A header with the wrong job name, lot, house number or date measured, or a document number that is
+  not the number the commit gives (check 6; a request numbered 3 used to pass printing VR-0001).
+No longer wrongly refused: a left-off item whose name sits inside an approved one ("8' doors" inside
+"8' doors and trim"), and a why that names a later row's item with a price.
+`verify.py` was split (pure moves, checked by comparing every definition before and after):
+`request_text.py` reads the PDF text, `row_checks.py` reads each row, `header_checks.py` reads the
+header. 156 tests (was 117). Not covered: the "Prepared" date, the vendor number, a PO job name on
+a builder's PO that does not use the words "JOB NAME:", and a notes file long enough to run onto a
+second page with a PO number written there.
+
 ## 2026-11-05, each row's figures are read from that row (peer-test finding)
 A peer's test agent found that check 2 accepted a row's difference if the right amount appeared
 anywhere on the request. A row printed +$999.00 passed, because the right +$220.00 sat on the
