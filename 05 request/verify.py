@@ -1,6 +1,6 @@
 """The six request checks, run by script on the real PDF. Nothing the AI wrote is trusted.
 
-1. Only approved rows, and all of them   2. Each difference matches   3. Tax per PO group
+1. Only approved rows, and all of them   2. Each row's figures, on that row   3. Each PO group's sums
 4. House totals                          5. Every proof document attached   6. Page count and footer
 
 `expected` comes from money.expected_request(); `proof` names what must (and must not) be attached.
@@ -22,13 +22,20 @@ def normalise(text):
     return re.sub(r"\s+", " ", text).strip().lower()
 
 
-def amounts(text):
-    """Every dollar amount printed, signed: '-$170.00' and '($170.00)' are both -170.00."""
+def marked_amounts(text):
+    """Every dollar amount printed, as (value, printed with a sign). '-$170.00' and '($170.00)'
+    are both -170.00, signed; '+$300.00' is signed; a plain '$60.00' is not."""
     found = []
     for m in MONEY.finditer(text):
         value = Decimal(m.group(3).replace(",", ""))
-        found.append(-value if (m.group(1) or m.group(2) in ("-", "−")) else value)
+        negative = bool(m.group(1)) or m.group(2) in ("-", "−")
+        found.append((-value if negative else value, bool(m.group(1) or m.group(2))))
     return found
+
+
+def amounts(text):
+    """Every dollar amount printed, signed: '-$170.00' and '($170.00)' are both -170.00."""
+    return [value for value, _ in marked_amounts(text)]
 
 
 def pdf_pages(path):
@@ -66,19 +73,13 @@ def check_rows(request, expected):
                 f"{len(expected['rows_on'])} approved row(s) printed, {len(expected['rows_off'])} left off")
 
 
-def check_differences(request, expected):
-    printed = amounts(request)
-    problems = [f"{r['item']}: expected {r['difference']:+.2f}, not on the PDF"
-                for r in expected["rows_on"] if r["difference"] not in printed]
-    return line(2, "Each difference matches the variance", problems,
-                ", ".join(f"{r['difference']:+.2f}" for r in expected["rows_on"]))
-
-
 # The last line of every group block, exactly as reference/request-layout.html words it.
 GROUP_END = re.compile(r"(?:epo requested for this po|credit back to the builder for this po|new po or epo requested)\s*"
                        + MONEY.pattern)
 PO_HEADING = re.compile(r"\bpo ([a-z]+-\d+/\d+)(?!\S*:)")
 NO_PO_HEADING = "no po work done"
+SUBTOTAL = "difference before tax"
+COLUMN_HEADINGS = "difference why"
 # The main box's label: what is owed to the trade, or, when the house nets to a credit, what goes back.
 OWED_TOTAL, CREDIT_TOTAL = "total requested", "total credit to the builder"
 
@@ -102,20 +103,106 @@ def group_key(block):
     return (first_po.group(1), first_po.start()) if first_po else (None, 0)
 
 
-def printed_groups(request):
-    """Each group block on the request, by its heading: {po: (difference before tax, tax, total)}."""
-    text, out, start = normalise(request), {}, 0
+def group_blocks(request):
+    """Each group block on the request, by its heading: ({po: (block from its heading, end line)},
+    [each PO whose heading is printed more than once])."""
+    text, out, twice, start = normalise(request), {}, [], 0
     for end in GROUP_END.finditer(text):
         block, start = text[start:end.start()], end.end()
         key, at = group_key(block)
         if key is None:
             continue
-        block = block[at:]
-        tail = block[block.find("difference before tax"):] if "difference before tax" in block else ""
-        values, total = amounts(tail), amounts(end.group(0))
+        if key in out:
+            twice.append(key)
+        out[key] = (block[at:], end.group(0))
+    return out, twice
+
+
+def printed_groups(request):
+    """Each group block on the request, by its heading: {po: (difference before tax, tax, total)}."""
+    out = {}
+    for key, (block, end_line) in group_blocks(request)[0].items():
+        tail = block[block.find(SUBTOTAL):] if SUBTOTAL in block else ""
+        values, total = amounts(tail), amounts(end_line)
         out[key] = (values[0] if values else None, values[1] if len(values) > 1 else None,
                     total[0] if total else None)
     return out
+
+
+def row_starts(block, items):
+    """Where each item's row starts in its group block: after the column headings, before the
+    subtotal. A name that is part of a longer item's name is not found inside that longer name."""
+    head = block.find(COLUMN_HEADINGS)
+    first = head + len(COLUMN_HEADINGS) if head >= 0 else 0
+    stop = block.find(SUBTOTAL) if SUBTOTAL in block else len(block)
+    taken, starts = [], {}
+    for name in sorted({normalise(i) for i in items}, key=len, reverse=True):
+        at = block.find(name, first)
+        while 0 <= at < stop and any(a <= at < b for a, b in taken):
+            at = block.find(name, at + 1)
+        if 0 <= at < stop:
+            starts[name] = at
+            taken.append((at, at + len(name)))
+    return starts, stop
+
+
+def read_row(segment):
+    """One printed row after its item name: (plain amounts before the difference, the difference).
+    The difference is the first amount printed with a sign. The plain amounts before it are the
+    agreed rate, the PO rate (blank on a no-PO row), the PO amount and the measured value."""
+    marks = marked_amounts(segment)
+    for i, (value, signed) in enumerate(marks):
+        if signed:
+            return [v for v, _ in marks[:i]], value
+    return [v for v, _ in marks], None
+
+
+def row_problems(row, plain, difference):
+    """Each figure on one printed row against the one worked out from Sam's read-back."""
+    where, out = f"{row['item']} ({row['po']})", []
+    if difference != row["difference"]:
+        out.append(f"{where}: difference expected {row['difference']:+.2f}, its row shows "
+                   + ("no signed amount" if difference is None else f"{difference:+.2f}"))
+    if "po_amount" not in row:
+        return out
+    full = len(plain) >= 3
+    for label, want, got in (("agreed rate", row["rate"], plain[0] if plain else None),
+                             ("PO amount", row["po_amount"], plain[-2] if full else None),
+                             ("measured value", row["measured_value"], plain[-1] if full else None)):
+        if got != want:
+            out.append(f"{where}: {label} expected ${want:.2f}, its row shows {shown(got)}")
+    return out
+
+
+def rows_by_po(rows):
+    out = {}
+    for row in rows:
+        out.setdefault(row["po"].lower(), []).append(row)
+    return out
+
+
+def check_differences(request, expected):
+    """Each approved row's figures, read from that row inside its own PO's block, never from
+    anywhere else on the page."""
+    blocks, twice = group_blocks(request)
+    problems = [f"PO {po} has more than one group block" for po in twice]
+    for po, rows in rows_by_po(expected["rows_on"]).items():
+        if po not in blocks:
+            problems += [f"{r['item']} ({r['po']}): its PO has no group block on the PDF" for r in rows]
+            continue
+        block = blocks[po][0]
+        starts, stop = row_starts(block, [r["item"] for r in rows])
+        ends = sorted(starts.values()) + [stop]
+        for row in rows:
+            name = normalise(row["item"])
+            if name not in starts:
+                problems.append(f"{row['item']} ({row['po']}): no row for it in its PO's block")
+                continue
+            at = starts[name]
+            segment = block[at + len(name):next(e for e in ends if e > at)]
+            problems += row_problems(row, *read_row(segment))
+    return line(2, "Each row's figures match the variance, on that row", problems,
+                ", ".join(f"{r['item']} {r['difference']:+.2f}" for r in expected["rows_on"]))
 
 
 def shown(value):
@@ -130,11 +217,12 @@ def check_tax(request, expected):
         if got is None:
             problems.append(f"{po}: no group block on the PDF")
             continue
-        for label, value in (("tax", got[1]), ("total", got[2])):
+        for label, value in (("before", got[0]), ("tax", got[1]), ("total", got[2])):
             if value != g[label]:
                 problems.append(f"{po} group {label}: expected ${g[label]:.2f}, the PDF shows {shown(value)}")
-    evidence = "; ".join(f"{po}: tax ${g['tax']:.2f}, total ${g['total']:.2f}" for po, g in expected["groups"].items())
-    return line(3, "Tax per PO, from its own printed rate", problems, evidence)
+    evidence = "; ".join(f"{po}: before tax ${g['before']:.2f}, tax ${g['tax']:.2f}, total ${g['total']:.2f}"
+                         for po, g in expected["groups"].items())
+    return line(3, "Subtotal, tax and total per PO, from its own block", problems, evidence)
 
 
 def check_house(request, expected):

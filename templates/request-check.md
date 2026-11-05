@@ -13,8 +13,8 @@ runs the six checks on the PDF and writes each finding here. The only part writt
 Sam's yes to send, below.
 
 - 1. Only approved rows, and all of them:
-- 2. Each difference matches the variance:
-- 3. Tax per PO, from its own printed rate:
+- 2. Each row's figures match the variance, on that row:
+- 3. Subtotal, tax and total per PO, from its own block:
 - 4. House totals add up:
 - 5. Every proof document attached:
 - 6. Page count printed equals actual pages, footer on the last page:

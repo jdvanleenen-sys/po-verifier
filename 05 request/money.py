@@ -138,7 +138,8 @@ def epo_amount(rb_row, epos):
 
 
 def checked_row(v, rb, epos, problems):
-    """One variance row, recomputed from its read-back row. Returns the true variance."""
+    """One variance row, recomputed from its read-back row. Returns the row's true figures:
+    {"rate", "po_amount", "measured_value", "difference"}, every one from the read-back."""
     where = f"variance row '{v['item']}' ({v['po']})"
     if v["rate"] != rb["rate"]:
         problems.append(f"{where}: agreed rate {v['rate']}, read-back says {rb['rate']}")
@@ -154,11 +155,14 @@ def checked_row(v, rb, epos, problems):
     if v["po_amount"] != po_amount or v["variance"] != true_variance:
         problems.append(f"{where}: says PO amount {v['po_amount']} and variance {v['variance']}; "
                         f"the read-back gives {po_amount} and {true_variance}")
-    return true_variance
+    rate = rb["rate"] or Decimal(0)
+    return {"rate": rate, "po_amount": po_amount, "measured_value": (v["measured_qty"] or 0) * rate,
+            "difference": true_variance}
 
 
 def variance_rows(text, rb_rows, epos, problems, set_aside=frozenset()):
-    """Every variance row, each checked against Sam's read-back. Returns {(po, item): variance}.
+    """Every variance row, each checked against Sam's read-back. Returns {(po, item): figures},
+    the figures as checked_row() gives them.
 
     set_aside: read-back row numbers the rule grid marks not comparable. They get no dollars.
     """
@@ -204,8 +208,9 @@ def decisions(text, variances, problems):
             problems.append(f"review row '{key[1]}' ({key[0]}) is not in the variance")
         elif not (decision.startswith("on") or decision.startswith("off")):
             problems.append(f"review row '{key[1]}' has no on/off decision from Sam")
-        elif to_amount(column(r, "variance")) != variances[key]:
-            problems.append(f"review row '{key[1]}' shows {column(r, 'variance')}, the variance is {variances[key]}")
+        elif to_amount(column(r, "variance")) != variances[key]["difference"]:
+            problems.append(f"review row '{key[1]}' shows {column(r, 'variance')}, "
+                            f"the variance is {variances[key]['difference']}")
         else:
             chosen[key] = decision.startswith("on")
     return chosen
@@ -252,10 +257,10 @@ def expected_request(records):
     out = {"rows_on": [], "rows_off": [k[1] for k, on in chosen.items() if not on], "groups": {}}
     house = [Decimal(0), Decimal(0)]
     for po, rows in groups.items():
-        before = sum((v for _, v in rows), Decimal(0))
+        before = sum((v["difference"] for _, v in rows), Decimal(0))
         tax = (before * group_rate(po, rates, problems)).quantize(CENT, ROUND_HALF_UP)
         out["groups"][po] = {"before": before, "tax": tax, "total": before + tax}
-        out["rows_on"] += [{"po": po, "item": i, "difference": v} for i, v in rows]
+        out["rows_on"] += [{"po": po, "item": i, **v} for i, v in rows]
         house[0] += before
         house[1] += tax
     out["house"] = {"before": house[0], "tax": house[1], "total": house[0] + house[1]}

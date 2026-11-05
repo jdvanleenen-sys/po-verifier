@@ -1,5 +1,24 @@
 # Change log
 
+## 2026-11-05, each row's figures are read from that row (peer-test finding)
+A peer's test agent found that check 2 accepted a row's difference if the right amount appeared
+anywhere on the request. A row printed +$999.00 passed, because the right +$220.00 sat on the
+subtotal line under it. Reproduced here on 77 Mockup Drive (+$300.00 changed to +$999.00, every
+money check passed), then fixed:
+- Check 2 reads each approved row inside its own PO's block: the first signed amount after the
+  item's name is its difference, and the plain amounts before it are the agreed rate, PO amount and
+  measured value. All four must equal the figures `money.py` works out from Sam's read-back. A name
+  inside a longer name, the same item on two POs, a row under the wrong PO and a PO heading printed
+  twice are each handled.
+- Check 3 also checks each group's "Difference before tax"; a wrong subtotal used to pass.
+- `money.py` hands verify each row's rate, PO amount and measured value, not only the difference.
+- The layout rules and `05 request/CONTEXT.md` say so: only the difference carries a sign; a no-PO
+  row prints its PO amount as $0.00.
+- `tests/test_row_binding.py`: 12 tests. 11 fail on the old checks; all pass now (117 in all).
+  The full build on 77 Mockup Drive passes; with the planted +$999.00 the commit refuses (exit 1).
+Not covered: quantities (PO qty, measured qty) are not checked on the row, only the dollar
+figures; a row whose PO amount is printed without an EPO already paid will now be refused.
+
 ## 2026-11-04, the break-it loop: 3 rounds, 15 cold runs, 2 sealed houses
 Ten new attack houses and two sealed ones (written by a separate agent, opened only in round 3).
 Money matched the key on all 15 runs; every run made its PDF from round 2 on. Full record, PDFs and
