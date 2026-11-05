@@ -1,6 +1,6 @@
 """The six request checks, run by script on the real PDF. Nothing the AI wrote is trusted.
 
-1. Only approved rows, and all of them   2. Each row's figures, on that row   3. Each PO group's sums
+1. Only approved rows and amounts       2. Each row's figures, on that row   3. Each PO group's sums
 4. House totals                          5. Every proof document attached   6. Page count and footer
 
 `expected` comes from money.expected_request(); `proof` names what must (and must not) be attached.
@@ -11,6 +11,8 @@ import re
 from decimal import Decimal
 
 import pymupdf
+
+D0 = Decimal(0)
 
 FOOTER_TEXT = "Checked and approved by"
 MONEY = re.compile(r"(\()?([+\-−])?\s?\$\s?((?:\d{1,3}(?:,\d{3})+|\d+)\.\d\d)(?!\d)")
@@ -77,6 +79,27 @@ def names_holding(item, rows_on):
     return [r["item"] for r in rows_on if normalise(item) in normalise(r["item"])]
 
 
+def known_amounts(expected):
+    """Every dollar figure the records give for this request, without its sign (signs are checked
+    on their own lines): row figures, group and house sums, PO rates and EPO totals, and $0.00."""
+    figures = {D0}
+    for r in expected["rows_on"]:
+        figures |= {r[k] for k in ("rate", "po_amount", "measured_value", "difference") if k in r}
+    for g in expected["groups"].values():
+        figures |= set(g.values())
+    figures |= set(expected.get("house", {}).values()) | set(expected.get("other_amounts", []))
+    return {abs(v) for v in figures}
+
+
+def stray_amounts(request, expected):
+    """Dollar amounts printed on the request that no record gives (an invented figure, a row with
+    no sign). Run only on an expected request built by money.py, which lists the other amounts."""
+    if "other_amounts" not in expected:
+        return []
+    known = known_amounts(expected)
+    return [f"${v:,.2f} is printed, but no record gives it" for v in amounts(request) if abs(v) not in known]
+
+
 def check_rows(request, expected):
     text = normalise(request)
     missing = [r["item"] for r in expected["rows_on"] if normalise(r["item"]) not in text]
@@ -84,7 +107,8 @@ def check_rows(request, expected):
                if normalise(item) in without_names(text, names_holding(item, expected["rows_on"]))]
     problems = [f"missing from the PDF: {m}" for m in missing]
     problems += [f"on the PDF but Sam chose it off: {p}" for p in present]
-    return line(1, "Only approved rows, and all of them", problems,
+    problems += stray_amounts(request, expected)
+    return line(1, "Only approved rows and amounts, and all of them", problems,
                 f"{len(expected['rows_on'])} approved row(s) printed, {len(expected['rows_off'])} left off")
 
 
@@ -94,6 +118,7 @@ GROUP_END = re.compile(r"(?:epo requested for this po|credit back to the builder
 PO_HEADING = re.compile(r"\bpo ([a-z]+-\d+/\d+)(?!\S*:)")
 NO_PO_HEADING = "no po work done"
 SUBTOTAL = "difference before tax"
+BOX_NOTE = re.compile(r"(?:\bpo ([a-z]+-\d+/\d+)|\bno po): " + MONEY.pattern)
 COLUMN_HEADINGS = "difference why"
 # The main box's label: what is owed to the trade, or, when the house nets to a credit, what goes back.
 OWED_TOTAL, CREDIT_TOTAL = "total requested", "total credit to the builder"
@@ -300,6 +325,22 @@ def check_tax(request, expected):
     return line(3, "Subtotal, tax and total per PO, from its own block", problems, evidence)
 
 
+def box_note_problems(text, expected):
+    """The main box's note names each group's total ("PO <number>: $315.00", "No PO: $705.60");
+    each must be that group's own total."""
+    totals = {po.lower(): g["total"] for po, g in expected["groups"].items()}
+    problems = []
+    for m in BOX_NOTE.finditer(text):
+        key = m.group(1) or "none"
+        value = amounts(m.group(0))[0]
+        if key not in totals:
+            problems.append(f"the box note names {key.upper()}, which has no group")
+        elif value != totals[key]:
+            problems.append(f"the box note gives {'No PO' if key == 'none' else key.upper()} "
+                            f"{shown(value)}; its group total is {shown(totals[key])}")
+    return problems
+
+
 def check_house(request, expected):
     """The three boxes at the top, each read from its own label, in order, sign included."""
     text, house, problems, at = normalise(request), expected["house"], [], 0
@@ -310,18 +351,27 @@ def check_house(request, expected):
         at = index + len(label) if index >= 0 else at
         if value != house[key]:
             problems.append(f"house {key} ('{label}' box): expected ${house[key]:.2f}, the PDF shows {shown(value)}")
+    problems += box_note_problems(text, expected)
     return line(4, "House totals add up", problems,
                 f"${house['before']:.2f} before tax + ${house['tax']:.2f} tax = ${house['total']:.2f}")
 
 
 def check_proof(proof_pages, proof):
     """Every PO and EPO attached; each notes page Sam named attached; each one he left out absent.
-    A notes page is found by its file name, printed as the heading of its proof page."""
-    text = normalise(" ".join(proof_pages))
+    A notes page is found by its file name, printed as the heading of its proof page. A PO counts
+    as attached only from a page of its own: its number on an EPO page or a notes page does not count."""
+    pages = [normalise(p) for p in proof_pages]
+    text = " ".join(pages)
+    others = [normalise(n) for n in proof["epo_names"] + proof["notes_attached"] + proof["notes_left_out"]]
+    po_pages = [p for p in pages if not any(n in p for n in others)]
     problems = []
     if not proof_pages:
         problems.append("no proof pages after the request")
-    for name in proof["po_numbers"] + proof["epo_names"]:
+    for name in proof["po_numbers"]:
+        if not any(normalise(name) in p for p in po_pages):
+            problems.append(f"not attached: {name}" + (" (its number is only on an EPO or notes page)"
+                                                       if normalise(name) in text else ""))
+    for name in proof["epo_names"]:
         if normalise(name) not in text:
             problems.append(f"not attached: {name}")
     for name in proof["notes_attached"]:

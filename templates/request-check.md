@@ -12,7 +12,7 @@ Written by the script's commit, never by hand: `python "05 request/build_request
 runs the six checks on the PDF and writes each finding here. The only part written afterwards is
 Sam's yes to send, below.
 
-- 1. Only approved rows, and all of them:
+- 1. Only approved rows and amounts, and all of them:
 - 2. Each row's figures match the variance, on that row:
 - 3. Subtotal, tax and total per PO, from its own block:
 - 4. House totals add up:

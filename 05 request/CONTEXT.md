@@ -84,16 +84,19 @@ The script needs Python 3.9 or newer with PyMuPDF, and Chrome, Chromium or Edge.
 machine with `python -m unittest discover -s tests` from the folder root.
 
 ## The six checks (the script runs them; nobody writes them by hand)
-1. Every row on it is a row Sam approved in the review, and no row he left off is on it.
+1. Every row on it is a row Sam approved in the review, and no row he left off is on it. Every
+   dollar amount printed is one the records give (a row or group figure, a PO rate, an EPO total);
+   an amount nobody can trace back is refused.
 2. Each row's agreed rate, PO qty, PO amount, measured qty, measured value and difference, read from that row inside
    its own PO's block, equal the figures worked out from Sam's read-back. A right number printed
    somewhere else on the page does not count.
 3. Each PO group's difference before tax, tax and total, read from that group's own lines with
    their sign, match Sam's records. A credit must print with its minus sign.
 4. The three boxes at the top (before tax, tax, total requested), each read from its own label
-   with its sign, match the groups.
+   with its sign, match the groups, and each per-PO total named in the box note is that PO's own.
 5. Every PO and EPO in the read-back is attached, each notes page Sam named is attached, and no
-   page he left out is.
+   page he left out is. A PO counts only from its own page; its number on an EPO or notes page
+   does not.
 6. The page count printed on the request equals its actual pages, and the footer is on the last
    page.
 
