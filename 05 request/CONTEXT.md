@@ -61,9 +61,12 @@ script reads every one of these from the row it belongs to.
 
 ## Ask Sam one thing before the build
 "Attach your site notes to the request as proof?" His notes are his own scribbles, so they go to
-the builder only if he says yes. Notes can be typed, a phone photo (.jpg, .png) or a voice-memo
-transcript, and there can be several pages. If there is more than one, ask which: all of them, or
-only the pages he names. A page that is not for this house is never attached. Write his answer into
+the builder only if he says yes. Notes can be typed, a phone photo (.jpg, .png), a voice-memo
+transcript, or a checklist PDF, and there can be several pages. The script knows a notes file by a
+word in its name: note, checklist, measurement or voice-memo. Any other PDF is taken for a PO or EPO
+and always attached. So before the build, if a PDF in intake is Sam's notes but its name has none of
+those words, stop and tell Sam it would go to the builder whatever he answers; renaming it is his call.
+If there is more than one notes page, ask which: all of them, or only the pages he names. A page that is not for this house is never attached. Write his answer into
 the proof list on the request.
 
 ## How the PDF is made: draft first, number only what passes

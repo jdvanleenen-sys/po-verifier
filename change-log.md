@@ -1,5 +1,15 @@
 # Change log
 
+## 2026-11-05, cold runs on three PO styles; a checklist PDF was taken for a PO
+`tests/po-styles/make_styles.py` prints each style's PO in its builder's own layout, and
+`tests/cold_run.py` sets up and scores those houses. Three fresh agents ran Tamarack (French, m2,
+GST and QST), Kestrel (legacy ERP, CR credit, spaces in the PO number) and the peer tester's
+Birchwood: all three PASS 6 of 6, every figure on the key. Birchwood found a real hole: a painter's
+checklist sent as a PDF was taken for a PO, attached whatever Sam answered, and recorded as
+"notes: no" though he said yes. A PDF named as notes or a checklist is now his notes, attached only
+on his yes, with its file name on every page so no page of it passes for a PO's (check 5). Eight
+more findings are recorded, not yet fixed, in `tests/po-styles/results-2026-11-05.md`. 184 tests.
+
 ## 2026-11-05, twelve builders' PO styles, and two tax bugs they found
 `tests/po-styles/` holds twelve made-up builders, one per style a painter meets (Hyphen-style,
 Procore schedule of values, Buildertrend with markup, CoConstruct lump sum, JD Edwards extra PO,

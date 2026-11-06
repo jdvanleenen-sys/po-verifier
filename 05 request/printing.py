@@ -82,10 +82,12 @@ def print_request(browser, draft):
     return request_pdf
 
 
-def proof_pdf(browser, path, draft):
-    """Turn one proof document into a PDF in the draft folder and return its path."""
+def proof_pdf(browser, path, draft, notes=False):
+    """Turn one proof document into a PDF in the draft folder and return its path. A notes file
+    sent as a PDF gets its file name printed on every page, so check 5 finds it by name and no page
+    of it passes for a PO's own page."""
     if path.suffix.lower() == ".pdf":
-        return path
+        return named_pages(path, draft / f"_proof-{path.stem}.pdf") if notes else path
     out = draft / f"_proof-{path.stem}.pdf"
     if path.suffix.lower() in (".html", ".htm"):
         print_pdf(browser, path, out)
@@ -94,6 +96,14 @@ def proof_pdf(browser, path, draft):
     page.write_text(notes_page_html(path), encoding="utf-8")
     print_pdf(browser, page, out)
     page.unlink(missing_ok=True)
+    return out
+
+
+def named_pages(path, out):
+    with pymupdf.open(path) as doc:
+        for page in doc:
+            page.insert_text((36, 20), path.name, fontsize=9)
+        doc.save(out)
     return out
 
 

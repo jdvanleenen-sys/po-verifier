@@ -36,8 +36,8 @@ import printing  # noqa: E402
 import verify  # noqa: E402
 
 DOCS = (".html", ".htm", ".pdf")
-NOTES = (".txt", ".md", ".jpg", ".jpeg", ".png")
-NOTES_NAMES = ("note", "voice-memo")
+NOTES = (".txt", ".md", ".jpg", ".jpeg", ".png", ".pdf")
+NOTES_NAMES = ("note", "voice-memo", "checklist", "measurement")
 NOT_PROOF = ("house-info.md",)
 ONLY = "only:"
 
@@ -81,15 +81,15 @@ def intake(house):
         sys.exit(f"No intake folder for {house}.")
     docs, seen, notes, others = [], {}, [], []
     for p in sorted(folder.iterdir()):
-        if p.suffix.lower() in DOCS:
+        if p.suffix.lower() in NOTES and any(n in p.name.lower() for n in NOTES_NAMES):
+            notes.append(p)  # before POs: a painter's checklist can come as a PDF
+        elif p.suffix.lower() in DOCS:
             digest = hashlib.sha256(p.read_bytes()).hexdigest()
             if digest in seen:
                 others.append(f"{p.name} (the same file as {seen[digest]}, attached once)")
             else:
                 seen[digest] = p.name
                 docs.append(p)
-        elif p.suffix.lower() in NOTES and any(n in p.name.lower() for n in NOTES_NAMES):
-            notes.append(p)
         elif p.name.lower() not in NOT_PROOF:
             others.append(f"{p.name} (not a PO, EPO or notes file, not attached)")
     return docs, notes, others
@@ -163,7 +163,8 @@ def build(house, notes_choice):
         (draft / old).unlink(missing_ok=True)
     browser = printing.find_browser()
     request_pdf = printing.print_request(browser, draft)
-    proofs = [printing.proof_pdf(browser, p, draft) for p in docs + attached]
+    proofs = ([printing.proof_pdf(browser, p, draft) for p in docs]
+              + [printing.proof_pdf(browser, p, draft, notes=True) for p in attached])
     merged = draft / "vpo-request.pdf"
     printing.merge(request_pdf, proofs, merged)
     for tmp in draft.glob("_proof-*.pdf"):

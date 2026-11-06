@@ -44,7 +44,13 @@ def as_painter(style, dest):
     text = setup.read_text(encoding="utf-8")
     text = text.replace("Sample Painting Co. (vendor V00999)", f"{style['painter']} (vendor {style['vendor_no'] or 'none'})")
     text = text.replace("Sample Builder Ltd., through SupplyPro", f"{style['builder']}, POs by email as PDF")
+    text = text.replace("Square footage is floor area, the same kind of number as the plan.",
+                        "Square footage is the painted surface, as the price list prices it.")
     setup.write_text(text, encoding="utf-8")
+    doc = dest / "reference" / "price-list.md"
+    count = len(style["prices"])
+    doc.write_text(doc.read_text(encoding="utf-8").replace(
+        '53 rows, 52 active\n("Whole-house interior" is not)', f"{count} rows, {count} active"), encoding="utf-8")
 
 
 def prepare(slug, dest):
