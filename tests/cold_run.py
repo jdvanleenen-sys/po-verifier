@@ -20,27 +20,46 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 HOUSES = ROOT / "tests" / "houses"
+STYLES = ROOT / "tests" / "po-styles"
 LEAVE_OUT = shutil.ignore_patterns(".git", "tests", "__pycache__", "_for-testers", "drafts", "README.md")
 
 
 def spec(slug):
+    """A test house from houses.json, or a PO style from po-styles/styles.json as {"style": ...}."""
     for h in json.loads((HOUSES / "houses.json").read_text(encoding="utf-8"))["houses"]:
         if h["slug"] == slug:
             return h
+    for s in json.loads((STYLES / "styles.json").read_text(encoding="utf-8"))["styles"]:
+        if s["slug"] == slug:
+            return {"style": s}
     sys.exit(f"No test house called {slug}.")
 
 
+def as_painter(style, dest):
+    """A PO style's house belongs to its own painter: his price list and setup go in the copy."""
+    sys.path.insert(0, str(STYLES))
+    import pipeline  # noqa: E402
+    (dest / "reference" / "price-list.csv").write_bytes(pipeline.price_csv(style))
+    setup = dest / "reference" / "contractor.md"
+    text = setup.read_text(encoding="utf-8")
+    text = text.replace("Sample Painting Co. (vendor V00999)", f"{style['painter']} (vendor {style['vendor_no'] or 'none'})")
+    text = text.replace("Sample Builder Ltd., through SupplyPro", f"{style['builder']}, POs by email as PDF")
+    setup.write_text(text, encoding="utf-8")
+
+
 def prepare(slug, dest):
-    spec(slug)
-    dest = Path(dest)
+    h, dest = spec(slug), Path(dest)
+    home = STYLES if "style" in h else HOUSES
     if dest.exists() and any(dest.iterdir()):
         sys.exit(f"{dest} is not empty. Give an empty or new folder.")
     if ROOT in dest.resolve().parents or dest.resolve() == ROOT:
         sys.exit("The copy must be outside this folder.")
     shutil.copytree(ROOT, dest, ignore=LEAVE_OUT, dirs_exist_ok=True)
-    shutil.copytree(HOUSES / slug / "intake", dest / "01 intake" / slug)
+    shutil.copytree(home / slug / "intake", dest / "01 intake" / slug)
+    if "style" in h:
+        as_painter(h["style"], dest)
     print(f"Ready: {dest}\nGive the agent: Sam just dropped in a new house, {slug}. Run it through the "
-          f"folder and build the request for the difference.\nPlay Sam from {HOUSES / slug / 'sam-answers.md'}")
+          f"folder and build the request for the difference.\nPlay Sam from {home / slug / 'sam-answers.md'}")
 
 
 def latest(folder, stem, ext="md"):
@@ -98,6 +117,24 @@ def score_request(h, run, slug, money, texts, results):
     results.append((pdf is not None, f"request numbered: {pdf.name if pdf else 'none'}"))
 
 
+def score_style(style, run, slug, money, texts, results):
+    """A PO style: the gate on the run's own records gives the answer key, or refuses for the key's reason."""
+    sys.path.insert(0, str(STYLES))
+    import pipeline  # noqa: E402
+    exp, problems = money.expected_request(texts)
+    pdf = latest(run / "05 request" / slug, "vpo-request", "pdf")
+    if style["expect"].startswith("refused"):
+        reason = style["expect"].split(":", 1)[1].strip()
+        results.append((pdf is None, f"no request numbered: {'none' if pdf is None else pdf.name}"))
+        results.append((any(reason in p for p in problems), f"refused for '{reason}': {problems or 'not refused'}"))
+        return
+    results.append((not problems, f"money gate on the run's records: {problems or 'no problems'}"))
+    got = {po: (g["before"], g["tax"], g["total"]) for po, g in exp.get("groups", {}).items()}
+    want = pipeline.answer_key(style)
+    results.append((got == want, f"request groups: want {want}, got {got}"))
+    results.append((pdf is not None, f"request numbered: {pdf.name if pdf else 'none'}"))
+
+
 def score(slug, run):
     h, run = spec(slug), Path(run)
     money, paths, texts = load(run, slug)
@@ -106,9 +143,15 @@ def score(slug, run):
         price_problems = money.prices.check_read_back(texts["read-back"], texts["price-list"])
         results.append((not price_problems, f"price check: {price_problems or 'pass'}"))
         results.append((money.approved(texts["read-back"]), "read-back carries Sam's yes"))
-    if texts["variance"]:
-        score_rows(h, money, texts, results)
-    score_request(h, run, slug, money, texts, results)
+    if "style" in h:
+        if texts["read-back"] and texts["variance"] and texts["review"]:
+            score_style(h["style"], run, slug, money, texts, results)
+        else:
+            results.append((h["style"]["expect"].startswith("refused"), "the run stopped before the review"))
+    else:
+        if texts["variance"]:
+            score_rows(h, money, texts, results)
+        score_request(h, run, slug, money, texts, results)
     for ok, line in results:
         print(("PASS  " if ok else "FAIL  ") + line)
     passed = all(ok for ok, _ in results)

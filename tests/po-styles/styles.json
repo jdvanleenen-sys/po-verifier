@@ -177,6 +177,8 @@
       "builder": "Summit Ridge Homes Ltd.", "painter": "ClearCoat Painting Inc.", "vendor_no": "",
       "address": "27 Birchwood Crescent, Waterloo, ON", "lot": "14", "measured": "2026-11-04",
       "pdf": {"po": "PO_SRH-2026-0417_Summit_Ridge_to_ClearCoat.pdf", "notes": "Painter_Checklist_SRH-2026-0417.pdf"},
+      "answers": ["**If it asks whether the bedroom walls are 392 SF as written or what 12' x 12' works out to:** \"392 is what I measured, use 392. The room is a bit over 12 by 12. The ceiling is 132, as written.\"",
+                  "**If it asks about a basement stair railing on a one-storey house:** \"There's a stair down to the basement. The PO is right, 10 feet.\""],
       "prices": {"Walls": ["SF", "1.85"], "Ceiling": ["SF", "1.40"], "Baseboard": ["LF", "2.25"], "Standard door": ["EA", "95.00"], "Bifold door": ["EA", "110.00"], "Door casing": ["EA", "40.00"], "Window casing": ["EA", "45.00"], "Railing": ["LF", "18.00"]},
       "pos": [{"number": "SRH-2026-0417", "taxes": [["HST", "13"]], "lines": [
         {"ref": "1.01", "desc": "Living Room Walls", "unit": "SF", "qty": "480", "price": "1.85", "item": "Walls", "measured": "480", "words": "480"},
