@@ -1,5 +1,24 @@
 # Change log
 
+## 2026-11-05, a second builder's PO: PO numbers and rows read from the read-back
+A peer tester ran a made-up second builder (PO SRH-2026-0417, HST 13%, numbered lines 1.01 to 7.02,
+walls on four lines of one PO). It passed 01 to 04, and the money gate refused it with 37 problems,
+for two reasons, both confirmed in the code:
+- The gate knew one builder's PO number shape (`MKR-02402401/027`). A PO number is now taken from
+  the read-back's own "POs read" table, as written, spaces included (`OP 4471203`). The request
+  check finds a PO group by the house's own PO numbers, and still refuses a group under any
+  PO-shaped number the records do not give, or a group with no PO heading at all.
+- A row was named by PO and item, so one item on four lines of one PO was refused. The variance
+  (written by `compare.py`) and the review now carry a Row column, the read-back row number, and the
+  gate matches on it. A variance or review without it (written before today) still works where PO
+  and item name one row, and is refused where they do not. On the request, an item on more than one
+  approved row of one PO prints with the PO's own line number: `Walls, PO line 3.01`.
+Also: the header check refused nothing when a PO gave no "JOB NAME:" and house-info gave no
+address or lot; it now refuses. `money.py` was split (pure moves, checked by comparing every
+definition): `records.py` reads the tables. 172 tests (was 156); 12 of the 16 new ones fail on the
+code before this change, the other 4 are controls. The 13 agent-made requests from 2026-11-04:
+the same 11 pass.
+
 ## 2026-11-05, test loop on the request checks: 13 holes found and closed
 A build-test loop (8 cycles, every probe's expected result written down before it ran) attacked the
 six PDF checks after the peer-test fix below. Each hole was reproduced first, then fixed with a test

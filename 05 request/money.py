@@ -12,84 +12,28 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "02 read"))
 import prices  # noqa: E402
+from records import (  # noqa: E402,F401  (callers use money.column, money.read_text, ...)
+    NUMBER, AMOUNT, approved, column, read_text, section, tables, to_amount, to_number)
 import grid_check  # noqa: E402
 
 CENT = Decimal("0.01")
 NO_PO = "none"
 PO_NUMBER = re.compile(r"[A-Z]{2,}-\d+/\d+")
-AMOUNT = re.compile(r"(\(?)([+\-−]?)\s*\$?\s*(\d[\d,]*(?:\.\d+)?)")
-NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?")
 
 
-def read_text(path):
-    """Read a record written by any editor: UTF-8 with or without a BOM, or UTF-16."""
-    raw = Path(path).read_bytes()
-    if raw[:2] in (b"\xff\xfe", b"\xfe\xff"):
-        return raw.decode("utf-16")
-    return raw.decode("utf-8-sig")
+def po_key(cell, known=None):
+    """The PO number in a cell, or 'none' for an item on no PO.
 
-
-def to_amount(cell):
-    """The first money amount in a cell, signed: '+$426.00', '-$170.00', '($170.00)', '$1,000.00'."""
-    match = AMOUNT.search(cell or "")
-    if not match:
-        return None
-    value = Decimal(match.group(3).replace(",", ""))
-    negative = match.group(1) == "(" or match.group(2) in ("-", "−")
-    return -value if negative else value
-
-
-def to_number(cell):
-    """The first plain number in a cell: '6 + 2 on EPO 01' gives 6."""
-    match = NUMBER.search(cell or "")
-    return Decimal(match.group(0).replace(",", "")) if match else None
-
-
-def po_key(cell):
-    """The PO number in a cell, or 'none' for an item on no PO."""
-    match = PO_NUMBER.search(cell or "")
-    return match.group(0) if match else NO_PO
-
-
-def tables(text):
-    """Every Markdown table in a text, keyed by the section heading above it."""
-    found, heading, rows = {}, "", None
-    for line in text.splitlines():
-        if line.startswith("#"):
-            heading = line.lstrip("#").strip().lower()
-        elif line.strip().startswith("|"):
-            cells = [c.strip() for c in line.strip().strip("|").split("|")]
-            if rows is None:
-                rows = {"header": [c.lower() for c in cells], "rows": []}
-                found.setdefault(heading, rows)
-            elif not all(set(c) <= set("-: ") for c in cells):
-                rows["rows"].append(dict(zip(rows["header"], cells)))
-        else:
-            rows = None
-    return found
-
-
-def column(row, *starts):
-    """The cell whose header starts with any of the given words."""
-    for key, value in row.items():
-        if any(key.startswith(s) for s in starts):
-            return value
-    return ""
-
-
-def section(found, *words):
-    for heading, table in found.items():
-        if all(w in heading for w in words):
-            return table["rows"]
-    return []
-
-
-def approved(text):
-    """A record counts only with status: approved and a yes written in Sam's yes block."""
-    status = re.search(r"^status:\s*(\S+)", text, re.M)
-    answer = re.search(r"^-\s*Answer:\s*(.+)$", text, re.M)
-    return bool(status and status.group(1).lower() == "approved"
-                and answer and re.search(r"\byes\b", answer.group(1), re.I) is not None)
+    known: the PO numbers the read-back lists under "POs read". Builders shape PO numbers in their
+    own way (MKR-02402401/027, SRH-2026-0417, 4500012345), so a cell is matched against those, the
+    longest first. A cell naming none of them is returned as written, and fails where it is used."""
+    text = (cell or "").strip()
+    if text.lower() in ("", NO_PO):
+        return NO_PO
+    if known:
+        return max((k for k in known if k.lower() in text.lower()), key=len, default=text)
+    match = PO_NUMBER.search(text)
+    return match.group(0) if match else text
 
 
 def takes_from_sam(which_way):
@@ -98,12 +42,19 @@ def takes_from_sam(which_way):
     return -1 if "back charge" in text and "other trade" not in text else 1
 
 
+def pos_listed(found):
+    """The PO numbers as the read-back's "POs read" table writes them."""
+    return {c for r in section(found, "pos read") if (c := column(r, "po number").strip()) and c.lower() != NO_PO}
+
+
 def read_back(text):
     """Sam's approved read-back: the rows, each PO's printed tax rate, and the EPOs."""
     found = tables(text)
+    known = pos_listed(found)
     rows = [{
         "num": (column(r, "#") or "").strip(),
-        "po": po_key(column(r, "po number")),
+        "po": po_key(column(r, "po number"), known),
+        "line": column(r, "line as printed").strip(),
         "item": column(r, "price list item").strip().lower(),
         "po_qty": to_number(column(r, "po qty")),
         "unit_price": to_amount(column(r, "unit price")),
@@ -116,9 +67,9 @@ def read_back(text):
         tax = sum((to_amount(m.group(0)) for m in re.finditer(r"\$[\d,]+\.\d\d", column(r, "tax lines"))),
                   Decimal(0))
         if subtotal:
-            rates[po_key(column(r, "po number"))] = tax / subtotal
+            rates[po_key(column(r, "po number"), known)] = tax / subtotal
     epos = [{
-        "po": po_key(column(r, "po it is against")),
+        "po": po_key(column(r, "po it is against"), known),
         "pays_for": column(r, "item it pays for").lower(),
         "total": to_amount(column(r, "total")) or Decimal(0),
         "sign": takes_from_sam(column(r, "which way")),
@@ -163,14 +114,17 @@ def checked_row(v, rb, epos, problems):
 
 
 def variance_rows(text, rb_rows, epos, problems, set_aside=frozenset()):
-    """Every variance row, each checked against Sam's read-back. Returns {(po, item): figures},
-    the figures as checked_row() gives them.
+    """Every variance row, each checked against Sam's read-back. Returns {(po, item, read-back row
+    number): figures}, the figures as checked_row() gives them. A variance with a Row column is
+    matched row by row; one without it (written before 2026-11-05) by PO and item, which must then
+    name one read-back row.
 
     set_aside: read-back row numbers the rule grid marks not comparable. They get no dollars.
     """
-    result = {}
+    result, known = {}, {rb["po"] for rb in rb_rows}
     for r in section(tables(text), "rows"):
-        v = {"po": po_key(column(r, "po number")), "item": column(r, "item").strip().lower(),
+        row_num = column(r, "row").strip() or None
+        v = {"po": po_key(column(r, "po number"), known), "item": column(r, "item").strip().lower(),
              "rate": to_amount(column(r, "agreed rate")), "po_qty": to_number(column(r, "po qty")),
              "po_rate": to_amount(column(r, "po rate")), "po_amount": to_amount(column(r, "po amount")),
              "measured_qty": to_number(column(r, "measured qty")), "variance": to_amount(column(r, "variance"))}
@@ -178,7 +132,8 @@ def variance_rows(text, rb_rows, epos, problems, set_aside=frozenset()):
             problems.append(f"variance row '{v['item']}' ({v['po']}) is unpriced, so it belongs in the "
                             "'Not comparable, or left unpriced' list with no dollars, not in the Rows table")
             continue
-        match = [rb for rb in rb_rows if rb["po"] == v["po"] and rb["item"] == v["item"]]
+        match = [rb for rb in rb_rows if rb["po"] == v["po"] and rb["item"] == v["item"]
+                 and row_num in (None, rb["num"])]
         if len(match) == 1 and match[0]["num"] in set_aside:
             problems.append(f"variance row '{v['item']}' ({v['po']}) is marked not comparable in the rule grid, "
                             "so it belongs in the 'Not comparable' list with no dollars")
@@ -188,9 +143,12 @@ def variance_rows(text, rb_rows, epos, problems, set_aside=frozenset()):
                             "Every item, including one on no PO, must be a row in the read-back's Rows table "
                             "(PO number 'none' for no PO), with Sam's yes on that read-back")
             continue
-        result[(v["po"], v["item"])] = checked_row(v, match[0], epos, problems)
+        key = (v["po"], v["item"], match[0]["num"])
+        if key in result:
+            problems.append(f"read-back row {key[2]} ('{v['item']}') is in the variance twice")
+        result[key] = checked_row(v, match[0], epos, problems)
     for rb in rb_rows:
-        if (rb["po"], rb["item"]) not in result and not unpriced(rb) and rb["num"] not in set_aside:
+        if all(k[2] != rb["num"] for k in result) and not unpriced(rb) and rb["num"] not in set_aside:
             problems.append(f"read-back row {rb['num']} ('{rb['item']}') is missing from the variance")
     return result
 
@@ -202,12 +160,20 @@ def unpriced(rb_row):
 
 def decisions(text, variances, problems):
     """Sam's on/off for each row he was shown. A row he did not choose is off."""
-    chosen = {}
+    chosen, known = {}, {k[0] for k in variances}
     for r in section(tables(text), ""):
-        key = (po_key(column(r, "po number")), column(r, "item").strip().lower())
+        po, item = po_key(column(r, "po number"), known), column(r, "item").strip().lower()
+        row_num = column(r, "row").strip() or None
+        keys = [k for k in variances if k[:2] == (po, item) and row_num in (None, k[2])]
+        key = keys[0] if len(keys) == 1 else (po, item, row_num)
         decision = column(r, "sam's decision").strip().lower()
-        if key not in variances:
-            problems.append(f"review row '{key[1]}' ({key[0]}) is not in the variance")
+        if len(keys) > 1:
+            problems.append(f"review row '{item}' ({po}) could be any of read-back rows "
+                            f"{', '.join(k[2] for k in keys)}; give each its Row number")
+        elif key in chosen:
+            problems.append(f"review row '{item}' ({po}, row {key[2]}) is in the review twice")
+        elif not keys:
+            problems.append(f"review row '{item}' ({po}) is not in the variance")
         elif not (decision.startswith("on") or decision.startswith("off")):
             problems.append(f"review row '{key[1]}' has no on/off decision from Sam")
         elif to_amount(column(r, "variance")) != variances[key]["difference"]:
@@ -216,6 +182,19 @@ def decisions(text, variances, problems):
         else:
             chosen[key] = decision.startswith("on")
     return chosen
+
+
+LINE_REF = re.compile(r"^\(?(\d+(?:\.\d+)*)\)?\s")
+
+
+def row_label(item, num, rows, lines):
+    """The name a row prints under on the request: its price list item, and when that item is on
+    more than one approved row of the same PO, the PO's own line number too ("walls, PO line 3.01"),
+    or the line as printed when the PO numbers no lines."""
+    if sum(1 for i, _, _ in rows if i == item) == 1:
+        return item
+    ref = LINE_REF.match(lines.get(num, "") + " ")
+    return f"{item}, PO line {ref.group(1)}" if ref else f"{item}, {lines.get(num) or 'row ' + num}"
 
 
 def group_rate(po, rates, problems):
@@ -252,19 +231,20 @@ def expected_request(records):
     set_aside = grid_check.not_comparable_rows(grid_text)
     variances = variance_rows(records["variance"], rb_rows, epos, problems, set_aside)
     chosen = decisions(records["review"], variances, problems)
-    groups = {}
-    for (po, item), on in chosen.items():
+    groups, lines = {}, {rb["num"]: rb["line"] for rb in rb_rows}
+    for (po, item, num), on in chosen.items():
         if on:
-            groups.setdefault(po, []).append((item, variances[(po, item)]))
+            groups.setdefault(po, []).append((item, num, variances[(po, item, num)]))
     out = {"rows_on": [], "rows_off": [k[1] for k, on in chosen.items() if not on], "groups": {}}
     house = [Decimal(0), Decimal(0)]
     for po, rows in groups.items():
-        before = sum((v["difference"] for _, v in rows), Decimal(0))
+        before = sum((v["difference"] for _, _, v in rows), Decimal(0))
         rate = group_rate(po, rates, problems)
         tax = (before * rate).quantize(CENT, ROUND_HALF_UP)
         out["groups"][po] = {"before": before, "tax": tax, "total": before + tax}
         out.setdefault("rates", {})[po] = rate
-        out["rows_on"] += [{"po": po, "item": i, **v} for i, v in rows]
+        out["rows_on"] += [{"po": po, "item": i, "row": n, "label": row_label(i, n, rows, lines), **v}
+                           for i, n, v in rows]
         house[0] += before
         house[1] += tax
     out["house"] = {"before": house[0], "tax": house[1], "total": house[0] + house[1]}

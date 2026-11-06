@@ -11,7 +11,7 @@ import re
 from decimal import Decimal
 
 from request_text import (  # noqa: F401  (pdf_pages, split_request, normalise: used by callers)
-    BOX_NOTE, FOOTER_TEXT, amounts, first_amount_after, group_blocks, normalise, pdf_pages,
+    box_note, FOOTER_TEXT, amounts, first_amount_after, group_blocks, normalise, pdf_pages,
     SUBTOTAL, printed_groups, shown, split_request)
 from header_checks import header_problems
 from row_checks import block_problems, rows_by_po
@@ -77,7 +77,7 @@ OWED_TOTAL, CREDIT_TOTAL = "total requested", "total credit to the builder"
 def check_differences(request, expected):
     """Each approved row's figures, read from that row inside its own PO's block, never from
     anywhere else on the page; no block or row the records do not give."""
-    blocks, twice = group_blocks(request)
+    blocks, twice = group_blocks(request, expected.get("po_numbers"))
     problems = [f"PO {po} has more than one group block" for po in twice]
     by_po = rows_by_po(expected["rows_on"])
     problems += [f"PO {po.upper()}: a group block is printed, but Sam approved no row on it"
@@ -114,7 +114,7 @@ def rate_problems(blocks, expected):
     """The percentages on a group's tax lines add up to that PO's own rate (5% for GST alone)."""
     problems = []
     for key, (block, _) in blocks.items():
-        rate = next((r for po, r in expected.get("rates", {}).items() if po.lower() == key), None)
+        rate = next((r for po, r in expected.get("rates", {}).items() if normalise(po) == key), None)
         printed = percents(block[block.find(SUBTOTAL):]) if SUBTOTAL in block else []
         if rate is not None and sum(printed, D0) != rate * 100:
             problems.append(f"{group_name(key)}: its tax line prints {' + '.join(f'{p}%' for p in printed) or 'no rate'}; "
@@ -125,15 +125,16 @@ def rate_problems(blocks, expected):
 def check_tax(request, expected):
     """Each PO's subtotal, tax and total, read from that PO's own block, sign included, and its
     last line worded by what the group is."""
-    found, problems = printed_groups(request), []
-    problems += rate_problems(group_blocks(request)[0], expected)
-    for key, (_, line_text) in group_blocks(request)[0].items():
-        group = next((g for po, g in expected["groups"].items() if po.lower() == key), None)
+    blocks = group_blocks(request, expected.get("po_numbers"))[0]
+    found, problems = printed_groups(request, expected.get("po_numbers")), []
+    problems += rate_problems(blocks, expected)
+    for key, (_, line_text) in blocks.items():
+        group = next((g for po, g in expected["groups"].items() if normalise(po) == key), None)
         if group and not line_text.startswith(end_label(key, group["total"])):
             problems.append(f"{group_name(key)}: its last line reads '{line_text}'; it must start "
                             f"'{end_label(key, group['total'])}'")
     for po, g in expected["groups"].items():
-        got = found.get(po.lower())
+        got = found.get(normalise(po))
         if got is None:
             problems.append(f"{po}: no group block on the PDF")
             continue
@@ -148,9 +149,9 @@ def check_tax(request, expected):
 def box_note_problems(text, expected):
     """The main box's note names each group's total ("PO <number>: $315.00", "No PO: $705.60");
     each must be that group's own total."""
-    totals = {po.lower(): g["total"] for po, g in expected["groups"].items()}
+    totals = {normalise(po): g["total"] for po, g in expected["groups"].items()}
     problems = []
-    for m in BOX_NOTE.finditer(text):
+    for m in box_note(expected.get("po_numbers")).finditer(text):
         key = m.group(1) or "none"
         value = amounts(m.group(0))[0]
         if key not in totals:
@@ -177,7 +178,7 @@ def box_text_problems(text, expected):
         m = re.search(pattern, box)
         if m and int(m.group(1)) != want:
             problems.append(f"the before-tax box says {m.group(1)} {what}; Sam approved {want}")
-    lines = [p for block, _ in group_blocks(text)[0].values() for p in percents(block[block.find(SUBTOTAL):])]
+    lines = [p for block, _ in group_blocks(text, expected.get("po_numbers"))[0].values() for p in percents(block[block.find(SUBTOTAL):])]
     problems += [f"the tax box prints {p}%, which no group's tax line prints" for p in percents(box) if p not in lines]
     return problems
 

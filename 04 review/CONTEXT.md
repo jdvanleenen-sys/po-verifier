@@ -8,7 +8,8 @@ The highest-numbered `../03 compare/<house>/variance-N.md`. For a re-ask after `
 outcome Sam answered from and the variance it traces back to.
 
 ## What Sam sees
-Every row shows its PO number, grouped by PO.
+Every row shows its Row number (the read-back row, copied from the variance) and its PO number,
+grouped by PO. The Row number is how the script tells apart one item on several lines of one PO.
 - **Flagged rows.** These go on the request unless Sam takes one off. If he takes one off, he
   gives a few words on why.
 - **Sam's-call rows.** He says chase or leave for each. If he says nothing, the row is left off.

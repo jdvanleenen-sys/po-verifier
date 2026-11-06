@@ -18,7 +18,7 @@ import grid_check  # noqa: E402
 import prices  # noqa: E402
 from grid_rules import show  # noqa: E402
 
-ROW_HEADER = ("| PO number | Item | Unit | Agreed rate | PO qty | PO rate | PO amount | Measured qty | "
+ROW_HEADER = ("| Row | PO number | Item | Unit | Agreed rate | PO qty | PO rate | PO amount | Measured qty | "
               "Measured value | Variance | Why | Call |")
 
 
@@ -46,7 +46,7 @@ def inputs(house):
 
 def row_line(r, ignore, flag):
     on_po = r["po"] != "none"
-    cells = [r["po"], r["item"], r["unit"], money(r["rate"]), show(r["po_qty"]),
+    cells = [r["num"], r["po"], r["item"], r["unit"], money(r["rate"]), show(r["po_qty"]),
              money(r["po_rate"]) if on_po else "", money(r["po_amount"]), show(r["measured_qty"]),
              money(r["measured_value"]), money(r["variance"], True), calc.why(r),
              calc.call(r["variance"], ignore, flag)]
@@ -86,7 +86,7 @@ def render(house, n, path, text, compared, set_aside, limits):
         f"price list read: {read_line.group(1) if read_line else 'not recorded'} (as recorded in {path.stem})",
         "---", "", f"# {house}, variance {n}", "",
         "Written by `03 compare/compare.py` from the read-back named above. No number here was typed.", "",
-        "## Rows", ROW_HEADER, "|---|---|---|---|---|---|---|---|---|---|---|---|",
+        "## Rows", ROW_HEADER, "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
         *[row_line(r, ignore, flag) for r in compared], "",
         f"{epo_count} row(s) carry an EPO already issued, counted in their PO amount.", "",
         "## Not comparable, or left unpriced by Sam", "| PO number | Item | Why |", "|---|---|---|",

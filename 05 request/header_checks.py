@@ -37,6 +37,9 @@ def header_problems(request_pages, header):
         if printed != sorted(header["job_numbers"]):
             problems.append(f"the job line reads '{job.group(1) if job else ''}'; house-info gives the numbers "
                             + ", ".join(header["job_numbers"]))
+    if not header["job_names"] and header["job_numbers"] is None:
+        problems.append("nothing to check the job line against: the POs give no job name and house-info "
+                        "gives no address or lot. Fill in house-info.md in 01 intake")
     for name in header["job_names"]:
         if normalise(name) not in head:
             problems.append(f"the PO's job name {name} is not in the header")

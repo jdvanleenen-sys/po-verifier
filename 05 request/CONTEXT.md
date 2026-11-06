@@ -42,7 +42,10 @@ from a calculation, run and shown. The script then works them all out again on i
 approved read-back and review, and refuses a request where any figure differs (`money.py`). It
 also refuses one whose read-back has no rule grid, or a grid that fails `grid.py check --final`.
 
-Write each row's item exactly as the variance names it (the price list's name), and print every
+Write each row's item exactly as the variance names it (the price list's name). When the same item
+is on more than one approved row of one PO (walls on four lines of one PO), print each with the PO's
+own line number after a comma, as the PO numbers its lines: `Walls, PO line 3.01`. Where the PO
+numbers no lines, follow the comma with the line as printed in the read-back. Print every
 difference with its sign and a dollar sign (`+$300.00`, `-$170.00`): the script finds them that way.
 Copy each row's agreed rate, PO qty, PO amount and measured qty from the compare too; the measured
 value is the measured quantity times the agreed rate. Each quantity is one plain number (`12`,

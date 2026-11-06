@@ -74,7 +74,7 @@ def quantity_problems(where, row, between):
 
 def row_problems(row, plain, difference, between=()):
     """Each figure on one printed row against the one worked out from Sam's read-back."""
-    where, out = f"{row['item']} ({row['po']})", []
+    where, out = f"{name_of(row)} ({row['po']})", []
     if difference != row["difference"]:
         out.append(f"{where}: difference expected {row['difference']:+.2f}, its row shows "
                    + ("no signed amount" if difference is None else f"{difference:+.2f}"))
@@ -92,7 +92,7 @@ def row_problems(row, plain, difference, between=()):
 def rows_by_po(rows):
     out = {}
     for row in rows:
-        out.setdefault(row["po"].lower(), []).append(row)
+        out.setdefault(normalise(row["po"]), []).append(row)
     return out
 
 
@@ -114,15 +114,20 @@ def stray_rows(po, block, first, stop, covered):
     return []
 
 
+def name_of(row):
+    """The name a row prints under: its item, with its PO line when the item repeats on that PO."""
+    return row.get("label") or row["item"]
+
+
 def block_problems(po, rows, block):
     """One PO block: each approved row read from its own row, and no other row in the block.
     Every row prints its difference with a sign, so the block holds one signed amount per row."""
-    starts, stop = row_starts(block, [r["item"] for r in rows])
+    starts, stop = row_starts(block, [name_of(r) for r in rows])
     ends, problems, covered = sorted(starts.values()) + [stop], [], []
     for row in rows:
-        name = normalise(row["item"])
+        name = normalise(name_of(row))
         if name not in starts:
-            problems.append(f"{row['item']} ({row['po']}): no row for it in its PO's block")
+            problems.append(f"{name_of(row)} ({row['po']}): no row for it in its PO's block")
             continue
         at = starts[name]
         segment = block[at + len(name):next(e for e in ends if e > at)]

@@ -11,8 +11,8 @@ price list read:
 Written by `03 compare/compare.py`, never by hand. Rates come from the read-back named above.
 
 ## Rows
-| PO number | Item | Unit | Agreed rate | PO qty | PO rate | PO amount | Measured qty | Measured value | Variance | Why | Call |
-|---|---|---|---|---|---|---|---|---|---|---|---|
+| Row | PO number | Item | Unit | Agreed rate | PO qty | PO rate | PO amount | Measured qty | Measured value | Variance | Why | Call |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
 
 ## Not comparable, or left unpriced by Sam
 | PO number | Item | Why |

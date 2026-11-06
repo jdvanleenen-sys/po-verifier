@@ -61,16 +61,33 @@ GROUP_END = re.compile(r"(?:epo requested for this po|credit back to the builder
                        + MONEY.pattern)
 
 
-PO_HEADING = re.compile(r"\bpo ([a-z]+-\d+/\d+)(?!\S*:)")
+# A word shaped like a PO number: it holds a digit and starts and ends on a letter or digit.
+PO_CHARS = r"(?=[a-z/._-]*\d)[a-z0-9](?:[a-z0-9/._-]*[a-z0-9])?"
+
+
+def po_names(po_numbers=None):
+    """The house's own PO numbers (longest first), then any PO-shaped word, so a group under a PO
+    the records do not give is still found, and refused. Builders write PO numbers their own way,
+    spaces included ('OP 4471203')."""
+    known = sorted({normalise(p) for p in po_numbers or ()}, key=len, reverse=True)
+    return "|".join([re.escape(k) for k in known] + [PO_CHARS])
+
+
+def po_heading(po_numbers=None):
+    return re.compile(rf"\bpo ({po_names(po_numbers)})(?!\S*:)")
+
+
+def box_note(po_numbers=None):
+    return re.compile(rf"(?:\bpo ({po_names(po_numbers)})|\bno po): " + MONEY.pattern)
+
+
+NO_HEADING = "(no po heading)"
 
 
 NO_PO_HEADING = "no po work done"
 
 
 SUBTOTAL = "difference before tax"
-
-
-BOX_NOTE = re.compile(r"(?:\bpo ([a-z]+-\d+/\d+)|\bno po): " + MONEY.pattern)
 
 
 COLUMN_HEADINGS = "difference why"
@@ -85,35 +102,36 @@ def first_amount_after(text, label):
     return found[0] if found else None
 
 
-def group_key(block):
+def group_key(block, heading):
     """The heading a group block starts under: its PO number, or "none" for the no-PO block.
     The heading is the first one in the block; a PO named later, in a row's wording, is not it."""
-    first_po = PO_HEADING.search(block)
+    first_po = heading.search(block)
     no_po = block.find(NO_PO_HEADING)
     if no_po >= 0 and (first_po is None or no_po < first_po.start()):
         return "none", no_po
     return (first_po.group(1), first_po.start()) if first_po else (None, 0)
 
 
-def group_blocks(request):
+def group_blocks(request, po_numbers=None):
     """Each group block on the request, by its heading: ({po: (block from its heading, end line)},
-    [each PO whose heading is printed more than once])."""
-    text, out, twice, start = normalise(request), {}, [], 0
+    [each PO whose heading is printed more than once]). A group whose heading names no PO is kept
+    under NO_HEADING, so it is refused rather than skipped."""
+    text, out, twice, start, heading = normalise(request), {}, [], 0, po_heading(po_numbers)
     for end in GROUP_END.finditer(text):
         block, start = text[start:end.start()], end.end()
-        key, at = group_key(block)
+        key, at = group_key(block, heading)
         if key is None:
-            continue
+            key = NO_HEADING
         if key in out:
             twice.append(key)
         out[key] = (block[at:], end.group(0))
     return out, twice
 
 
-def printed_groups(request):
+def printed_groups(request, po_numbers=None):
     """Each group block on the request, by its heading: {po: (difference before tax, tax, total)}."""
     out = {}
-    for key, (block, end_line) in group_blocks(request)[0].items():
+    for key, (block, end_line) in group_blocks(request, po_numbers)[0].items():
         tail = block[block.find(SUBTOTAL):] if SUBTOTAL in block else ""
         values, total = amounts(tail), amounts(end_line)
         out[key] = (values[0] if values else None, values[1] if len(values) > 1 else None,
