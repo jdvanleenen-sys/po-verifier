@@ -69,8 +69,10 @@ def po_names(po_numbers=None):
     """The house's own PO numbers (longest first), then any PO-shaped word, so a group under a PO
     the records do not give is still found, and refused. Builders write PO numbers their own way,
     spaces included ('OP 4471203')."""
-    known = sorted({normalise(p) for p in po_numbers or ()}, key=len, reverse=True)
-    return "|".join([re.escape(k) for k in known] + [PO_CHARS])
+    known = "|".join(re.escape(k) for k in sorted({normalise(p) for p in po_numbers or ()}, key=len, reverse=True))
+    # The PO-shaped word never starts where one of the house's own numbers starts, so the first
+    # part of 'KBH/2026/0091 Rev 02' is never taken for a PO of its own.
+    return f"(?:{known})|(?!(?:{known}))(?:{PO_CHARS})" if known else PO_CHARS
 
 
 def po_heading(po_numbers=None):

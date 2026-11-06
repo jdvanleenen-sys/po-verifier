@@ -78,7 +78,7 @@ class PoNumbersInAnyShape(unittest.TestCase):
     def test_read_back_rows_and_tax_rate_use_the_pos_read_number(self):
         rows, rates, _ = money.read_back(READ_BACK)
         self.assertEqual({r["po"] for r in rows}, {PO})
-        self.assertEqual(rates[PO], D("203.94") / D("1568.80"))
+        self.assertEqual(rates[PO], (D("0.13"),))
 
 
 class OneItemOnSeveralLines(unittest.TestCase):

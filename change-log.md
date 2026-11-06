@@ -1,5 +1,23 @@
 # Change log
 
+## 2026-11-05, twelve builders' PO styles, and two tax bugs they found
+`tests/po-styles/` holds twelve made-up builders, one per style a painter meets (Hyphen-style,
+Procore schedule of values, Buildertrend with markup, CoConstruct lump sum, JD Edwards extra PO,
+a combined two-PO print, a Quebec PO with GST and QST, a tax-inclusive PO, a QuickBooks PO, a
+legacy ERP PO with CR credits, an Excel template with a holdback, and the peer tester's PO).
+`tests/test_po_styles.py` runs each through stages 02 to 05 with the stages' own code and plants
+mistakes on each. Before the fixes below, 4 of the 12 failed. What they found:
+- A correct request was refused when a PO's tax was rounded to the cent: the gate took the rate as
+  tax over subtotal (12.99994% for a printed 13%), and check 3 compares the printed rate. The gate
+  now takes each tax line's printed percentage, where every line prints one and it gives the
+  amount printed; otherwise tax over subtotal, as before.
+- A PO with two taxes (GST and QST) was worked out at one combined rate, rounded once; the PO rounds
+  each tax on its own. $60.00 came to $8.98 tax instead of $8.99. Each tax is now rounded on its own.
+- A PO number with a space (`KBH/2026/0091 Rev 02`) had its first part taken for a PO of its own
+  (a bug in the change below, the same day). Fixed.
+A tax-inclusive PO is refused at the grid (tax-total), not guessed. 181 tests (was 172). The 13
+agent-made requests from 2026-11-04: the same 11 pass.
+
 ## 2026-11-05, a second builder's PO: PO numbers and rows read from the read-back
 A peer tester ran a made-up second builder (PO SRH-2026-0417, HST 13%, numbered lines 1.01 to 7.02,
 walls on four lines of one PO). It passed 01 to 04, and the money gate refused it with 37 problems,

@@ -1,0 +1,205 @@
+{
+  "about": "Made-up builders, painters and houses, one per PO style a painter meets. Not real jobs. Each style imitates, in spirit only, a system builders use (see README.md). Every PO line is read into a read-back row in order, PO by PO, then the extra items. 'cmp' false marks a row that is not a count Sam can set against the PO (a lump sum, a credit line, a different unit system). 'on' lists the rows Sam puts on the request. 'expect' is either 'request' or 'refused: <words the gate must say>'.",
+  "styles": [
+    {
+      "slug": "12-quarry-lane",
+      "imitates": "Hyphen SupplyPro-style trade PO, with a not-to-exceed EPO",
+      "builder": "Cobalt Ridge Homes", "painter": "Brushline Painting Ltd.", "vendor_no": "V20417",
+      "address": "12 Quarry Lane, Sampleton, AB T0X 0X0", "lot": "18, block 7", "measured": "2026-11-03",
+      "prices": {"Walls, 2 coats": ["SF", "1.75"], "Ceilings, flat": ["SF", "1.20"], "Railing, metal": ["LF", "40.00"]},
+      "layout": {"title": "PURCHASE ORDER", "po_label": "Builder's Order Number", "money": "dollar",
+                 "head": [["Account Name", "Brushline Painting Ltd."], ["Job", "CRH-03311807-12 Quarry Lane"], ["Lot/Block", "18/07"], ["Subdivision", "Quarry Ridge"], ["Plan/Elev/Swing", "2410-B-L"], ["Task", "6200 Interior Paint"], ["Requested Start Date", "10/14/2026"]],
+                 "cols": [["sku", "SKU"], ["desc", "Description"], ["qty", "Order"], ["received", "Received"], ["price", "Unit Price"], ["amount", "Total"]]},
+      "pos": [{"number": "CRH-03311807/014", "taxes": [["GST", "5"]], "lines": [
+        {"ref": "6200-110", "desc": "Paint walls - Finished Areas", "unit": "SF", "qty": "1450", "price": "1.75", "item": "Walls, 2 coats", "measured": "1490", "words": "walls 1490 sf"},
+        {"ref": "6200-140", "desc": "Ceilings flat", "unit": "SF", "qty": "1100", "price": "1.20", "item": "Ceilings, flat", "measured": "1100", "words": "ceilings 1100"},
+        {"ref": "6200-220", "desc": "Railing metal", "unit": "LF", "qty": "18", "price": "40.00", "item": "Railing, metal", "measured": "24", "words": "metal rail 24 ft"}]}],
+      "epos": [{"name": "CRH-03311807/031 EPO 01", "against": "CRH-03311807/014", "row": 3, "total": "120.00", "way": "pays Sam", "note": "Elevation varies from standard. $120.00 (Not to Exceed). No quantity."}],
+      "on": [1, 3], "expect": "request"
+    },
+    {
+      "slug": "40-larchmont-way",
+      "imitates": "Procore-style subcontract: schedule of values, amount-only lines, 10% retainage",
+      "builder": "Larchmont Builders", "painter": "Northgate Coatings", "vendor_no": "NC-118",
+      "address": "40 Larchmont Way, Sampleton, ON N0X 0X0", "lot": "9", "measured": "2026-11-02",
+      "prices": {"Interior repaint, whole house": ["Floor SF", "2.60"], "Railing, wood": ["LF", "36.00"], "Garage, prime and paint": ["SF", "1.60"]},
+      "layout": {"title": "SUBCONTRACT - SCHEDULE OF VALUES", "po_label": "Commitment #", "money": "dollar",
+                 "head": [["Project", "2214 - Larchmont Phase 2"], ["Location", "Lot 9, 40 Larchmont Way"], ["Contract Company", "Northgate Coatings"], ["Status", "Approved"]],
+                 "cols": [["ref", "Cost Code"], ["desc", "Description"], ["amount", "Scheduled Value"], ["retainage", "Retainage %"]],
+                 "after_total": [["Less retainage 10%", "-576.30"], ["Amount payable", "5186.70"]]},
+      "pos": [{"number": "SC-2214-007", "taxes": [["HST", "13"]], "lines": [
+        {"ref": "09 91 23-01", "desc": "Interior painting, main and upper floors", "unit": "LS", "qty": "1", "price": "4200.00", "item": "Interior repaint, whole house", "measured": "1650", "words": "house 1650 sf floor", "cmp": false, "why": "lump sum"},
+        {"ref": "09 91 23-02", "desc": "Stair stringers and railing", "unit": "LS", "qty": "1", "price": "900.00", "item": "Railing, wood", "measured": "20", "words": "rail 20 ft", "cmp": false, "why": "lump sum"}]}],
+      "extras": [{"item": "Garage, prime and paint", "measured": "450", "words": "garage 450 sf primed and painted, not on PO"}],
+      "on": [3], "expect": "request"
+    },
+    {
+      "slug": "7-fieldstone-court",
+      "imitates": "Buildertrend-style PO with a markup column and a variance PO linked to it",
+      "builder": "Fieldstone Living", "painter": "Clearline Interiors", "vendor_no": "4471",
+      "address": "7 Fieldstone Court, Sampleton, AB T0X 0X0", "lot": "31, block 2", "measured": "2026-11-04",
+      "prices": {"Walls, 2 coats": ["SF", "1.75"], "8' doors and trim": ["EA", "60.00"], "Accent wall": ["EA", "225.00"]},
+      "layout": {"title": "Purchase Order", "po_label": "PO #", "money": "dollar",
+                 "head": [["Job", "Fieldstone Ct Lot 31"], ["Assigned To", "Clearline Interiors"], ["Scope of Work", "Paint all interior walls 2 coats, 14 doors and trim, per plan. 3 bedrooms, 2 baths."]],
+                 "cols": [["ref", "Cost Code"], ["desc", "Title"], ["qty", "Qty"], ["unit", "Unit"], ["printed_price", "Unit Cost"], ["markup", "Markup"], ["amount", "Total"]]},
+      "pos": [{"number": "1047-01", "taxes": [["GST", "5"]], "lines": [
+          {"ref": "09-100", "desc": "Interior walls", "unit": "SF", "qty": "1600", "price": "1.76", "printed_price": "1.60", "markup": "10%", "item": "Walls, 2 coats", "measured": "1600", "words": "walls 1600"},
+          {"ref": "09-120", "desc": "8' doors and trim", "unit": "EA", "qty": "14", "price": "60.50", "printed_price": "55.00", "markup": "10%", "item": "8' doors and trim", "measured": "16", "words": "8 ft doors x16"}]},
+        {"number": "1047-02", "title_note": "Variance PO - linked to 1047-01. Variance code 13 - Takeoff error.", "taxes": [["GST", "5"]], "lines": [
+          {"ref": "09-150", "desc": "Accent wall, dining", "unit": "EA", "qty": "1", "price": "220.00", "printed_price": "200.00", "markup": "10%", "item": "Accent wall", "measured": "2", "words": "accent walls 2 (dining and den)"}]}],
+      "on": [2, 3], "expect": "request"
+    },
+    {
+      "slug": "3-harrow-pine-road",
+      "imitates": "CoConstruct-style PO: title, inclusions and exclusions, one lump-sum line",
+      "builder": "Harrow & Pine Homes", "painter": "Tidewater Painting", "vendor_no": "TW-07",
+      "address": "3 Harrow Pine Road, Sampleton, AB T0X 0X0", "lot": "4", "measured": "2026-11-01",
+      "prices": {"Interior repaint, whole house": ["Floor SF", "2.60"], "Pocket door": ["EA", "45.00"], "Skylights": ["EA", "90.00"]},
+      "layout": {"title": "Purchase Order: Interior Paint", "po_label": "PO Number", "money": "dollar",
+                 "head": [["Issue To", "Tidewater Painting"], ["Inclusions", "2 coats walls, 3 bedrooms + hall, 1 coat ceilings"], ["Exclusions", "Garage, exterior, 2 existing doors"]],
+                 "cols": [["ref", "#"], ["desc", "Description"], ["qty", "Qty"], ["unit", "Unit"], ["price", "Unit Cost"], ["amount", "Amount"]]},
+      "pos": [{"number": "HP-0882", "taxes": [["GST", "5"]], "lines": [
+        {"ref": "1", "desc": "Interior repaint, 2 coats, 3 bedrooms + hall (per Inclusions)", "unit": "LS", "qty": "1", "price": "2400.00", "item": "Interior repaint, whole house", "measured": "1180", "words": "house 1180 sf", "cmp": false, "why": "lump sum"},
+        {"ref": "2", "desc": "Pocket doors", "unit": "EA", "qty": "2", "price": "45.00", "item": "Pocket door", "measured": "3", "words": "pocket doors 3"},
+        {"ref": "3", "desc": "Skylights", "unit": "EA", "qty": "1", "price": "90.00", "item": "Skylights", "measured": "1", "words": "skylight 1"}]}],
+      "on": [2], "expect": "request"
+    },
+    {
+      "slug": "88-ostrander-drive",
+      "imitates": "JD Edwards-style extra PO: cost code, cost type, option number; GST and PST on two lines (BC)",
+      "builder": "Ostrander Communities", "painter": "Coastline Finishes", "vendor_no": "100482",
+      "address": "88 Ostrander Drive, Sampleton, BC V0X 0X0", "lot": "112", "measured": "2026-10-30",
+      "prices": {"Walls, 2 coats": ["SF", "1.75"], "Stairwell": ["Incl.", "0"], "Headers": ["EA", "20.00"]},
+      "layout": {"title": "EXTRA PURCHASE ORDER", "po_label": "Order Number / Type", "money": "dollar",
+                 "head": [["Community", "OST - Ostrander Hills"], ["Lot", "112"], ["Plan / Elev", "B204 / C"], ["Source Doc Type", "OP"]],
+                 "cols": [["ref", "Cost Code / Type"], ["sku", "Item No."], ["option", "Option No."], ["desc", "Description"], ["qty", "Qty"], ["unit", "UOM"], ["price", "Unit Cost"], ["amount", "Extended"]]},
+      "pos": [{"number": "OP 4471203", "taxes": [["GST", "5"], ["PST BC", "7"]], "lines": [
+        {"ref": "09-910 L", "sku": "PNT-WALL", "option": "-", "desc": "Paint walls", "unit": "SF", "qty": "1800", "price": "1.75", "item": "Walls, 2 coats", "measured": "1860", "words": "walls 1860"},
+        {"ref": "09-910 L", "sku": "PNT-STAIR", "option": "OPT-114", "desc": "Stairwell", "unit": "Incl.", "qty": "1", "price": "0.00", "item": "Stairwell", "measured": "1", "words": "stairwell done"},
+        {"ref": "09-920 L", "sku": "PNT-HDR", "option": "-", "desc": "Headers", "unit": "EA", "qty": "6", "price": "20.00", "item": "Headers", "measured": "6", "words": "headers 6"}]}],
+      "on": [1], "expect": "request"
+    },
+    {
+      "slug": "15-belvoir-bend",
+      "imitates": "Infor-style combined print: one document, lines from two POs; GST and PST (SK)",
+      "builder": "Belvoir Homes", "painter": "Prairie Brush Co.", "vendor_no": "PB-2",
+      "address": "15 Belvoir Bend, Sampleton, SK S0X 0X0", "lot": "6, block 1", "measured": "2026-11-02",
+      "prices": {"Walls, 2 coats": ["SF", "1.75"], "Ceilings, flat": ["SF", "1.20"], "Railing, wood": ["LF", "38.00"]},
+      "layout": {"title": "PURCHASE ORDER (combined print)", "po_label": "Source POs", "money": "dollar", "combined": true,
+                 "head": [["Ship To", "Lot 6 Blk 1, 15 Belvoir Bend"], ["Vendor", "Prairie Brush Co."]],
+                 "cols": [["ref", "Line"], ["desc", "Description"], ["qty", "Qty"], ["unit", "U/M"], ["price", "Price"], ["amount", "Ext. Price"]]},
+      "pos": [{"number": "PO88213", "taxes": [["GST", "5"], ["PST SK", "6"]], "lines": [
+          {"ref": "0001_PO88213", "desc": "Walls main and upper", "unit": "SF", "qty": "1500", "price": "1.75", "item": "Walls, 2 coats", "measured": "1500", "words": "walls 1500"},
+          {"ref": "0002_PO88213", "desc": "Ceilings", "unit": "SF", "qty": "1200", "price": "1.20", "item": "Ceilings, flat", "measured": "1260", "words": "ceilings 1260"}]},
+        {"number": "PO88214", "taxes": [["GST", "5"], ["PST SK", "6"]], "lines": [
+          {"ref": "0001_PO88214", "desc": "Stair railing, wood", "unit": "LF", "qty": "20", "price": "38.00", "item": "Railing, wood", "measured": "16", "words": "wood rail 16 ft"}]}],
+      "on": [2, 3], "expect": "request"
+    },
+    {
+      "slug": "9-tamarack-rue",
+      "imitates": "Quebec PO in French and English: decimal commas, m2, GST and QST on two lines",
+      "builder": "Tamarack Maison", "painter": "Peinture Laval", "vendor_no": "F-3301",
+      "address": "9 rue Tamarack, Sampleton, QC J0X 0X0", "lot": "2 214 567", "measured": "2026-11-03",
+      "prices": {"Walls, 2 coats": ["SF", "1.75"], "8' doors and trim": ["EA", "60.00"]},
+      "layout": {"title": "BON DE COMMANDE / PURCHASE ORDER", "po_label": "No de commande / PO No.", "money": "fr",
+                 "head": [["Chantier / Job site", "9 rue Tamarack"], ["Lot", "2 214 567"], ["Modele / Model", "Le Boreal"], ["No TPS / GST No.", "123456789 RT0001"], ["No TVQ / QST No.", "1234567891 TQ0001"]],
+                 "cols": [["ref", "Ligne"], ["desc", "Description"], ["qty", "Qte"], ["unit", "Unite"], ["price", "Prix unitaire"], ["amount", "Montant"]]},
+      "pos": [{"number": "TM-26-00412", "taxes": [["TPS / GST", "5"], ["TVQ / QST", "9.975"]], "lines": [
+        {"ref": "1", "desc": "Murs, 2 couches / Walls, 2 coats", "unit": "m2", "qty": "167", "price": "18.84", "item": "Walls, 2 coats", "measured": "1800", "words": "walls 1800 sf", "cmp": false, "why": "PO counts square metres, Sam square feet"},
+        {"ref": "2", "desc": "Portes 8' et cadrage / 8' doors and trim", "unit": "UN", "qty": "10", "price": "60.00", "item": "8' doors and trim", "measured": "11", "words": "8ft doors 11"}]}],
+      "on": [2], "expect": "request"
+    },
+    {
+      "slug": "21-glenhollow-lane",
+      "imitates": "Xero-style small-builder PO with amounts tax inclusive",
+      "builder": "Glenhollow Homes", "painter": "Maple Coat Painting", "vendor_no": "MC1",
+      "address": "21 Glenhollow Lane, Sampleton, ON N0X 0X0", "lot": "21", "measured": "2026-11-04",
+      "prices": {"Walls, 2 coats": ["SF", "1.75"]},
+      "layout": {"title": "PURCHASE ORDER", "po_label": "Order Number", "money": "dollar", "inclusive": true,
+                 "head": [["Delivery Address", "21 Glenhollow Lane"], ["Amounts are", "Tax Inclusive"]],
+                 "cols": [["sku", "Item"], ["desc", "Description"], ["qty", "Quantity"], ["price", "Unit Price"], ["taxrate", "Tax Rate"], ["amount", "Amount CAD"]]},
+      "pos": [{"number": "PO-0317", "taxes": [["HST", "13"]], "lines": [
+        {"ref": "WALL", "sku": "WALL", "desc": "Paint walls 2 coats", "unit": "SF", "qty": "1200", "price": "1.98", "item": "Walls, 2 coats", "measured": "1250", "words": "walls 1250"}]}],
+      "on": [1], "expect": "refused: tax-total"
+    },
+    {
+      "slug": "5521-prairie-gate",
+      "imitates": "QuickBooks-style PO: a bare PO number, one combined GST/PST line (MB), walls on four lines",
+      "builder": "Prairie Gate Builders", "painter": "Red River Painting", "vendor_no": "",
+      "address": "60 Prairie Gate, Sampleton, MB R0X 0X0", "lot": "14", "measured": "2026-11-02",
+      "prices": {"Walls, 2 coats": ["SF", "1.75"], "Garage, prime and paint": ["SF", "1.60"], "8' doors and trim": ["EA", "60.00"]},
+      "layout": {"title": "Purchase Order", "po_label": "P.O. NO.", "money": "dollar",
+                 "head": [["SHIP TO", "Lot 14, 60 Prairie Gate"], ["VENDOR", "Red River Painting"]],
+                 "cols": [["sku", "PRODUCT/SERVICE"], ["desc", "DESCRIPTION"], ["qty", "QTY"], ["price", "RATE"], ["amount", "AMOUNT"], ["taxrate", "TAX"]]},
+      "pos": [{"number": "5521", "taxes": [["GST/PST MB", "12"]], "lines": [
+        {"ref": "Walls - Main", "sku": "Paint:Walls", "desc": "Walls - Main", "unit": "SF", "qty": "900", "price": "1.75", "item": "Walls, 2 coats", "measured": "940", "words": "main walls 940"},
+        {"ref": "Walls - Upper", "sku": "Paint:Walls", "desc": "Walls - Upper", "unit": "SF", "qty": "1000", "price": "1.75", "item": "Walls, 2 coats", "measured": "1000", "words": "upper walls 1000"},
+        {"ref": "Walls - Basement", "sku": "Paint:Walls", "desc": "Walls - Basement", "unit": "SF", "qty": "700", "price": "1.75", "item": "Walls, 2 coats", "measured": "760", "words": "bsmt walls 760"},
+        {"ref": "Walls - Garage", "sku": "Paint:Garage", "desc": "Walls - Garage", "unit": "SF", "qty": "400", "price": "1.60", "item": "Garage, prime and paint", "measured": "400", "words": "garage 400"},
+        {"ref": "Doors", "sku": "Paint:Doors", "desc": "8' doors and trim", "unit": "EA", "qty": "12", "price": "60.00", "item": "8' doors and trim", "measured": "12", "words": "doors 12"}]}],
+      "on": [1, 3], "expect": "request"
+    },
+    {
+      "slug": "4-kestrel-bay",
+      "imitates": "Legacy ERP PO (Atlantic): revision suffix, DD/MM/YYYY, SQ FT, no dollar signs, a CR credit line",
+      "builder": "Kestrel Bay Homes", "painter": "Harbourside Painters", "vendor_no": "000317",
+      "address": "4 Kestrel Bay, Sampleton, NS B0X 0X0", "lot": "27", "measured": "2026-11-03",
+      "prices": {"Walls, 2 coats": ["SF", "1.75"], "Ceilings, flat": ["SF", "1.20"], "Touch-up, flat rate": ["EA", "500.00"]},
+      "layout": {"title": "PURCHASE ORDER", "po_label": "P/O NO.", "money": "plain", "dates": "dmy",
+                 "head": [["SUPER", "R. MACINNIS"], ["JOB", "KB-027 4 KESTREL BAY"], ["ORDER DATE", "28/10/2026"]],
+                 "cols": [["ref", "LN"], ["desc", "DESCRIPTION"], ["qty", "QTY"], ["unit", "UOM"], ["price", "UNIT PRICE"], ["amount", "EXTENSION"]]},
+      "pos": [{"number": "KBH/2026/0091 Rev 02", "taxes": [["HST", "15"]], "lines": [
+        {"ref": "010", "desc": "PAINT WALLS 2 COATS", "unit": "SQ FT", "qty": "1300", "price": "1.75", "item": "Walls, 2 coats", "measured": "1350", "words": "walls 1350"},
+        {"ref": "020", "desc": "PAINT CEILINGS", "unit": "SQ FT", "qty": "1000", "price": "1.20", "item": "Ceilings, flat", "measured": "1000", "words": "ceilings 1000"},
+        {"ref": "030", "desc": "CREDIT - TOUCH-UP BY OTHERS", "unit": "EA", "qty": "-1", "price": "500.00", "item": "Touch-up, flat rate", "measured": "0", "words": "no touch-up, others did it", "cmp": false, "why": "a credit line, not a count", "confirmed": true}]}],
+      "on": [1], "expect": "request"
+    },
+    {
+      "slug": "118-summit-ash-street",
+      "imitates": "Excel or Word template PO: line numbers 1.1/2.1, a discount row, a 10% holdback, no lot",
+      "builder": "Summit Ash Developments", "painter": "Foothills Painting", "vendor_no": "FP-9",
+      "address": "118 Summit Ash Street, Sampleton, AB T0X 0X0", "lot": null, "measured": "2026-11-04",
+      "prices": {"Walls, 2 coats": ["SF", "1.75"], "Ceilings, flat": ["SF", "1.20"], "Railing, metal": ["LF", "40.00"]},
+      "layout": {"title": "PURCHASE ORDER", "po_label": "PO No.", "money": "dollar", "credit": "parens",
+                 "head": [["Job Address", "118 Summit Ash Street"], ["Authorized By", "K. Olsen, Nov 5/26"]],
+                 "cols": [["ref", "Line No."], ["desc", "Description"], ["qty", "Qty"], ["unit", "Unit"], ["price", "Rate"], ["amount", "Amount"]],
+                 "after_total": [["Holdback 10%", "-420.00"], ["Payable on completion", "3780.00"]]},
+      "pos": [{"number": "SAD-PO-26-118-A", "taxes": [["GST", "5"]], "lines": [
+        {"ref": "1.1", "desc": "Walls, main floor", "unit": "SF", "qty": "1400", "price": "1.75", "item": "Walls, 2 coats", "measured": "1460", "words": "walls 1460"},
+        {"ref": "1.2", "desc": "Ceilings, main floor", "unit": "SF", "qty": "1000", "price": "1.20", "item": "Ceilings, flat", "measured": "1000", "words": "ceilings 1000"},
+        {"ref": "2.1", "desc": "Railing, metal", "unit": "LF", "qty": "15", "price": "40.00", "item": "Railing, metal", "measured": "15", "words": "rail 15"},
+        {"ref": "3.1", "desc": "Volume discount", "unit": "", "qty": "1", "price": "-250.00", "item": null, "measured": null, "words": "nothing measured for the discount"}]}],
+      "on": [1], "expect": "request"
+    },
+    {
+      "slug": "27-birchwood-crescent",
+      "imitates": "A peer tester's made-up builder PO (Summit Ridge Homes): numbered lines, one item on many lines, HST 13%",
+      "builder": "Summit Ridge Homes Ltd.", "painter": "ClearCoat Painting Inc.", "vendor_no": "",
+      "address": "27 Birchwood Crescent, Waterloo, ON", "lot": "14", "measured": "2026-11-04",
+      "pdf": {"po": "PO_SRH-2026-0417_Summit_Ridge_to_ClearCoat.pdf", "notes": "Painter_Checklist_SRH-2026-0417.pdf"},
+      "prices": {"Walls": ["SF", "1.85"], "Ceiling": ["SF", "1.40"], "Baseboard": ["LF", "2.25"], "Standard door": ["EA", "95.00"], "Bifold door": ["EA", "110.00"], "Door casing": ["EA", "40.00"], "Window casing": ["EA", "45.00"], "Railing": ["LF", "18.00"]},
+      "pos": [{"number": "SRH-2026-0417", "taxes": [["HST", "13"]], "lines": [
+        {"ref": "1.01", "desc": "Living Room Walls", "unit": "SF", "qty": "480", "price": "1.85", "item": "Walls", "measured": "480", "words": "480"},
+        {"ref": "1.02", "desc": "Living Room Ceiling", "unit": "SF", "qty": "224", "price": "1.40", "item": "Ceiling", "measured": "224", "words": "224"},
+        {"ref": "1.03", "desc": "Living Room Baseboard", "unit": "LF", "qty": "57", "price": "2.25", "item": "Baseboard", "measured": "57", "words": "57"},
+        {"ref": "2.01", "desc": "Kitchen / Eating Walls", "unit": "SF", "qty": "416", "price": "1.85", "item": "Walls", "measured": "416", "words": "416"},
+        {"ref": "2.02", "desc": "Kitchen / Eating Ceiling", "unit": "SF", "qty": "168", "price": "1.40", "item": "Ceiling", "measured": "168", "words": "168"},
+        {"ref": "2.03", "desc": "Kitchen / Eating Baseboard", "unit": "LF", "qty": "46", "price": "2.25", "item": "Baseboard", "measured": "46", "words": "46, cabinet runs excluded"},
+        {"ref": "3.01", "desc": "Bedroom Walls", "unit": "SF", "qty": "368", "price": "1.85", "item": "Walls", "measured": "392", "words": "392, room measures 12' x 12'"},
+        {"ref": "3.02", "desc": "Bedroom Ceiling", "unit": "SF", "qty": "132", "price": "1.40", "item": "Ceiling", "measured": "132", "words": "132"},
+        {"ref": "3.03", "desc": "Bedroom Baseboard", "unit": "LF", "qty": "41", "price": "2.25", "item": "Baseboard", "measured": "41", "words": "41"},
+        {"ref": "4.01", "desc": "Bathroom Walls", "unit": "SF", "qty": "224", "price": "1.85", "item": "Walls", "measured": "224", "words": "224"},
+        {"ref": "4.02", "desc": "Bathroom Ceiling", "unit": "SF", "qty": "48", "price": "1.40", "item": "Ceiling", "measured": "48", "words": "48"},
+        {"ref": "4.03", "desc": "Bathroom Baseboard", "unit": "LF", "qty": "22", "price": "2.25", "item": "Baseboard", "measured": "22", "words": "22"},
+        {"ref": "5.01", "desc": "Front entry door, interior face", "unit": "EA", "qty": "1", "price": "95.00", "item": "Standard door", "measured": "1", "words": "1"},
+        {"ref": "5.02", "desc": "Bedroom passage door", "unit": "EA", "qty": "1", "price": "95.00", "item": "Standard door", "measured": "1", "words": "1"},
+        {"ref": "5.03", "desc": "Bathroom passage door", "unit": "EA", "qty": "1", "price": "95.00", "item": "Standard door", "measured": "1", "words": "1"},
+        {"ref": "5.04", "desc": "Bedroom closet bifold", "unit": "EA", "qty": "1", "price": "110.00", "item": "Bifold door", "measured": "1", "words": "1"},
+        {"ref": "6.01", "desc": "Door casings", "unit": "EA", "qty": "4", "price": "40.00", "item": "Door casing", "measured": "4", "words": "4"},
+        {"ref": "6.02", "desc": "Window casings", "unit": "EA", "qty": "5", "price": "45.00", "item": "Window casing", "measured": "5", "words": "5"},
+        {"ref": "7.01", "desc": "Interior basement stair railing + spindles", "unit": "LF", "qty": "10", "price": "18.00", "item": "Railing", "measured": "10", "words": "10"},
+        {"ref": "7.02", "desc": "Front porch railing (exterior)", "unit": "LF", "qty": "12", "price": "18.00", "item": "Railing", "measured": "14", "words": "14, railing wraps to step"}]}],
+      "on": [7, 20], "expect": "request"
+    }
+  ]
+}

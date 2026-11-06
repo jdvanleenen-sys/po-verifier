@@ -42,6 +42,25 @@ def takes_from_sam(which_way):
     return -1 if "back charge" in text and "other trade" not in text else 1
 
 
+TAX_PART = re.compile(r"(\d+(?:\.\d+)?)\s?%")
+TAX_AMOUNT = re.compile(r"\$[\d,]+\.\d\d")
+
+
+def printed_rates(subtotal, tax_cell):
+    """Each tax the PO charges, as a fraction: (0.05,) for GST, (0.05, 0.09975) for GST and QST.
+
+    Where every tax line prints its percentage and that percentage of the subtotal is the amount it
+    prints, the percentages are used, and each tax is worked out and rounded on its own, as the PO
+    does. Otherwise the one rate the printed figures give: all the tax over the subtotal."""
+    parts = [(TAX_PART.search(p), to_amount(a.group(0))) for p in tax_cell.split(";") if (a := TAX_AMOUNT.search(p))]
+    charged = [(pct, amount) for pct, amount in parts if amount]
+    if charged and all(pct for pct, _ in charged):
+        fractions = tuple(Decimal(pct.group(1)) / 100 for pct, _ in charged)
+        if all((subtotal * f).quantize(CENT, ROUND_HALF_UP) == amount for f, (_, amount) in zip(fractions, charged)):
+            return fractions
+    return (sum((amount for _, amount in parts), Decimal(0)) / subtotal,)
+
+
 def pos_listed(found):
     """The PO numbers as the read-back's "POs read" table writes them."""
     return {c for r in section(found, "pos read") if (c := column(r, "po number").strip()) and c.lower() != NO_PO}
@@ -64,10 +83,8 @@ def read_back(text):
     rates = {}
     for r in section(found, "pos read"):
         subtotal = to_amount(column(r, "subtotal"))
-        tax = sum((to_amount(m.group(0)) for m in re.finditer(r"\$[\d,]+\.\d\d", column(r, "tax lines"))),
-                  Decimal(0))
         if subtotal:
-            rates[po_key(column(r, "po number"), known)] = tax / subtotal
+            rates[po_key(column(r, "po number"), known)] = printed_rates(subtotal, column(r, "tax lines"))
     epos = [{
         "po": po_key(column(r, "po it is against"), known),
         "pays_for": column(r, "item it pays for").lower(),
@@ -198,15 +215,15 @@ def row_label(item, num, rows, lines):
 
 
 def group_rate(po, rates, problems):
-    """Tax for a PO group comes from that PO's own printed figures; 'no PO' needs one house rate."""
+    """The taxes for a PO group, from that PO's own printed figures; 'no PO' needs one house rate."""
     if po != NO_PO:
         if po not in rates:
             problems.append(f"no printed tax found for {po} in the read-back")
-        return rates.get(po, Decimal(0))
+        return rates.get(po, (Decimal(0),))
     distinct = set(rates.values())
     if len(distinct) != 1:
         problems.append("the POs carry different tax rates, so the 'no PO' group needs Sam to say which")
-        return Decimal(0)
+        return (Decimal(0),)
     return distinct.pop()
 
 
@@ -239,10 +256,10 @@ def expected_request(records):
     house = [Decimal(0), Decimal(0)]
     for po, rows in groups.items():
         before = sum((v["difference"] for _, _, v in rows), Decimal(0))
-        rate = group_rate(po, rates, problems)
-        tax = (before * rate).quantize(CENT, ROUND_HALF_UP)
+        taxes = group_rate(po, rates, problems)
+        tax = sum(((before * t).quantize(CENT, ROUND_HALF_UP) for t in taxes), Decimal(0))
         out["groups"][po] = {"before": before, "tax": tax, "total": before + tax}
-        out.setdefault("rates", {})[po] = rate
+        out.setdefault("rates", {})[po] = sum(taxes, Decimal(0))
         out["rows_on"] += [{"po": po, "item": i, "row": n, "label": row_label(i, n, rows, lines), **v}
                            for i, n, v in rows]
         house[0] += before
