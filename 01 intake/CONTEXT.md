@@ -5,8 +5,8 @@ Everything about one house lands here first, exactly as Sam received it.
 
 ## What comes in
 - The builder's POs for the house.
-- Any EPOs the builder has already issued for it. Sam asks for a VPO; the builder's system
-  issues it as an EPO (an extra PO).
+- Any EPOs the builder has already issued for it. An EPO (extra purchase order) and a VPO
+  (variance purchase order) are the same document: Sam asks for one, and the builder issues it.
 - Sam's measurements from site.
 
 ## Who puts it here, and how

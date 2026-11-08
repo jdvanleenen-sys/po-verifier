@@ -1,5 +1,12 @@
 # Change log
 
+## 2026-11-08, VPO and EPO are the same document
+Jeff: a VPO is a variance purchase order and an EPO is an extra purchase order, and the two mean
+exactly the same thing. `CONTEXT.md` (How things are named) and `01 intake/CONTEXT.md` said a VPO
+was the request and an EPO the builder's document; both now say they are two names for one
+document. No code changed. Not changed: the test house `tests/po-styles/7-fieldstone-court`, where
+a Buildertrend "variance PO" is a second full PO with lines, not an EPO; that is that builder's
+usage, kept as a test.
 ## 2026-11-08, two grid gaps found on the first real house
 Running a real painter's house (kept private, outside this repo) found two ways a missing fact
 could pass as a checked one. Both now refused by code; 6 new tests in `tests/test_grid_gaps.py`.
