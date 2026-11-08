@@ -55,8 +55,9 @@ contractor is a second copy of the folder, set up through `00 setup`.
 ## How things are named
 - **PO number:** the ORDER # printed on a PO. It is the job number, a slash, and a running number.
   It goes on every row and is never dropped.
-- **EPO:** the builder's extra PO. It has a total and no lines, and names the PO it belongs to.
-- **VPO:** what Sam asks for. The site super writes it as an EPO.
+- **EPO and VPO:** two names for the same document. EPO is an extra purchase order; VPO is a
+  variance purchase order. It has a total and no lines, and names the PO it belongs to. Sam asks
+  for one; the site super writes it in the builder's system.
 
 ## What the numbers mean
 - Variance is measured value minus PO amount. A plus is money owed to Sam. A minus is a credit

@@ -1,5 +1,13 @@
 # Change log
 
+## 2026-11-08, VPO and EPO are the same document
+Jeff: a VPO is a variance purchase order and an EPO is an extra purchase order, and the two mean
+exactly the same thing. `CONTEXT.md` (How things are named) and `01 intake/CONTEXT.md` said a VPO
+was the request and an EPO the builder's document; both now say they are two names for one
+document. No code changed. Not changed: the test house `tests/po-styles/7-fieldstone-court`, where
+a Buildertrend "variance PO" is a second full PO with lines, not an EPO; that is that builder's
+usage, kept as a test.
+
 ## 2026-11-05, cold runs on three PO styles; a checklist PDF was taken for a PO
 `tests/po-styles/make_styles.py` prints each style's PO in its builder's own layout, and
 `tests/cold_run.py` sets up and scores those houses. Three fresh agents ran Tamarack (French, m2,
