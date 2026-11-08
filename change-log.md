@@ -1,5 +1,14 @@
 # Change log
 
+## 2026-11-08, work on no PO can go on a PO's EPO
+Jeff: the main PO carries the whole list of work; the other POs are for prime and touch-ups. Extras
+belong on the main PO's one EPO, each on its own line so the builder can track it. The review now
+has an "EPO goes on" column: Sam names the PO for a row on no PO, and `money.expected_request`
+puts that row in that PO's group (`epo_targets`). Blank keeps the old "No PO" group. It refuses a
+PO not in the house, and moving a row already on one PO to another. The before-tax box still counts
+a moved extra as "on no PO" (`verify.box_text_problems` reads the row's origin). 6 tests in
+`tests/test_extras_on_po.py`; 196 tests. `money.py` is at 298 lines: split it before the next change.
+
 ## 2026-11-08, VPO and EPO are the same document
 Jeff: a VPO is a variance purchase order and an EPO is an extra purchase order, and the two mean
 exactly the same thing. `CONTEXT.md` (How things are named) and `01 intake/CONTEXT.md` said a VPO

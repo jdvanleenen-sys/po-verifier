@@ -201,6 +201,29 @@ def decisions(text, variances, problems):
     return chosen
 
 
+def epo_targets(text, chosen, house_pos, problems):
+    """The PO whose EPO each chosen row goes on, from the review's 'EPO goes on' column.
+
+    Blank means the row's own PO (a row on no PO stays in the "No PO" group). Only a row on no PO
+    may be named onto a PO, and only a PO in this house.
+    """
+    targets = {}
+    for r in section(tables(text), ""):
+        named = column(r, "epo goes on").strip()
+        num, item = column(r, "row").strip() or None, column(r, "item").strip().lower()
+        keys = [k for k in chosen if k[1] == item and num in (None, k[2])]
+        if not named or len(keys) != 1:
+            continue
+        key, target = keys[0], po_key(named, house_pos)
+        if target not in house_pos:
+            problems.append(f"review row '{item}' names {named} under 'EPO goes on', which is not a PO in this house")
+        elif key[0] != NO_PO and target != key[0]:
+            problems.append(f"review row '{item}' is on PO {key[0]}; only work on no PO can go on another PO's EPO")
+        else:
+            targets[key] = target
+    return targets
+
+
 LINE_REF = re.compile(r"^\(?(\d+(?:\.\d+)*)\)?\s")
 
 
@@ -248,10 +271,12 @@ def expected_request(records):
     set_aside = grid_check.not_comparable_rows(grid_text)
     variances = variance_rows(records["variance"], rb_rows, epos, problems, set_aside)
     chosen = decisions(records["review"], variances, problems)
+    targets = epo_targets(records["review"], chosen, set(rates), problems)
     groups, lines = {}, {rb["num"]: rb["line"] for rb in rb_rows}
     for (po, item, num), on in chosen.items():
         if on:
-            groups.setdefault(po, []).append((item, num, variances[(po, item, num)]))
+            group = targets.get((po, item, num), po)
+            groups.setdefault(group, []).append((item, num, {**variances[(po, item, num)], "on_po": po != NO_PO}))
     out = {"rows_on": [], "rows_off": [k[1] for k, on in chosen.items() if not on], "groups": {}}
     house = [Decimal(0), Decimal(0)]
     for po, rows in groups.items():

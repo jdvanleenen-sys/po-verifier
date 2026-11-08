@@ -170,7 +170,7 @@ def box_text_problems(text, expected):
     if start < 0 or end < start:
         return []
     box, rows, problems = text[start:end], expected.get("rows_on"), []
-    on_po = sum(1 for r in rows or [] if r["po"] != "none")
+    on_po = sum(1 for r in rows or [] if r.get("on_po", r["po"] != "none"))
     counts = [] if rows is None else [(r"(\d+) items?\b", len(rows), "items"),
                                       (r"(\d+) on (?:a )?po\b", on_po, "on a PO"),
                                       (r"(\d+) on no po\b", len(rows) - on_po, "on no PO")]

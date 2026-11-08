@@ -30,6 +30,13 @@ One table for the house. He replies yes to accept it as shown, or names the rows
 change. The AI updates the table and shows it again until he says yes. Only a plain yes closes
 this stage. "I don't know" leaves it open; it is not a yes to the rows as shown.
 
+## Work on no PO: which EPO it goes on
+A row on no PO goes on the request in its own "No PO" group unless Sam names a PO for it in the
+"EPO goes on" column. Then it prints inside that PO's group, on its own line with PO qty 0, and
+that PO's EPO total includes it. Some builders put every extra on the main PO, the one that carries
+the whole list of work (Fifth Avenue Homes does: Jeff, 2026-11-08). Ask Sam which PO; never pick it
+for him. Only a row on no PO can be named onto a PO, and only a PO in this house.
+
 ## What goes out
 `<house>/review-N.md`, copied from `../templates/review.md`, holding the variance file it came from, each row with Sam's decision, the reason for any flagged row he took
 off, his yes, his name and the date. Each review makes one request. The request stage
