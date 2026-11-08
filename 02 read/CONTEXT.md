@@ -136,7 +136,8 @@ check that was skipped shows as a blank cell, and a blank cell is refused.
    read, Rows or Extra items changed after the grid was built.
 
 The house leaves this stage only when `grid.py check <house> --final` passes, which also refuses
-any cell still marked `ask Sam`. Sam's answers go into a new numbered read-back with its own grid.
+any cell still marked `ask Sam`, any warning item with no answer from Sam, and any row marked
+"not on the price list" that the warning table leaves out. Sam's answers go into a new numbered read-back with its own grid.
 The grid is not Sam's to approve; it is the record of what was checked before he saw the table.
 
 ## At risk for this house

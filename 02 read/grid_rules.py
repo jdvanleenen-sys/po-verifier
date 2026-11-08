@@ -77,14 +77,19 @@ def item_state(row):
 
 
 def measured_text(row):
-    """Sam's size or count as written: the first number after his quoted words, or in the second ';' part."""
+    """Sam's size or count as written: the first number after his quoted words, or, without quotes,
+    the number that opens the second ';' part (the size slot), as in "stringers; 34 ft".
+
+    Without quotes, a number further in, such as "not in notes; see row 13", is a pointer or a
+    remark, never a measurement. With quotes, the first number after them is still taken, because
+    read-backs write the size as '"8' doors x12"; count 12'; so never put a row number there.
+    """
     text = cell(row, "sam measured")
     if '"' in text:
-        rest = text[text.rindex('"') + 1:]
+        found = NUMBER.search(text[text.rindex('"') + 1:])
     else:
         parts = text.split(";")
-        rest = parts[1] if len(parts) > 1 else parts[0]
-    found = NUMBER.search(rest)
+        found = NUMBER.match(parts[1].strip()) if len(parts) > 1 else None
     return found.group(0) if found else None
 
 

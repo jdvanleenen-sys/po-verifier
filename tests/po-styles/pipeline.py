@@ -103,6 +103,18 @@ def row_line(r, style):
     return "| " + " | ".join(cells) + " |"
 
 
+def warning_lines(rows):
+    """The warning table 02 read requires for every row not on the price list, with Sam's answer."""
+    unpriced = [r for r in rows if not r["item"]]
+    if not unpriced:
+        return []
+    return [f"## WARNING: not on the price list ({len(unpriced)} items)",
+            "| PO number | Description as printed | Qty and unit | Closest items | Sam's answer |",
+            "|---|---|---|---|---|",
+            *[f"| {r['po']} | {r['desc'] or r['words']} | {r['qty']} {r['unit']} | none | leave unpriced |"
+              for r in unpriced], ""]
+
+
 def read_back(style, snapshot):
     rows = rows_of(style)
     risky = [r["num"] for r in rows if r["po"] != NO_PO and r["item"] and r["unit"] != style["prices"][r["item"]][0]]
@@ -110,7 +122,7 @@ def read_back(style, snapshot):
     return "\n".join([
         "---", f"house: {style['slug']}", "attempt: 1", "stage: 02 read", "status: approved",
         f"price list read: 2026-11-05, price-list-1.csv, sha256 {prices.fingerprint(snapshot)}", "---", "",
-        f"# {style['slug']}, read-back 1", "", "## The house", f"{style['address']}; lot {style['lot']}; {style['builder']}.", "",
+        f"# {style['slug']}, read-back 1", "", *warning_lines(rows), "## The house", f"{style['address']}; lot {style['lot']}; {style['builder']}.", "",
         "## At risk for this house",
         f"- Unit printed differs from the price list unit: rows {', '.join(risky)}." if risky else "- none", "",
         *pos_read(style), "", *epos_read(style), "",

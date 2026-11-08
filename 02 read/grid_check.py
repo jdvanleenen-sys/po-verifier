@@ -7,6 +7,7 @@ from grid_read import expected_cells, table, tables_hash, under
 HASH_LINE = re.compile(r"^read-back tables sha256:\s*([0-9a-f]{64})", re.M)
 ROW_LIST = re.compile(r"\brows?\s+(\d+(?:\s*(?:,|and|&)\s*\d+)*)", re.I)
 TRAP_WORDS = {"unit": "unit", "selection": "selection", "line-notes": "notes"}
+SAM_ON_ROW = "(sam:"
 GRIDS = (("row grid", "#", "rows", rules.ROW_RULES, "row"),
          ("po grid", "po number", "pos", rules.PO_RULES, "PO"))
 
@@ -104,7 +105,29 @@ def check_grid(read_back_text, grid_text, snapshot_raw, final=False):
         if where.split()[-1] not in at_risk_rows(read_back_text, word):
             state["problems"].append(f"{where} is at risk on {rule}, but no line under 'At risk for this "
                                      f"house' that says '{word}' names it")
+    if final:
+        state["problems"] += warning_problems(read_back_text)
     return state["problems"], state["asks"]
+
+
+def warning_problems(read_back_text):
+    """Each 'not on the price list' item Sam has not answered, or that the warning table leaves out.
+
+    An unanswered item would reach compare unpriced without anyone deciding it should.
+    """
+    header, warned = table(under(read_back_text, "warning"))
+    problems = [f"warning item {w[0]} '{w[1]}': no answer from Sam (add row / names item / leave unpriced)"
+                for w in warned if len(w) < len(header) or not w[-1].strip()]
+    rows_header, rows = table(under(read_back_text, "rows"))
+    if "price list item" not in rows_header:
+        return problems
+    at = rows_header.index("price list item")
+    unpriced = [r[0] for r in rows if len(r) > at and r[at].lower().startswith(rules.prices.UNPRICED)
+                and SAM_ON_ROW not in r[at].lower()]
+    if len(unpriced) > len(warned):
+        problems.append(f"rows {', '.join(unpriced)} are not on the price list, but the warning table "
+                        f"lists {len(warned)}. Every one goes in the warning table with Sam's answer")
+    return problems
 
 
 def not_comparable_rows(grid_text):

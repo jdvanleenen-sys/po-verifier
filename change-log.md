@@ -1,5 +1,19 @@
 # Change log
 
+## 2026-11-08, two grid gaps found on the first real house
+Running a real painter's house (kept private, outside this repo) found two ways a missing fact
+could pass as a checked one. Both now refused by code; 6 new tests in `tests/test_grid_gaps.py`.
+- `grid_rules.measured_text`: a "Sam measured" cell with no quoted words, such as
+  "not in notes; see row 13", was read as a measurement of 13, and compare would have priced it.
+  Without quotes, only a number that opens the size slot ("stringers; 34 ft") is a measurement.
+  Not closed: with quotes, the first number after them is still taken, because read-backs write
+  '"8' doors x12"; count 12'. Never put a row number right after Sam's quoted words.
+- `grid_check.warning_problems`: `--final` passed a house whose "not on the price list" warnings
+  had no answer, so compare would have left those lines unpriced without Sam deciding it. It now
+  refuses a blank answer, and an unpriced row the warning table leaves out (an answer written on
+  the row as "(Sam: ...)" counts). `tests/po-styles/pipeline.py` now writes that table.
+190 tests.
+
 ## 2026-11-05, cold runs on three PO styles; a checklist PDF was taken for a PO
 `tests/po-styles/make_styles.py` prints each style's PO in its builder's own layout, and
 `tests/cold_run.py` sets up and scores those houses. Three fresh agents ran Tamarack (French, m2,
