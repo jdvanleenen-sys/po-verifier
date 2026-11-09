@@ -1,5 +1,14 @@
 # Change log
 
+## 2026-11-09, loop run 4 group A: po-line order, the slot backed by Sam's words
+Run 4's attacker swapped a row's qty and unit price (125 x $2.00 for 2 x $125.00, the same total):
+the po-line rule passed it, because it only checked the three numbers were somewhere on the PO line,
+and it would have flagged +$15,375. It now needs them in order: qty, then unit price, then total.
+The size slot was never set against Sam's quoted words, so "Railing 16'" with 61 in the slot (+$1,840),
+a range ("13-14'") or a pointer ("see row 3") passed as a size. The slot must now be one of the numbers
+in his words, and a range or pointer there asks Sam. A 0 and a "Sam confirmed" number are exempt. Both
+real houses still read every row as before. 5 tests in `tests/test_run4_reading.py`.
+
 ## 2026-11-09, loop run 4: a read-back is not "used" by its own grid
 Run 4 (a real house) could not seal any read-back: the run-3 rule "a record another file was built
 from is never sealed" counted the read-back's own grid, which names it in from: and is built before

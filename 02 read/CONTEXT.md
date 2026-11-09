@@ -50,7 +50,12 @@ reads the size only from that slot, the same way in the grid and the money gate,
 his quoted words: if they multiply the size (10' x2, ×2, each side, both sides, a pair, double,
 twice, two of them) the cell reads as no size. In his words, "x" before the size itself ("8' doors
 x12" with 12 in the slot) is how he writes a count, and "12' x 12'" (a number with a unit after
-it) is a room size; neither counts as a multiplier. Anything else reads as no size. Never write in
+it) is a room size; neither counts as a multiplier. The slot must also be backed by his words:
+when his quoted words hold a number, the slot must be one of his numbers ("Railing 16'" with 61 in
+the slot reads as no size), and when they hold a range (13-14', 13 to 14) or a pointer (see row 3,
+same as, row 3) the cell reads as no size. Words with no number ("done as ordered") back any slot;
+a 0 in the slot and a cell that ends "Sam confirmed" are Sam's own numbers. Anything else reads as
+no size. Never write in
 the slot a size you worked out: feet and inches (13'6"), a multiplier (124 ft x2, (x2), ×2), a
 range (10-12', 13 – 14 ft), a fraction (13 ½ ft), two sizes (13 ft / 16 ft), a number in words
 (ten), a row number (see row 3), or a comma for a decimal point (10,5). Write his words as he wrote
@@ -58,8 +63,9 @@ them and leave the slot for his answer: the grid reads no size there and asks Sa
 goes in the slot when he gives it.
 
 Every row on a PO is also set against the PO itself (the po-line rule, `po_lines.py`, run by
-`grid.py check`): its PO qty, unit price and line total must be printed on the PO line that carries
-its "line as printed", so copy that line exactly. Only an HTML PO (one table row per line, as
+`grid.py check`): its PO qty, unit price and line total must be printed, in that order, on the PO line that carries
+its "line as printed", so copy that line exactly. A qty and unit price swapped (125 x 2.00 for
+2 x 125.00, the same total) fails. Only an HTML PO (one table row per line, as
 SupplyPro and BuildPro save them) can be read this way; rows on a PDF PO are counted in the check's
 output as not checked, and those rows are checked by eye.
 
