@@ -35,13 +35,20 @@ One table for the house. He replies yes to accept it as shown, or names the rows
 change. The AI updates the table and shows it again until he says yes. Only a plain yes closes
 this stage. "I don't know" leaves it open; it is not a yes to the rows as shown.
 
+## Rows Sam sees but does not decide
+Rows compare set apart (not comparable, or left unpriced by Sam) have no decision. List them under
+the table as "For information", one line each with the PO, the line and why; they never go on the
+request.
+
 ## Work on no PO: which EPO it goes on
 A row on no PO goes on the request in its own "No PO" group unless Sam names a PO for it in the
 "EPO goes on" column. Then it prints inside that PO's group, on its own line with PO qty 0, and
 that PO's EPO total includes it. Some builders put every extra on the main PO, the one that carries
 the whole list of work (some do: Jeff, 2026-11-08). If `../reference/contractor.md` has a standing
 answer under "Work on no PO goes on" for this builder, fill the column from it and write "EPO goes on: standing
-answer, contractor.md" in the reason column (the reason column also holds notes like this); Sam sees it in the table he says yes to. Otherwise ask Sam
+answer, contractor.md" in the reason column (the reason column also holds notes like this; the
+request refuses a blank "EPO goes on" on such a row unless the reason gives Sam's own answer as
+"Sam: ..."); Sam sees it in the table he says yes to. Otherwise ask Sam
 which PO; never pick it for him. Only a row on no PO can be named onto a PO, and only a PO in this house, written exactly as it
 appears under "POs read" (a typo such as an extra digit is refused, never guessed at).
 

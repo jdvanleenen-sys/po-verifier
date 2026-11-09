@@ -54,12 +54,18 @@ issued for the row (say so in the why). A no-PO row prints its PO amount as `$0.
 script reads every one of these from the row it belongs to.
 
 ## Filling in the header
+- **The practice badge** ("PRACTICE SAMPLE. MADE-UP DATA." in the layout) prints only while
+  `../reference/contractor.md` is the practice stand-in. For a real contractor, delete that line
+  from the request.
+- **The proof line** names the site notes by their date, or, when the date was waived, as "the site
+  notes (date not recorded)".
 - **Trade contractor:** exactly as `../reference/contractor.md` gives it: the business name and,
   in brackets, the vendor number (for example "Sample Painting Co. (V00999)"). Never a name from
   the POs, never "not confirmed". If the POs are made out to someone else, the house is not this
   folder's: stop (the grid check already refuses it).
 - **Job:** the address, then the lot and block: from `house-info.md`, or, when it gives no lot, the
-  lot every PO prints ("28 Sample Road, lot 19, block 8").
+  lot every PO prints ("28 Sample Road, lot 19, block 8"). Check 6 reads the address word for word
+  and the lot as "lot <lot>, block <block>" in that order, so a swapped digit is refused.
 - **Builder:** the builder as every PO prints it on its FROM line, whole; it must also be one
   `contractor.md` names, whole ("Homes" for "Sample Homes Ltd." is refused).
 - **Community:** exactly as every PO prints it on its FROM line.
@@ -99,12 +105,18 @@ The PDF is never written straight into the record. A print that goes wrong must 
    review it came from. It refuses a file that is not the built request, a request already
    numbered, a draft PDF whose sha256 is not the one build wrote in `script-checks.md`, and a
    second request from a review that already has one (a new request needs a new review).
+Build and commit refuse any row that is already on a request marked `sent: yes`: a row the builder
+has been asked for is chased again through `06 outcome`, never by a second request. With a standing
+answer under "Work on no PO goes on" in `contractor.md`, a chosen row on no PO with "EPO goes on"
+blank is refused, unless the reason gives Sam's own different answer as "Sam: ...".
 Build and commit also refuse a house whose POs are made out to anyone but this folder's
 contractor, and any file in `01 intake/<house>/` that changed, was added or is gone since the rule
 grid's Intake read table was written. A file dropped in after the read is never attached: it means
 a new read-back.
-If the build says Sam's records do not agree, never edit a file he approved to make it pass: write
-the corrected record as the next number, show it to Sam, and get his yes again.
+If the build says Sam's records do not agree, never edit a file he approved to make it pass. The
+message names the one fix that fits: put back a snapshot or intake file that was changed or
+deleted; delete a hand-edited variance and run compare.py again; or write the corrected read-back
+or review as the next number, show it to Sam, and get his yes again.
 `drafts/` is a workbench, not the record. Anything in it may be deleted.
 The script needs Python 3.9 or newer with PyMuPDF, and Chrome, Chromium or Edge. Prove it on your
 machine with `python -m unittest discover -s tests` from the folder root.

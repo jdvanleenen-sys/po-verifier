@@ -34,6 +34,7 @@ sys.path.insert(0, str(STAGE))
 import house_checks  # noqa: E402
 import money  # noqa: E402
 import printing  # noqa: E402
+from proof_choice import choose_notes, proof_spec  # noqa: E402
 import verify  # noqa: E402
 from chain import chain_problems  # noqa: E402  (money puts 02 read on the path)
 import seal  # noqa: E402
@@ -42,7 +43,6 @@ DOCS = (".html", ".htm", ".pdf")
 NOTES = (".txt", ".md", ".jpg", ".jpeg", ".png", ".pdf")
 NOTES_NAMES = ("note", "voice-memo", "checklist", "measurement")
 NOT_PROOF = ("house-info.md",)
-ONLY = "only:"
 
 
 def latest(folder, stem):
@@ -117,30 +117,6 @@ def intake(house):
     return docs, notes, others
 
 
-def choose_notes(notes, choice):
-    """Sam's answer to "attach your notes?": yes (all of them), no, or only:<file>,<file>."""
-    if choice == "yes":
-        return list(notes)
-    if choice == "no":
-        return []
-    if not choice.startswith(ONLY):
-        sys.exit("--notes must be yes, no, or only:<file name>,<file name>. Nothing was built.")
-    names = [n.strip() for n in choice[len(ONLY):].split(",") if n.strip()]
-    by_name = {p.name: p for p in notes}
-    missing = [n for n in names if n not in by_name]
-    if missing or not names:
-        sys.exit(f"Sam named notes that are not in intake: {', '.join(missing) or '(none named)'}. "
-                 f"The notes files are: {', '.join(by_name) or 'none'}. Nothing was built.")
-    return [by_name[n] for n in names]
-
-
-def proof_spec(expected, attached, notes):
-    """What must be in the proof, and the notes pages Sam left out, which must not be."""
-    names = [p.name for p in attached]
-    return {"po_numbers": expected["po_numbers"], "epo_names": expected["epo_names"],
-            "notes_attached": names, "notes_left_out": [p.name for p in notes if p.name not in names]}
-
-
 JOB_NAME = re.compile(r"JOB NAME:\s*(.*?)\s+JOB ADDRESS:")
 
 
@@ -158,13 +134,17 @@ def header_spec(house, n):
     info = money.read_text(folder / "house-info.md") if (folder / "house-info.md").is_file() else ""
     fields = [m.group(1) for f in ("address", "lot") if (m := re.search(rf"^- {f}:\s*(.+)$", info, re.I | re.M))]
     texts = [document_text(p) for p in intake(house)[0]]
-    if fields and not re.search(r"^- lot:", info, re.I | re.M) and (lot := house_checks.lot_from_pos(texts)):
+    lot_line = re.search(r"^- lot:\s*(.+)$", info, re.I | re.M)
+    lot = re.findall(r"\d+", lot_line.group(1)) if lot_line else house_checks.lot_from_pos(texts)
+    if fields and not lot_line and lot:
         fields.append(" ".join(lot))
+    address = re.search(r"^- address:\s*(.+?)\s*$", info, re.I | re.M)
     names = {m.group(1).strip() for t in texts if (m := JOB_NAME.search(t))}
     measured = re.search(r"^- date measured:\s*(\d{4}-\d{2}-\d{2})\s*$", info, re.I | re.M)
     who = house_checks.contractor.read(ROOT / "reference" / "contractor.md")
-    return {"contractor": who["shown"], "builders": who["builders"],"document": f"VR-{n:04d}", "job_numbers": [x for f in fields for x in re.findall(r"\d+", f)] if fields else None,
+    return {"contractor": who["shown"], "builders": who["builders"], "practice": who.get("practice", True),"document": f"VR-{n:04d}", "job_numbers": [x for f in fields for x in re.findall(r"\d+", f)] if fields else None,
             "job_names": sorted(names), "measured": measured.group(1) if measured else None,
+            "address": address.group(1) if address else None, "lot": lot or None,
             **house_checks.header_extras(texts, money.read_text(r) if (r := latest(ROOT / "04 review" / house, "review")) else "")}
 
 
@@ -183,8 +163,8 @@ def stop_if_changed(house):
 def expected_or_stop(house):
     expected, problems = money.expected_request(records(house))
     if problems:
-        sys.exit("Sam's records do not agree, so nothing was built:\n- " + "\n- ".join(problems) +
-                 "\n" + house_checks.fix_advice(ROOT, house))
+        shown, advice = house_checks.stop_message(ROOT, house, problems)
+        sys.exit("Sam's records do not agree, so nothing was built:\n- " + "\n- ".join(shown) + "\n" + advice)
     return expected
 
 

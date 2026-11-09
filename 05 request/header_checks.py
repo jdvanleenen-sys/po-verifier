@@ -92,6 +92,23 @@ def measured_problems(head, measured, known=False):
     return []
 
 
+def job_text_problems(job, header):
+    """The job line holds house-info's address word for word, and the lot as 'lot <lot>, block
+    <block>' in that order, so swapped or moved digits are refused (the sorted digits can agree)."""
+    problems, job = [], normalise(job)
+    address = normalise(header.get("address") or "")
+    if address and not re.search(rf"(?<![\w-]){re.escape(address)}(?![\w-])", job):
+        problems.append(f"the job line reads '{job}', but house-info gives the address '{header['address']}' "
+                        "word for word")
+    lot = header.get("lot") or []
+    if lot:
+        want = f"lot {lot[0]}, block {lot[1]}" if len(lot) > 1 else f"lot {lot[0]}"
+        if not re.search(rf"(?<!\w){re.escape(want)}(?!\w)", job):
+            problems.append(f"the job line reads '{job}'; the lot must read '{want}' (from house-info, or the "
+                            "lot every PO prints when house-info gives none)")
+    return problems
+
+
 def header_problems(request_pages, header):
     """The job line carries exactly the house's address and lot numbers, every PO's job name is in
     the header, and the only document number printed is the one the commit will give."""
@@ -104,6 +121,7 @@ def header_problems(request_pages, header):
             problems.append(f"the job line reads '{job.group(1) if job else ''}'; house-info (and, when it gives no lot, the "
                             "lot every PO prints) gives the numbers "
                             + ", ".join(header["job_numbers"]))
+    problems += job_text_problems(job.group(1) if job else "", header)
     if not header["job_names"] and header["job_numbers"] is None:
         problems.append("nothing to check the job line against: the POs give no job name and house-info "
                         "gives no address or lot. Fill in house-info.md in 01 intake")
@@ -112,6 +130,9 @@ def header_problems(request_pages, header):
             problems.append(f"the PO's job name {name} is not in the header. Check that PO is for this "
                             "house: a PO for another house comes out of intake (ask Sam), it never goes in the header")
     problems += measured_problems(head, header.get("measured"), "measured" in header)
+    if header.get("practice") is False and "practice sample" in text:
+        problems.append("the request says PRACTICE SAMPLE, but reference/contractor.md is a real contractor: "
+                        "delete the badge line from request.html")
     problems += who_problems(head, header) + facts_problems(head, header)
     want = int(header["document"].split("-")[1])
     found = sorted({int(n) for n in DOCUMENT.findall(text)})

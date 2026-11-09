@@ -47,7 +47,7 @@ does not cover, such as Sam's answer under check 6.
 - <check>: pass / fail: ... / cannot check: ...
 
 ## Sam's yes
-When Sam says yes: write his answer (starting with yes), name and date here, then run
+When Sam says yes: write his plain yes ("yes", or "yes, to the whole table"; never "yes, but..."), name and date here, then run
 `python "02 read/seal.py" <this file>`. Never set status: approved by hand.
 - Answer:
 - Name:

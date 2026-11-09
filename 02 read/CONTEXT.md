@@ -43,14 +43,25 @@ Write the "Sam measured" cell as his words in quotes first, then `;`, then the s
 `;` and anything else: `"Railing 13'"; 13 ft; no colour given (photo line 1)`. The size slot holds
 one plain number, with "count" before it or a unit after it if you like (', ft, feet, LF, SF,
 sq ft, EA, each). After that the code accepts only three things: nothing; a comma and a remark
-("3016, Sam confirmed"); or a remark of plain words with no number or sign before its first comma
-("0 here, counted on /027"). Anything else in the slot reads as no size. Code reads only that slot,
-the same way in the grid and the money gate. Never write in it a size you worked out: feet and
-inches (13'6"), a multiplier (124 ft x2, (x2), ×2), a range (10-12', 13 – 14 ft), a fraction
-(13 ½ ft), two sizes (13 ft / 16 ft), a number in words (ten), a row number (see row 3), or a comma
-for a decimal point (10,5). Write his words as he wrote them and leave the slot
-for his answer: the grid reads no size there and asks Sam, and his number goes in the slot when he
-gives it.
+("3016, Sam confirmed"); or a remark of plain words before its first comma ("0 here, counted on
+/027"). A remark may not hold a sign, a number word (one to twenty), a digit (except in a PO
+number such as /027), or a word that multiplies (each, both, pair, double, twice, of them). Code
+reads the size only from that slot, the same way in the grid and the money gate, and it also reads
+his quoted words: if they multiply the size (10' x2, ×2, each side, both sides, a pair, double,
+twice, two of them) the cell reads as no size. In his words, "x" before the size itself ("8' doors
+x12" with 12 in the slot) is how he writes a count, and "12' x 12'" (a number with a unit after
+it) is a room size; neither counts as a multiplier. Anything else reads as no size. Never write in
+the slot a size you worked out: feet and inches (13'6"), a multiplier (124 ft x2, (x2), ×2), a
+range (10-12', 13 – 14 ft), a fraction (13 ½ ft), two sizes (13 ft / 16 ft), a number in words
+(ten), a row number (see row 3), or a comma for a decimal point (10,5). Write his words as he wrote
+them and leave the slot for his answer: the grid reads no size there and asks Sam, and his number
+goes in the slot when he gives it.
+
+Every row on a PO is also set against the PO itself (the po-line rule, `po_lines.py`, run by
+`grid.py check`): its PO qty, unit price and line total must be printed on the PO line that carries
+its "line as printed", so copy that line exactly. Only an HTML PO (one table row per line, as
+SupplyPro and BuildPro save them) can be read this way; rows on a PDF PO are counted in the check's
+output as not checked, and those rows are checked by eye.
 
 The rule grid puts some numbers to Sam by code before anything is priced, because each has cost real
 money in testing: a number that may be a thousands figure written with a dot for a comma ("3.016"
@@ -66,8 +77,10 @@ in his notes, payment splits, builder-named price list rows). When one answers t
 it and do not ask:
 - **Lines not in his notes** says done as ordered: write the row's "Sam measured" cell as
   `"done as ordered"; <PO qty>; standing answer, contractor.md`. Its count is the PO's. When the PO
-  prints a count (EA) on a line the price list prices per foot or per square foot, the PO's count
-  is not a size: ask Sam for the size instead.
+  prints EA on a line the price list prices per foot or per square foot, the PO's number is a size
+  only if "How he writes measurements" in contractor.md says so for that kind of line (for example
+  "square footage is floor area, as the PO counts it", or "stringers are in feet"); then use it and
+  do not ask. If contractor.md does not say, ask Sam what the PO's number counts.
 - **Payment splits** names a line: answer its warning `leave unpriced: payment split, standing
   answer, contractor.md`.
 - **Builder-named price list rows**: a PO line from that builder that fits the builder's own row
@@ -115,6 +128,10 @@ Sam settles each one in one of three ways:
 2. **He names an existing item** that it should match.
 3. **He says leave it unpriced.** It goes to compare marked "not on the price list", with no
    measured value and no call.
+
+His answer in the warning table starts with the way he settled it: `add row`, `names` (the item),
+or `leave unpriced`, then his words. Anything else, such as "I don't know, ask Joe", is no answer,
+and the house does not leave this stage.
 
 The AI never adds, changes or suggests a rate for a price list row. Sam's yes on the table does
 not settle a warning item. Each one needs its own answer.
@@ -189,7 +206,8 @@ Run it only after `grid.py check <house> --final` passes: the seal records the g
 grid never changes after it. Never set `status: approved` by hand. If he says "I don't know" about a row, that row's grid cell
 says `ask Sam:` and the read-back stays a draft.
 
-A read-back's `from:` names exactly one file or folder: `01 intake/<house>/` for read-back 1, and
+Every numbered record has a `from:` line; one without it is refused. A read-back's `from:` names
+exactly one file or folder: `01 intake/<house>/` for read-back 1, and
 the read-back it corrects (`02 read/<house>/read-back-1.md`) for each one after. Its `attempt:` is
 its file number. A `from:` names a record of this same house, in this stage or an earlier one,
 never another house's. compare and the request refuse a record whose `from:`, `attempt:` or

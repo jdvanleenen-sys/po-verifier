@@ -1,5 +1,43 @@
 # Change log
 
+## 2026-11-09, loop run 3 (Group A): multipliers, invisible names, the po-line rule
+Run 3's attacker got four reading mistakes past the code on a real house. A multiplier in Sam's words
+or in the slot's remark ("10' x2", "two of them", "13 ft each side") was read as one size; it now
+reads as no size, so the grid asks Sam (02 read/size_read.py, split out of grid_rules.py). A price
+row whose name hid a zero-width space sat beside the real row at another rate; prices.py now refuses
+any name with an invisible character and names both lines of a dash twin. A row whose PO qty and line
+total were read off another line of the PO passed every check; the new po-line rule (po_lines.py, run
+by grid.py check) sets every row on an HTML PO against its own PO line, and counts rows on a PDF PO
+as not checked. prices.py check reads a read-back saved in another encoding in plain words. 14 tests
+in tests/test_run3_reading.py.
+
+## 2026-11-09, loop run 3 group B: a yes is plain, a used record is never sealed
+Run 3's attack sealed "Yes, but take the lockers off." and "Yes?" as Sam's yes, re-sealed an
+approved review after a request was built from it, passed "I don't know, ask Joe" as a warning
+answer, passed a record with no from: line, and stopped commit with a traceback on a request check
+saved as ANSI. Now: a yes is "yes" alone or one of three plain forms; seal.py refuses a record
+another record already names in from: or "from review:"; a warning answer starts with add row,
+names or leave unpriced; every numbered record needs a from: line; request checks are read in plain
+words. CONTEXT.md says what the ledger does not guard against. 8 tests in
+tests/test_run3_approvals.py.
+
+## 2026-11-09, loop run 3, group C: the request
+The run 3 attack on a real house found four request-stage gaps. A row already on a request marked
+sent: yes could be asked for again through a second review (a44): build and commit now refuse it
+and point to 06 outcome. The job line passed with the house number and the lot swapped, because
+only the sorted digits were compared (a42): check 6 now reads the address word for word and the
+lot as "lot <lot>, block <block>". With a standing answer for work on no PO, a blank "EPO goes on"
+passed (a38): it is refused unless the reason gives Sam's own answer. One missing snapshot printed
+15 lines and advice to write a new read-back: the stop message now prints each problem once and
+the fix that fits. build_request.py was split first (proof_choice.py). 13 tests added.
+
+## 2026-11-09, loop run 3: per-foot rule, practice badge, proof line, set-apart rows
+Run 3 on a real house asked Sam for floor area and stringer feet that his setup already answers:
+the run-2 rule "a PO count on a per-foot line is not a size" ignored contractor.md's "How he writes
+measurements". It now defers to it. A real contractor's request no longer passes with the layout's
+PRACTICE SAMPLE badge (check 6 refuses it). The proof line has words for a waived date, and the
+review lists set-apart rows "For information". 4 tests added.
+
 ## 2026-11-09, every printed figure checked; the size slot is an allowlist (loop run 2, group A)
 The second attack on a real house got these past the code. The size slot now accepts, after its
 number and unit, only nothing, a comma and a remark, or plain words before the first comma, so

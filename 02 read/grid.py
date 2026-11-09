@@ -10,7 +10,9 @@
       tables changed after the grid was built. --final (03 compare and the money gate) also
       refuses "ask Sam". Without it, "ask Sam" cells pass and are counted. It also refuses a PO
       made out to anyone but reference/contractor.md's contractor, and any file in 01 intake that
-      changed, was added or is gone since the grid's Intake read table was written.
+      changed, was added or is gone since the grid's Intake read table was written, and (po-line,
+      po_lines.py) any row whose PO qty, unit price and line total are not printed on its own line
+      of an HTML PO; rows on a PDF PO are counted as not checked.
 
 The grid is how a skipped check stops being silent: the number of cells is fixed by code before
 anyone checks anything, and a blank cell is a refusal.
@@ -21,6 +23,7 @@ from pathlib import Path
 
 import contractor
 import intake_read
+import po_lines
 import prices
 import seal
 from grid_check import check_grid
@@ -83,9 +86,13 @@ def main(argv):
         problems += [f"{path.name} {why}" for why in seal.file_approval_problems(path, text)]
     problems += contractor.vendor_problems(text)
     problems += intake_read.problems(ROOT / "01 intake" / house, grid_text, house)
+    line_problems, unchecked = po_lines.check(ROOT / "01 intake" / house, text)
+    problems += line_problems
     if problems:
         sys.exit(f"{grid_file.name} is refused:\n- " + "\n- ".join(problems))
     note = f" {asks} cell(s) wait on Sam; the house cannot leave 02 read until he answers." if asks else ""
+    note += (f" po-line: {unchecked} row(s) are on a PDF PO and were not checked against its lines; "
+             "check those by eye.") if unchecked else ""
     print(f"{grid_file.name}: every cell is filled and every code cell checks out.{note}")
 
 

@@ -57,14 +57,20 @@ def is_approved(text):
     return bool(status and status.group(1).lower() == "approved")
 
 
+PLAIN_YES = re.compile(r"yes(?:,?\s+to the (?:whole table|table exactly as shown|table with those decisions))?\.?",
+                       re.I)
+
+
 def yes_problems(text):
-    """What is missing from Sam's yes. A yes is an Answer that starts with 'yes', with a name and date."""
+    """What is missing from Sam's yes. A yes is the Answer 'yes' alone or one of the three plain forms
+    ('yes, to the whole table', '... exactly as shown', '... with those decisions'), with a name and
+    date. A condition or a question after the yes ('Yes, but...', 'Yes?') is not a yes."""
     answer = ANSWER.search(text)
     said = answer.group(1).strip() if answer else ""
     problems = []
-    if not re.match(r"yes\b", said, re.I):
-        problems.append(f"has an Answer that is not a plain yes ('{said}'). Only an answer that starts "
-                        "with yes counts; anything else leaves the stage open")
+    if not PLAIN_YES.fullmatch(said):
+        problems.append(f"has an Answer that is not a plain yes: '{said}'. A condition or a question means "
+                        "the table changes first")
     problems += [f"has no {k} under Sam's yes" for k, pattern in FILLED.items() if not pattern.search(text)]
     return problems
 
@@ -150,9 +156,34 @@ def seal_text(name, text):
     return STATUS.sub(lambda m: m.group(0) + "\n" + line, text, count=1)
 
 
+USED_BY = re.compile(r"^from(?: review)?:[ \t]*`?([^`\n]+?)`?[ \t]*$", re.M)
+
+
+def used_by(path):
+    """Other records of this house that already name this record in a from: or 'from review:' line."""
+    path = Path(path).resolve()
+    root, house, stage = path.parent.parent.parent, path.parent.name, path.parent.parent.name
+    own = f"{stage}/{house}/{path.name}".lower()
+    users = []
+    for other in sorted(root.glob(f"*/{house}/*.md")):
+        if other.resolve() == path or other.name == LEDGER:
+            continue
+        try:
+            text = read_record(other)
+        except SystemExit:
+            continue
+        if any(m.group(1).strip().replace("\\", "/").lower() == own for m in USED_BY.finditer(text)):
+            users.append(other.name)
+    return users
+
+
 def seal_file(path, today=None):
     """Seal the record at path and write its ledger line. Raises ValueError with the reasons not to."""
     path = Path(path)
+    users = used_by(path)
+    if users:
+        raise ValueError([f"is already used by {', '.join(users)}: a record another file was built from is "
+                          "never approved after the fact. Write the next number"])
     if path.name in ledger(path.parent):
         raise ValueError([f"was sealed before (it is in {LEDGER}). An approved file is never re-approved: "
                           "write the next number"])
