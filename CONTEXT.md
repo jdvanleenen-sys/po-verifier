@@ -102,7 +102,8 @@ the yes. Never edit `seals.md`. **Never set `status: approved` by hand**, and
 never seal a file Sam did not answer. A yes said in chat but not written to the file does not count.
 A correction to an approved file is a new numbered file with its own yes, never an edit.
 seal.py also refuses a record that another record already names in its `from:` or `from review:`
-line: a record something was built from is never approved after the fact. What the seal does not
+line (a read-back's own grid does not count), and a record that leaves a numbering gap below it:
+a record something was built from is never approved after the fact. What the seal does not
 do: the ledger guards against mistakes, not against someone deleting its lines on purpose. The real
 guard is Sam giving his yes from his own screen, so no one else can write it for him.
 

@@ -18,6 +18,13 @@ go on the main PO (most priced lines). A request with no row on is refused. A re
 when its yes block reads `- sent: yes` (the template line is now `- sent:`). The money gate checks
 each variance row's Why and Call and the house-flag line (`variance_words.py`). 14 tests added.
 
+## 2026-11-09, loop run 4 group C: intake against the first read; no seal over a gap
+Run 4's attack edited a PO in intake before writing read-back 2; grid-2 fingerprinted the edited file
+afresh and nothing noticed (a44). grid.py build, grid.py check, build and commit now also compare
+intake with the house's first grid: a file changed, added or removed since the first read is refused.
+seal.py also refused nothing for a record leaving a numbering gap (only the request caught it later,
+a28); it now refuses it when the seal is asked for. 6 tests in tests/test_run4_intake.py.
+
 ## 2026-11-09, loop run 4: a read-back is not "used" by its own grid
 Run 4 (a real house) could not seal any read-back: the run-3 rule "a record another file was built
 from is never sealed" counted the read-back's own grid, which names it in from: and is built before

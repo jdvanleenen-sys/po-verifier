@@ -23,6 +23,8 @@ def gate_problems(root, house, texts):
     setup = root / "reference" / "contractor.md"
     return (contractor.vendor_problems(texts["read-back"])
             + intake_read.problems(root / "01 intake" / house, texts.get("grid"), house)
+            + intake_read.since_first_problems(root / "01 intake" / house, root / "02 read" / house, house,
+                                               below=intake_read.latest_number(root / "02 read" / house))
             + sent_problems(root, root / "05 request" / house, texts["review"])
             + standing_epo_problems(texts["review"], setup.read_text(encoding="utf-8-sig") if setup.is_file() else "",
                                     texts["read-back"]))

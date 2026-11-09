@@ -17,6 +17,8 @@ import sys
 from datetime import date
 from pathlib import Path
 
+import chain
+
 LEDGER = "seals.md"
 LEDGER_HEAD = ("# Seals\n\nWritten by 02 read/seal.py, one line per approved record. Never edit this file.\n\n"
                "| File | Seal sha256 | Grid sha256 | Sealed on |\n|---|---|---|---|\n")
@@ -181,6 +183,9 @@ def used_by(path):
 def seal_file(path, today=None):
     """Seal the record at path and write its ledger line. Raises ValueError with the reasons not to."""
     path = Path(path)
+    gap = chain.gap_problems(path)
+    if gap:
+        raise ValueError([why.replace(f"{path.name} leaves", "leaves", 1) for why in gap])
     users = used_by(path)
     if users:
         raise ValueError([f"is already used by {', '.join(users)}: a record another file was built from is "
