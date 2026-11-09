@@ -151,6 +151,14 @@ left off. This is where Sam looks first.
 He sees one table of everything that was read and replies yes. If a row is wrong, he gives the
 right number and the AI writes a new numbered read-back with that row fixed, then shows the table
 again. Only a plain yes closes this stage (see "What counts as Sam's yes" in `../CONTEXT.md`).
+Write his yes, name and date into the read-back, then run `python "02 read/seal.py" "02 read/<house>/read-back-N.md"`.
+Never set `status: approved` by hand. If he says "I don't know" about a row, that row's grid cell
+says `ask Sam:` and the read-back stays a draft.
+
+A read-back's `from:` names exactly one file or folder: `01 intake/<house>/` for read-back 1, and
+the read-back it corrects (`02 read/<house>/read-back-1.md`) for each one after. Its `attempt:` is
+its file number. compare and the request refuse a record whose `from:`, `attempt:` or numbering is
+wrong.
 
 ## What goes out
 For each attempt, `<house>/grid-N.md`, the rule grid, and `<house>/read-back-N.md` (N starts at 1), holding the confirmed

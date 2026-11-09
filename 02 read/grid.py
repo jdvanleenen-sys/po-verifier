@@ -18,6 +18,7 @@ import sys
 from pathlib import Path
 
 import prices
+import seal
 from grid_check import check_grid
 from grid_read import render
 
@@ -73,6 +74,8 @@ def main(argv):
     if not grid_file.exists():
         sys.exit(f"No {grid_file.name} for {path.name}. Run: python \"02 read/grid.py\" build {house}")
     problems, asks = check_grid(text, read(grid_file), prices.snapshot_bytes(house, text), "--final" in flags)
+    if seal.is_approved(text):
+        problems += [f"{path.name} {why}" for why in seal.approval_problems(text, path.name)]
     if problems:
         sys.exit(f"{grid_file.name} is refused:\n- " + "\n- ".join(problems))
     note = f" {asks} cell(s) wait on Sam; the house cannot leave 02 read until he answers." if asks else ""

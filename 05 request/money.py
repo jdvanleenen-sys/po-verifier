@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "02 read"))
 import prices  # noqa: E402
 from records import (  # noqa: E402,F401  (callers use money.column, money.read_text, ...)
-    NUMBER, AMOUNT, approved, column, read_text, section, tables, to_amount, to_number)
+    NUMBER, AMOUNT, approval_problems, approved, column, read_text, section, tables, to_amount, to_number)
 import grid_check  # noqa: E402
 
 CENT = Decimal("0.01")
@@ -259,8 +259,7 @@ def expected_request(records):
     """
     problems = []
     for name in ("read-back", "review"):
-        if not approved(records[name]):
-            problems.append(f"the {name} does not carry Sam's approval (status: approved and his yes)")
+        problems += [f"the {name} {why}" for why in approval_problems(records[name])]
     problems += prices.check_read_back(records["read-back"], records.get("price-list"))
     grid_text = records.get("grid")
     if grid_text is None:

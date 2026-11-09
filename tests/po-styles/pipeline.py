@@ -20,6 +20,7 @@ import compare  # noqa: E402
 import compare_rows  # noqa: E402
 import grid_read  # noqa: E402
 import prices  # noqa: E402
+import seal  # noqa: E402
 
 CENT = Decimal("0.01")
 NO_PO = "none"
@@ -119,8 +120,8 @@ def read_back(style, snapshot):
     rows = rows_of(style)
     risky = [r["num"] for r in rows if r["po"] != NO_PO and r["item"] and r["unit"] != style["prices"][r["item"]][0]]
     extras = [r for r in rows if r["po"] == NO_PO]
-    return "\n".join([
-        "---", f"house: {style['slug']}", "attempt: 1", "stage: 02 read", "status: approved",
+    return seal.seal_text("read-back-1.md", "\n".join([
+        "---", f"house: {style['slug']}", "attempt: 1", "stage: 02 read", "status: draft",
         f"price list read: 2026-11-05, price-list-1.csv, sha256 {prices.fingerprint(snapshot)}", "---", "",
         f"# {style['slug']}, read-back 1", "", *warning_lines(rows), "## The house", f"{style['address']}; lot {style['lot']}; {style['builder']}.", "",
         "## At risk for this house",
@@ -130,7 +131,7 @@ def read_back(style, snapshot):
         "Sam measured (his words, size or count, colour, notes) | Price list item | Unit | Rate |",
         "|---|---|---|---|---|---|---|---|---|---|---|---|", *[row_line(r, style) for r in rows], "",
         "## Extra items (in Sam's notes, on no PO)", *([f"- row {r['num']}: {r['words']}" for r in extras] or ["none"]), "",
-        "## Sam's yes", "- Answer: yes, to the whole table", ""])
+        "## Sam's yes", "- Answer: yes, to the whole table", "- Name: Sam", "- Date: 2026-11-05", ""]))
 
 
 ANSWERS = {"po-line-match": "pass: the PO line is this price list item", "note-match": "pass: Sam's note is this item",
@@ -166,12 +167,13 @@ def variance(style, read_back_text, grid_text):
 
 def review(style, compared):
     on = {str(n) for n in style["on"]}
-    lines = ["---", f"house: {style['slug']}", "attempt: 1", "stage: 04 review", "status: approved", "---", "",
+    lines = ["---", f"house: {style['slug']}", "attempt: 1", "stage: 04 review", "status: draft", "---", "",
              "| Row | PO number | Item | Variance | Call | Sam's decision (on / off) | Reason, if a flagged row is taken off |",
              "|---|---|---|---|---|---|---|"]
     lines += [f"| {r['num']} | {r['po']} | {r['item']} | {money(r['variance'], True)} | shown | "
               f"{'on' if r['num'] in on else 'off (not chosen)'} | |" for r in compared]
-    return "\n".join(lines + ["", "## Sam's yes", "- Answer: yes", ""])
+    return seal.seal_text("review-1.md", "\n".join(lines + ["", "## Sam's yes", "- Answer: yes", "- Name: Sam",
+                                                             "- Date: 2026-11-05", ""]))
 
 
 def records(style):

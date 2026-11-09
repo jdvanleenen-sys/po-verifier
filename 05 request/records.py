@@ -1,7 +1,11 @@
 """Reading Sam's records: Markdown tables, cells, amounts and his approval. Used by money.py."""
 import re
+import sys
 from decimal import Decimal
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "02 read"))
+from seal import approval_problems  # noqa: E402
 
 AMOUNT = re.compile(r"(\(?)([+\-−]?)\s*\$?\s*(\d[\d,]*(?:\.\d+)?)")
 NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?")
@@ -65,8 +69,5 @@ def section(found, *words):
 
 
 def approved(text):
-    """A record counts only with status: approved and a yes written in Sam's yes block."""
-    status = re.search(r"^status:\s*(\S+)", text, re.M)
-    answer = re.search(r"^-\s*Answer:\s*(.+)$", text, re.M)
-    return bool(status and status.group(1).lower() == "approved"
-                and answer and re.search(r"\byes\b", answer.group(1), re.I) is not None)
+    """A record counts only when sealed by 02 read/seal.py after Sam's plain yes, and unchanged since."""
+    return not approval_problems(text)

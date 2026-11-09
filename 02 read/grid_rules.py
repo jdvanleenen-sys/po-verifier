@@ -35,7 +35,7 @@ ROW_RULES = {
     "line-notes": ("The notes under the line do not change what it covers (if they do: At risk)",
                    "code finds notes, AI answers", (PASS, AT_RISK)),
     "count": ("Sam's quantity can be set against the PO qty (not a lump sum or a part)", "AI",
-              (PASS, NOT_COMPARABLE)),
+              (PASS, NOT_COMPARABLE, ASK_SAM)),
 }
 PO_RULES = {
     "lines-subtotal": ("The line totals add up to the printed subtotal", "code", ()),

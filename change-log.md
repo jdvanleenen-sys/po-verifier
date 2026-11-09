@@ -1,5 +1,16 @@
 # Change log
 
+## 2026-11-09, Sam's yes is sealed; records keep their numbers
+Found by the run 1 attack on a real house: "Not yet... will say yes" counted as a yes; an approved
+read-back or review could be edited, or copied under a new number, and still pass; a numbering gap,
+an `attempt:` that disagreed with the file name, and a `from:` written as prose all passed; compare
+wrote a second variance from the same read-back; the grid's count rule could not say "ask Sam".
+Now `02 read/seal.py` is the only way a record becomes approved: it needs an Answer that starts with
+yes, a name and a date, and writes a seal over the file's name and text that every script checks.
+`02 read/chain.py` checks number, `attempt:` and `from:` in compare and the request. compare refuses a
+second variance from one read-back. The count rule may be answered "ask Sam". The worked example is
+sealed. 17 tests added (`tests/test_seal.py`, one in `tests/test_grid.py`).
+
 ## 2026-11-09, Sam's words are the first quoted phrase
 Found on a real house: `measured_text` read the size after the LAST
 quote mark in the "Sam measured" cell. A source note in that cell, '(photo, under "12 Sample

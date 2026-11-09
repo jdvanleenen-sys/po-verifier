@@ -3,6 +3,7 @@ house: 77-mockup-drive
 attempt: 1
 stage: 04 review
 status: approved
+sealed: review-1.md sha256 747d05b41de56f5732cd91968a3a69ea3c92d1b1313e4aa323314b5f6ccb3daf
 from: 03 compare/77-mockup-drive/variance-1.md
 ---
 
