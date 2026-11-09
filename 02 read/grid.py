@@ -42,7 +42,7 @@ def grid_path_for(read_back_path):
 
 
 def read(path):
-    return Path(path).read_bytes().decode("utf-8-sig")
+    return seal.read_record(path)
 
 
 def build(house, replace=False):
@@ -80,7 +80,7 @@ def main(argv):
     grid_text = read(grid_file)
     problems, asks = check_grid(text, grid_text, prices.snapshot_bytes(house, text), "--final" in flags)
     if seal.is_approved(text):
-        problems += [f"{path.name} {why}" for why in seal.approval_problems(text, path.name)]
+        problems += [f"{path.name} {why}" for why in seal.file_approval_problems(path, text)]
     problems += contractor.vendor_problems(text)
     problems += intake_read.problems(ROOT / "01 intake" / house, grid_text, house)
     if problems:

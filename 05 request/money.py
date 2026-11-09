@@ -13,7 +13,8 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "02 read"))
 import prices  # noqa: E402
 from records import (  # noqa: E402,F401  (callers use money.column, money.read_text, ...)
-    NUMBER, AMOUNT, approval_problems, approved, column, read_text, section, tables, to_amount, to_number)
+    NUMBER, AMOUNT, approval_problems, approved, column, decision_problem, decision_word, read_text, section,
+    tables, tax_names, to_amount, to_number)
 import grid_check  # noqa: E402
 import grid_rules  # noqa: E402
 
@@ -126,7 +127,7 @@ def checked_row(v, rb, epos, problems):
         problems.append(f"{where}: says PO amount {v['po_amount']} and variance {v['variance']}; "
                         f"the read-back gives {po_amount} and {true_variance}")
     rate = rb["rate"] or Decimal(0)
-    return {"rate": rate, "po_qty": rb["po_qty"] or Decimal(0), "po_amount": po_amount,
+    return {"rate": rate, "po_qty": rb["po_qty"] or Decimal(0), "po_amount": po_amount, "po_rate": rb["unit_price"] if rb["po"] != NO_PO else None,
             "measured_qty": v["measured_qty"] or Decimal(0), "measured_value": (v["measured_qty"] or 0) * rate,
             "difference": true_variance}
 
@@ -192,13 +193,13 @@ def decisions(text, variances, problems):
             problems.append(f"review row '{item}' ({po}, row {key[2]}) is in the review twice")
         elif not keys:
             problems.append(f"review row '{item}' ({po}) is not in the variance")
-        elif not (decision.startswith("on") or decision.startswith("off")):
-            problems.append(f"review row '{key[1]}' has no on/off decision from Sam")
+        elif decision_word(decision) is None:
+            problems.append(f"review row '{key[1]}' {decision_problem(decision)}")
         elif to_amount(column(r, "variance")) != variances[key]["difference"]:
             problems.append(f"review row '{key[1]}' shows {column(r, 'variance')}, "
                             f"the variance is {variances[key]['difference']}")
         else:
-            chosen[key] = decision.startswith("on")
+            chosen[key] = decision_word(decision) == "on"
     return chosen
 
 
@@ -215,7 +216,7 @@ def epo_targets(text, chosen, house_pos, problems):
         keys = [k for k in chosen if k[1] == item and num in (None, k[2])]
         if not named or len(keys) != 1:
             continue
-        key, target = keys[0], po_key(named, house_pos)
+        key, target = keys[0], next((p for p in house_pos if p.lower() == named.lower()), named)
         if target not in house_pos:
             problems.append(f"review row '{item}' names {named} under 'EPO goes on', which is not a PO in this house")
         elif key[0] != NO_PO and target != key[0]:
@@ -291,7 +292,7 @@ def expected_request(records):
         house[1] += tax
     out["house"] = {"before": house[0], "tax": house[1], "total": house[0] + house[1]}
     out["po_numbers"] = sorted(set(rates))
-    out["epo_names"] = [e["name"] for e in epos]
+    out["epo_names"], out["tax_names"] = [e["name"] for e in epos], tax_names(records["read-back"])
     # Amounts a row's why or a PO rate may print besides the row and group figures.
     out["other_amounts"] = sorted({r["unit_price"] for r in rb_rows if r.get("unit_price") is not None} |
                                   {e["total"] for e in epos})

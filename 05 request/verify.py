@@ -58,6 +58,15 @@ def stray_amounts(request, expected):
     return [f"${v:,.2f} is printed, but no record gives it" for v in amounts(request) if abs(v) not in known]
 
 
+LOOSE_DOLLARS = re.compile(r"\$\s?\d[\d,]*(\.\d+)?")
+
+
+def without_cents(request):
+    """Amounts printed without exactly two decimals ("$2,521"): every amount prints its cents."""
+    return [f"{m.group(0)} is printed without cents; every amount prints dollars and cents"
+            for m in LOOSE_DOLLARS.finditer(request) if not m.group(1) or len(m.group(1)) != 3]
+
+
 def check_rows(request, expected):
     text = normalise(request)
     missing = [r["item"] for r in expected["rows_on"] if normalise(r["item"]) not in text]
@@ -65,7 +74,7 @@ def check_rows(request, expected):
                if normalise(item) in without_names(text, names_holding(item, expected["rows_on"]))]
     problems = [f"missing from the PDF: {m}" for m in missing]
     problems += [f"on the PDF but Sam chose it off: {p}" for p in present]
-    problems += stray_amounts(request, expected)
+    problems += stray_amounts(request, expected) + without_cents(request)
     return line(1, "Only approved rows and amounts, and all of them", problems,
                 f"{len(expected['rows_on'])} approved row(s) printed, {len(expected['rows_off'])} left off")
 
@@ -110,12 +119,30 @@ def percents(text):
     return [Decimal(p) for p in PERCENT.findall(text)]
 
 
+TAX_WORD = re.compile(r"\b(gst/hst|hst|gst|pst|qst)\b")
+
+
+def tax_name_problems(key, tail, expected):
+    """The tax names a group prints are the names its PO's own tax line charges (PST, not GST)."""
+    names = expected.get("tax_names")
+    want = next((n for po, n in (names or {}).items() if normalise(po) == key), None)
+    if names is None or want is None:
+        return []
+    printed = set(TAX_WORD.findall(tail))
+    if printed != want:
+        return [f"{group_name(key)}: its tax line names {', '.join(sorted(printed)).upper() or 'no tax'}; "
+                f"the PO charges {', '.join(sorted(want)).upper()}"]
+    return []
+
+
 def rate_problems(blocks, expected):
     """The percentages on a group's tax lines add up to that PO's own rate (5% for GST alone)."""
     problems = []
     for key, (block, _) in blocks.items():
         rate = next((r for po, r in expected.get("rates", {}).items() if normalise(po) == key), None)
-        printed = percents(block[block.find(SUBTOTAL):]) if SUBTOTAL in block else []
+        tail = block[block.find(SUBTOTAL):] if SUBTOTAL in block else ""
+        problems += tax_name_problems(key, tail, expected)
+        printed = percents(tail)
         if rate is not None and sum(printed, D0) != rate * 100:
             problems.append(f"{group_name(key)}: its tax line prints {' + '.join(f'{p}%' for p in printed) or 'no rate'}; "
                             f"the PO's rate is {(rate * 100).normalize():f}%")

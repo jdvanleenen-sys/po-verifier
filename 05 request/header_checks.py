@@ -13,6 +13,17 @@ DOCUMENT = re.compile(r"\bvr-(\d+)\b")
 MEASURED = re.compile(r"measured on site ([a-z]+ \d{1,2}, \d{4})")
 TRADE = re.compile(r"\btrade contractor (.*?) prepared\b")
 BUILDER = re.compile(r"\bbuilder (.*?) trade contractor\b")
+COMMUNITY = re.compile(r"\bcommunity (.*?) measured on site\b")
+PREPARED = re.compile(r"\bprepared ([a-z]+ \d{1,2}, \d{4})\b")
+NOT_RECORDED = re.compile(r"measured on site (?:date )?not (?:recorded|given)\b")
+HOW_THEY_ARRIVE = re.compile(r",\s*(?:through|pos?|by)\b.*$", re.I | re.S)
+
+
+def named_builders(answer):
+    """The builders contractor.md names, each whole, without how the POs arrive:
+    'A Homes; B Ltd., through SupplyPro' gives ['a homes', 'b ltd.']."""
+    names = (normalise(HOW_THEY_ARRIVE.sub("", part)) for part in (answer or "").split(";"))
+    return [n for n in names if n]
 
 
 def who_problems(head, header):
@@ -27,13 +38,43 @@ def who_problems(head, header):
     if "builders" in header:
         m = BUILDER.search(head)
         printed = m.group(1).strip() if m else ""
-        if not printed or printed not in normalise(header["builders"]):
+        if not printed or printed not in named_builders(header["builders"]):
             problems.append(f"the builder reads '{printed}'; reference/contractor.md names the builders as "
                             f"'{header['builders']}'")
     return problems
 
 
-def measured_problems(head, measured):
+def facts_problems(head, header):
+    """The community and builder every PO prints, and a prepared date between Sam's yes on the
+    review and today. Each is checked only when the build knows it."""
+    problems = []
+    for key, pattern, label in (("community", COMMUNITY, "community"), ("po_builder", BUILDER, "builder")):
+        if header.get(key):
+            m = pattern.search(head)
+            printed = m.group(1).strip() if m else ""
+            if printed != normalise(header[key]):
+                problems.append(f"the {label} reads '{printed}'; every PO prints '{header[key]}'")
+    if header.get("review_date"):
+        m = PREPARED.search(head)
+        try:
+            printed = datetime.strptime(m.group(1), "%B %d, %Y").date() if m else None
+        except ValueError:
+            printed = None
+        start = date.fromisoformat(header["review_date"])
+        if printed is None or not start <= printed <= date.today():
+            problems.append(f"the prepared date reads '{m.group(1) if m else ''}'; it must be between Sam's yes on "
+                            f"the review ({start:%B} {start.day}, {start.year}) and today")
+    return problems
+
+
+def measured_problems(head, measured, known=False):
+    """The date measured, printed as 'October 2, 2026', is house-info's date (2026-10-02). When the
+    build knows house-info gives no date (known), the header must say the date is not recorded."""
+    if not measured and known:
+        if MEASURED.search(head) or not NOT_RECORDED.search(head):
+            return ["house-info gives no date measured, so the header must read 'Measured on site: Date not "
+                    "recorded'. Never print a date Sam did not give"]
+        return []
     """The date measured, printed as 'October 2, 2026', is house-info's date (2026-10-02)."""
     if not measured:
         return []
@@ -60,7 +101,8 @@ def header_problems(request_pages, header):
     if header["job_numbers"] is not None:
         printed = sorted(re.findall(r"\d+", job.group(1))) if job else None
         if printed != sorted(header["job_numbers"]):
-            problems.append(f"the job line reads '{job.group(1) if job else ''}'; house-info gives the numbers "
+            problems.append(f"the job line reads '{job.group(1) if job else ''}'; house-info (and, when it gives no lot, the "
+                            "lot every PO prints) gives the numbers "
                             + ", ".join(header["job_numbers"]))
     if not header["job_names"] and header["job_numbers"] is None:
         problems.append("nothing to check the job line against: the POs give no job name and house-info "
@@ -69,8 +111,8 @@ def header_problems(request_pages, header):
         if normalise(name) not in head:
             problems.append(f"the PO's job name {name} is not in the header. Check that PO is for this "
                             "house: a PO for another house comes out of intake (ask Sam), it never goes in the header")
-    problems += measured_problems(head, header.get("measured"))
-    problems += who_problems(head, header)
+    problems += measured_problems(head, header.get("measured"), "measured" in header)
+    problems += who_problems(head, header) + facts_problems(head, header)
     want = int(header["document"].split("-")[1])
     found = sorted({int(n) for n in DOCUMENT.findall(text)})
     if found != [want]:

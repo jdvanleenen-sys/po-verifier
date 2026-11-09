@@ -80,6 +80,13 @@ def row_problems(row, plain, difference, between=()):
                    + ("no signed amount" if difference is None else f"{difference:+.2f}"))
     if "po_amount" not in row:
         return out
+    if "po_rate" in row:
+        want = 4 if row["po_rate"] is not None else 3
+        if len(plain) != want:
+            return out + [f"{where}: its row prints {len(plain)} amount(s) before the difference; it must print "
+                          f"{want} (agreed rate, {'PO rate, ' if want == 4 else ''}PO amount, measured value)"]
+        if want == 4 and plain[1] != row["po_rate"]:
+            out.append(f"{where}: PO rate expected ${row['po_rate']:.2f}, its row shows {shown(plain[1])}")
     full = len(plain) >= 3
     for label, want, got in (("agreed rate", row["rate"], plain[0] if plain else None),
                              ("PO amount", row["po_amount"], plain[-2] if full else None),

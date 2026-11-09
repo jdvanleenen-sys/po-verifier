@@ -64,6 +64,7 @@ def record_stop(paths, texts):
         if key != "variance":
             problems += [f"{path.name} {why}" for why in seal.seal_problems(texts[key], path.name)
                          if "copied under a new name" in why]
+            problems += [f"{path.name} {why}" for why in seal.ledger_problems(path, texts[key])]
         problems += chain_problems(path, texts[key], ROOT)
     if problems:
         sys.exit("Sam's records are not in order, so nothing was built:\n- " + "\n- ".join(problems))
@@ -156,11 +157,15 @@ def header_spec(house, n):
     folder = ROOT / "01 intake" / house
     info = money.read_text(folder / "house-info.md") if (folder / "house-info.md").is_file() else ""
     fields = [m.group(1) for f in ("address", "lot") if (m := re.search(rf"^- {f}:\s*(.+)$", info, re.I | re.M))]
-    names = {m.group(1).strip() for p in intake(house)[0] if (m := JOB_NAME.search(document_text(p)))}
+    texts = [document_text(p) for p in intake(house)[0]]
+    if fields and not re.search(r"^- lot:", info, re.I | re.M) and (lot := house_checks.lot_from_pos(texts)):
+        fields.append(" ".join(lot))
+    names = {m.group(1).strip() for t in texts if (m := JOB_NAME.search(t))}
     measured = re.search(r"^- date measured:\s*(\d{4}-\d{2}-\d{2})\s*$", info, re.I | re.M)
     who = house_checks.contractor.read(ROOT / "reference" / "contractor.md")
     return {"contractor": who["shown"], "builders": who["builders"],"document": f"VR-{n:04d}", "job_numbers": [x for f in fields for x in re.findall(r"\d+", f)] if fields else None,
-            "job_names": sorted(names), "measured": measured.group(1) if measured else None}
+            "job_names": sorted(names), "measured": measured.group(1) if measured else None,
+            **house_checks.header_extras(texts, money.read_text(r) if (r := latest(ROOT / "04 review" / house, "review")) else "")}
 
 
 def review_name(house):
@@ -179,8 +184,7 @@ def expected_or_stop(house):
     expected, problems = money.expected_request(records(house))
     if problems:
         sys.exit("Sam's records do not agree, so nothing was built:\n- " + "\n- ".join(problems) +
-                 "\nTo fix: never edit a file Sam approved. Write the corrected record as the next number "
-                 "(read-back-2, variance-2 or review-2), show it to Sam, and get his yes again.")
+                 "\n" + house_checks.fix_advice(ROOT, house))
     return expected
 
 
@@ -209,6 +213,7 @@ def build(house, notes_choice):
     left_out = [p.name for p in notes if p not in attached]
     report = [f"# {house}, script checks", "", *[f"- {l}" for l in lines], "",
               f"notes: {notes_choice}", f"pdf sha256: {house_checks.sha256(merged)}",
+              f"html sha256: {house_checks.sha256(draft / 'request.html')}",
               *[f"not attached: {o}" for o in others],
               *[f"not attached: {n} (Sam left it out)" for n in left_out]]
     (draft / "script-checks.md").write_text("\n".join(report) + "\n", encoding="utf-8")
@@ -232,9 +237,10 @@ def commit(house):
     pdf, checks = draft / "vpo-request.pdf", draft / "script-checks.md"
     if not pdf.is_file() or not checks.is_file():
         sys.exit("Run build first. Nothing was numbered.")
-    if pdf.stat().st_mtime < (draft / "request.html").stat().st_mtime:
-        sys.exit("request.html changed after the last build. Build again. Nothing was numbered.")
     checks_text = money.read_text(checks)
+    stale = house_checks.html_problem(draft / "request.html", checks_text)
+    if stale:
+        sys.exit(f"{stale} Nothing was numbered.")
     choice = re.search(r"^notes:\s*(yes|no|only:\S.*?)\s*$", checks_text, re.M)
     if not choice:
         sys.exit("script-checks.md does not record Sam's notes answer. Build again. Nothing was numbered.")

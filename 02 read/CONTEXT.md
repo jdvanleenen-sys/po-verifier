@@ -41,11 +41,14 @@ anything else he wrote.
 
 Write the "Sam measured" cell as his words in quotes first, then `;`, then the size slot, then
 `;` and anything else: `"Railing 13'"; 13 ft; no colour given (photo line 1)`. The size slot holds
-one plain number, with "count" before it or a unit after it if you like (', ft, LF, SF, EA), and
-nothing else but a remark in words ("0 here, counted on /027"). Code reads only that slot, the same
-way in the grid and the money gate. Never write in it a size you worked out: feet and inches
-(13'6"), a multiplier (124 ft x2), a range (10-12'), a number in words (ten), a row number (see
-row 3), or a comma for a decimal point (10,5). Write his words as he wrote them and leave the slot
+one plain number, with "count" before it or a unit after it if you like (', ft, feet, LF, SF,
+sq ft, EA, each). After that the code accepts only three things: nothing; a comma and a remark
+("3016, Sam confirmed"); or a remark of plain words with no number or sign before its first comma
+("0 here, counted on /027"). Anything else in the slot reads as no size. Code reads only that slot,
+the same way in the grid and the money gate. Never write in it a size you worked out: feet and
+inches (13'6"), a multiplier (124 ft x2, (x2), ×2), a range (10-12', 13 – 14 ft), a fraction
+(13 ½ ft), two sizes (13 ft / 16 ft), a number in words (ten), a row number (see row 3), or a comma
+for a decimal point (10,5). Write his words as he wrote them and leave the slot
 for his answer: the grid reads no size there and asks Sam, and his number goes in the slot when he
 gives it.
 
@@ -62,7 +65,9 @@ Before any question to Sam, read the standing answers in `../reference/contracto
 in his notes, payment splits, builder-named price list rows). When one answers the question, apply
 it and do not ask:
 - **Lines not in his notes** says done as ordered: write the row's "Sam measured" cell as
-  `"done as ordered"; <PO qty>; standing answer, contractor.md`. Its count is the PO's.
+  `"done as ordered"; <PO qty>; standing answer, contractor.md`. Its count is the PO's. When the PO
+  prints a count (EA) on a line the price list prices per foot or per square foot, the PO's count
+  is not a size: ask Sam for the size instead.
 - **Payment splits** names a line: answer its warning `leave unpriced: payment split, standing
   answer, contractor.md`.
 - **Builder-named price list rows**: a PO line from that builder that fits the builder's own row
@@ -180,13 +185,15 @@ He sees one table of everything that was read and replies yes. If a row is wrong
 right number and the AI writes a new numbered read-back with that row fixed, then shows the table
 again. Only a plain yes closes this stage (see "What counts as Sam's yes" in `../CONTEXT.md`).
 Write his yes, name and date into the read-back, then run `python "02 read/seal.py" "02 read/<house>/read-back-N.md"`.
-Never set `status: approved` by hand. If he says "I don't know" about a row, that row's grid cell
+Run it only after `grid.py check <house> --final` passes: the seal records the grid's sha256, and the
+grid never changes after it. Never set `status: approved` by hand. If he says "I don't know" about a row, that row's grid cell
 says `ask Sam:` and the read-back stays a draft.
 
 A read-back's `from:` names exactly one file or folder: `01 intake/<house>/` for read-back 1, and
 the read-back it corrects (`02 read/<house>/read-back-1.md`) for each one after. Its `attempt:` is
-its file number. compare and the request refuse a record whose `from:`, `attempt:` or numbering is
-wrong.
+its file number. A `from:` names a record of this same house, in this stage or an earlier one,
+never another house's. compare and the request refuse a record whose `from:`, `attempt:` or
+numbering is wrong.
 
 ## What goes out
 For each attempt, `<house>/grid-N.md`, the rule grid, and `<house>/read-back-N.md` (N starts at 1), holding the confirmed

@@ -1,5 +1,37 @@
 # Change log
 
+## 2026-11-09, every printed figure checked; the size slot is an allowlist (loop run 2, group A)
+The second attack on a real house got these past the code. The size slot now accepts, after its
+number and unit, only nothing, a comma and a remark, or plain words before the first comma, so
+"124 ft (x2)", "124 ft ×2", "13 – 14 ft", "13 ½ ft" and "13 ft / 16 ft" ask Sam. The price list
+refuses two active rows whose names differ only by a dash, a space or capitals. Every amount on
+the request prints its cents, and "Total requested" reads the amount right after it. Each row's
+PO rate is read off the PDF and the row must print exactly its amounts. The tax line's name must
+be the tax the PO charges (PST is not GST). 11 tests in `tests/test_run2_reading.py`; the po-styles
+test pipeline now prints each row's own PO rate, as a real request does.
+
+## 2026-11-09, a record is sealed once, with its grid (loop run 2, approvals)
+Run 2's attacker re-approved an edited review by deleting its seal line and running seal.py
+again, edited the grid's Intake read table after Sam's yes, and got "on hold" counted as on. Now:
+seal.py writes each seal to the folder's `seals.md` ledger (with the read-back's grid sha256) and
+refuses a file already in it; every reader refuses an approved file not in the ledger, not matching
+it, or whose grid changed. A review decision is exactly on or off, with any remark in brackets; a
+blank or anything else is refused. A record not saved as UTF-8 or UTF-16 is refused in words, not
+a traceback. The "records do not agree" advice names the real next numbers and never a hand-made
+variance. Commit compares request.html by sha256, not file times. 13 tests in
+`tests/test_run2_approvals.py`; 77 Mockup Drive has ledgers for its two sealed records.
+
+
+## 2026-11-09, loop run 2 (group C): the request header and the record chain
+The second attack on a real house got a request past all six checks with a date Sam never gave, a
+different community, and the builder cut to one word; a review naming another house's variance in
+its from: line; and "EPO goes on" with an extra digit read as the PO it contained. Check 6 now
+requires: "Date not recorded" when house-info gives no date; the community and builder every PO
+prints on its FROM line (the builder also named whole in contractor.md); a prepared date between
+Sam's yes on the review and today; and the PO lot when house-info gives none. A from: must name
+this house's own record, in its stage or an earlier one. "EPO goes on" must name a PO in this
+house exactly. 15 tests in `tests/test_run2_header_chain.py`.
+
 ## 2026-11-09, standing answers: never ask what Sam already answered
 The first front-to-back loop run on a real house asked Sam 18 questions; several had answers the
 folder already held or that never change from house to house (lines not in his notes, payment

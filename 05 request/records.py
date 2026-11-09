@@ -5,18 +5,16 @@ from decimal import Decimal
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "02 read"))
-from seal import approval_problems  # noqa: E402
+from seal import approval_problems, read_record  # noqa: E402
 
 AMOUNT = re.compile(r"(\(?)([+\-−]?)\s*\$?\s*(\d[\d,]*(?:\.\d+)?)")
 NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?")
 
 
 def read_text(path):
-    """Read a record written by any editor: UTF-8 with or without a BOM, or UTF-16."""
-    raw = Path(path).read_bytes()
-    if raw[:2] in (b"\xff\xfe", b"\xfe\xff"):
-        return raw.decode("utf-16")
-    return raw.decode("utf-8-sig")
+    """Read a record written by any editor: UTF-8 with or without a BOM, or UTF-16. Anything else
+    stops in plain words (seal.read_record), never a traceback."""
+    return read_record(path)
 
 
 def to_amount(cell):
@@ -71,3 +69,38 @@ def section(found, *words):
 def approved(text):
     """A record counts only when sealed by 02 read/seal.py after Sam's plain yes, and unchanged since."""
     return not approval_problems(text)
+
+
+TAX_NAME = re.compile(r"\b(gst/hst|hst|gst|pst|qst)\b", re.I)
+
+
+def tax_names(read_back_text):
+    """{PO number, lower case: the names of the taxes it charges (a non-zero amount)}, read from the
+    read-back's POs read table: 'GST/HST $0.00; PST $342.19' gives {'pst'}."""
+    out = {}
+    for r in section(tables(read_back_text), "pos read"):
+        po = column(r, "po number").strip().lower()
+        for part in column(r, "tax lines").split(";"):
+            names, amount = [n.lower() for n in TAX_NAME.findall(part)], to_amount(part)
+            if po and names and amount:
+                out.setdefault(po, set()).update(names)
+    return out
+
+
+DECISION = re.compile(r"^(on|off)(?:\s+\(.*\))?$", re.I)
+
+
+def decision_word(cell):
+    """Sam's review decision: 'on' or 'off' when the cell is exactly that word, alone or followed by a
+    remark in brackets ("off (Sam: leave the doors off)"). Anything else, blank included, is None."""
+    found = DECISION.match((cell or "").strip())
+    return found.group(1).lower() if found else None
+
+
+def decision_problem(cell):
+    """Why a review decision cell is not a decision, in words Sam can act on."""
+    said = (cell or "").strip()
+    if not said:
+        return "has no on/off decision from Sam. A blank is not a decision: ask him on or off"
+    return (f"has no on/off decision from Sam: '{said}' is not on or off. Write exactly on or off, with any "
+            "remark in brackets after it; ask Sam if he has not decided")
