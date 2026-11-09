@@ -46,7 +46,9 @@ A row on no PO goes on the request in its own "No PO" group unless Sam names a P
 that PO's EPO total includes it. Some builders put every extra on the main PO, the one that carries
 the whole list of work (some do: Jeff, 2026-11-08). If `../reference/contractor.md` has a standing
 answer under "Work on no PO goes on" for this builder, fill the column from it and write "EPO goes on: standing
-answer, contractor.md" in the reason column (the reason column also holds notes like this); Sam sees it in the table he says yes to. Otherwise ask Sam
+answer, contractor.md" in the reason column (the reason column also holds notes like this; the
+request refuses a blank "EPO goes on" on such a row unless the reason gives Sam's own answer as
+"Sam: ..."); Sam sees it in the table he says yes to. Otherwise ask Sam
 which PO; never pick it for him. Only a row on no PO can be named onto a PO, and only a PO in this house, written exactly as it
 appears under "POs read" (a typo such as an extra digit is refused, never guessed at).
 

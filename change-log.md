@@ -21,6 +21,16 @@ names or leave unpriced; every numbered record needs a from: line; request check
 words. CONTEXT.md says what the ledger does not guard against. 8 tests in
 tests/test_run3_approvals.py.
 
+## 2026-11-09, loop run 3, group C: the request
+The run 3 attack on a real house found four request-stage gaps. A row already on a request marked
+sent: yes could be asked for again through a second review (a44): build and commit now refuse it
+and point to 06 outcome. The job line passed with the house number and the lot swapped, because
+only the sorted digits were compared (a42): check 6 now reads the address word for word and the
+lot as "lot <lot>, block <block>". With a standing answer for work on no PO, a blank "EPO goes on"
+passed (a38): it is refused unless the reason gives Sam's own answer. One missing snapshot printed
+15 lines and advice to write a new read-back: the stop message now prints each problem once and
+the fix that fits. build_request.py was split first (proof_choice.py). 13 tests added.
+
 ## 2026-11-09, loop run 3: per-foot rule, practice badge, proof line, set-apart rows
 Run 3 on a real house asked Sam for floor area and stringer feet that his setup already answers:
 the run-2 rule "a PO count on a per-foot line is not a size" ignored contractor.md's "How he writes
