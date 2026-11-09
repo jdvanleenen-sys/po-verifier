@@ -84,7 +84,7 @@ def measured_text(row):
     remark, never a measurement. With quotes, the first number after them is still taken, because
     read-backs write the size as '"8' doors x12"; count 12'; so never put a row number there.
     His words are the FIRST quoted phrase: a quoted name later in the cell, such as a source note
-    '(photo, under "24 Tillatson Downs", line 2)', must not move where the size is read from.
+    '(photo, under "12 Sample Road", line 2)', must not move where the size is read from.
     """
     text = cell(row, "sam measured")
     if '"' in text:

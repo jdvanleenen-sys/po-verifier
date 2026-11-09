@@ -31,7 +31,7 @@ class NoQuoteNoMeasurement(unittest.TestCase):
         self.assertTrue(cell.startswith(rules.ASK_SAM), cell)
 
     def test_a_quoted_name_later_in_the_cell_is_not_the_measurement(self):
-        said = "\"Handrail 14'\"; 14 ft; no colour given (photo, under \"24 Tillatson Downs\", line 2)"
+        said = "\"Handrail 14'\"; 14 ft; no colour given (photo, under \"12 Sample Road\", line 2)"
         self.assertEqual(str(rules.measured_qty(row(said))), "14")
 
     def test_quoted_words_still_measure(self):
