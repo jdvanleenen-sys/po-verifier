@@ -58,7 +58,7 @@ class SlotMatchesHisWords(unittest.TestCase):
     def test_his_number_or_no_number_still_reads(self):
         for said, want in (('"Railing 16\'"; 16 ft', "16"), ('"done as ordered"; 16; standing answer', "16"),
                            ('"8\' doors 12"; count 12', "12"), ('"2,152 sf"; 2152', "2152"),
-                           ('"3.016 sf"; 3016, Sam confirmed', "3016")):
+                           ('"3.016 sf"; 3016, Sam confirmed 3016', "3016")):
             with self.subTest(said=said):
                 self.assertEqual(str(rules.measured_qty(row(said))), want)
 

@@ -60,7 +60,11 @@ def facts_problems(head, header):
             printed = datetime.strptime(m.group(1), "%B %d, %Y").date() if m else None
         except ValueError:
             printed = None
-        start = date.fromisoformat(header["review_date"])
+        try:
+            start = date.fromisoformat(header["review_date"])
+        except ValueError:
+            return problems + [f"the review's Date under Sam's yes, {header['review_date']}, is not a real day. "
+                               "A review is never edited after the yes: write the next review with the right date"]
         if printed is None or not start <= printed <= date.today():
             problems.append(f"the prepared date reads '{m.group(1) if m else ''}'; it must be between Sam's yes on "
                             f"the review ({start:%B} {start.day}, {start.year}) and today")

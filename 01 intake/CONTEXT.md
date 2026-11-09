@@ -21,6 +21,10 @@ takes a photo with his phone in the Claude app. After that he should see the res
 - The date he measured.
 - The date he dropped the files in.
 
+`house-info.md` has a line for each, `- Date measured: <YYYY-MM-DD>` included; leave a line blank
+rather than leaving it out. The folder is named for the address, or a nickname (`real-2`) when the
+address must stay private; the nickname is used in every stage.
+
 ## How it is filed
 One folder per house, named for the address, such as `77-mockup-drive`.
 

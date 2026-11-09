@@ -39,13 +39,20 @@ still pays Sam. Sam confirms the direction with the rest of the table.
 One row per thing he measured, in his own words: what it is, its size or count, the colour, and
 anything else he wrote.
 
+A row with no measurement of Sam's at all (a payment-split line, say) has `not in notes; standing
+answer, contractor.md` in that cell. When Sam answers an `ask Sam:` cell that is not a number (which
+price list row, say), write his words in that row's note in the next read-back, and answer the grid
+cell `pass: Sam picked <item> (<date>)`.
+
 Write the "Sam measured" cell as his words in quotes first, then `;`, then the size slot, then
 `;` and anything else: `"Railing 13'"; 13 ft; no colour given (photo line 1)`. The size slot holds
 one plain number, with "count" before it or a unit after it if you like (', ft, feet, LF, SF,
 sq ft, EA, each). After that the code accepts only three things: nothing; a comma and a remark
 ("3016, Sam confirmed"); or a remark of plain words before its first comma ("0 here, counted on
 /027"). A remark may not hold a sign, a number word (one to twenty), a digit (except in a PO
-number such as /027), or a word that multiplies (each, both, pair, double, twice, of them). Code
+number such as /027), or a word that multiplies (each, both, pair, double, twice, of them). These
+limits are on the size slot only; the parts after the next `;` are free notes and may hold digits
+("photo line 1"). Code
 reads the size only from that slot, the same way in the grid and the money gate, and it also reads
 his quoted words: if they multiply the size (10' x2, ×2, each side, both sides, a pair, double,
 twice, two of them) the cell reads as no size. In his words, "x" before the size itself ("8' doors
@@ -54,11 +61,14 @@ it) is a room size; neither counts as a multiplier. The slot must also be backed
 when his quoted words hold a number, the slot must be one of his numbers ("Railing 16'" with 61 in
 the slot reads as no size). His quoted words are read for the same traps as the slot: a range
 (13-14', 13 to 14), a pointer (see row 3, same, ditto, as above, do.), feet and inches (16 ft 6 in,
-16'6"), a number in words with a unit (sixteen feet), or a multiplier (x2, ×2, @, times, (2), 2 of,
-each, both, pair, twice) makes the cell read as no size. Quoted words with no number at all do not
+16'6"), a number in words with a unit (sixteen feet), or a multiplier or join (x2, ×2, @, times, (2), 2 of,
+each, both, pair, twice, a number then x at the start as in "2x Railing", +, &, *, a bracket holding a
+digit such as "(2 sides)") makes the cell read as no size. Curly quotes and prime marks (as typed on a
+phone or in Word: “ ” ‘ ’ ′ ″) are read as straight quotes, feet and inches first, so they never hide
+his words. Quoted words with no number at all do not
 back a size, except the exact words "done as ordered" (a standing answer). A cell with no quoted
-words ("stringers; 34 ft"), a 0 in the slot and a cell that ends "Sam confirmed" are read from the
-slot alone. Anything else reads as
+words ("stringers; 34 ft"), a 0 in the slot, and a cell holding "Sam confirmed <the slot's number>" are
+read from the slot alone; a bare "Sam confirmed" does not let a slot differ from his words. Anything else reads as
 no size. Never write in
 the slot a size you worked out: feet and inches (13'6"), a multiplier (124 ft x2, (x2), ×2), a
 range (10-12', 13 – 14 ft), a fraction (13 ½ ft), two sizes (13 ft / 16 ft), a number in words
@@ -85,7 +95,7 @@ money in testing: a number that may be a thousands figure written with a dot for
 for 3,016), a number ten times or more off its PO line, a 0 against a PO line (the whole line becomes
 a credit), and the same item, quantity and price on two different POs (probably ordered twice). Ask
 him. When he answers, write the number he gave in the row's "Sam measured" cell, after his own
-words, and end that cell with "Sam confirmed". Never write "Sam confirmed" for a row he was not
+words, and end that cell with "Sam confirmed <that number>", such as "Sam confirmed 3016". Never write "Sam confirmed" for a row he was not
 asked about.
 
 ## Standing answers: never ask what Sam already answered
@@ -105,8 +115,9 @@ it and do not ask:
   takes the same row when the PO line it sits against was matched to the builder's row; say so in
   the row's note so Sam sees it.
 - **When a PO line's own notes cut against a standing answer** (a builder's own railing row, but the
-  line says "iron spindle"), keep the standing answer's match, list the row under "At risk for this
-  house" with the words from the notes, and ask Sam in the table. Never decide it either way.
+  line says "iron spindle"), keep the standing answer's match and list the row under "At risk for this
+  house" with the words from the notes. Do not ask it as a separate question: Sam sees it in the table
+  he says yes to, and a standing answer is his answer until he changes it there.
 Sam still sees every one of these in the table he says yes to; the standing answer only saves the
 question. When the answer says "ask each time", ask. Never ask Sam something his notes, the price
 list or an answer he already gave in this house settles.
