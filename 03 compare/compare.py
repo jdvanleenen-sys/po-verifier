@@ -25,7 +25,7 @@ ROW_HEADER = ("| Row | PO number | Item | Unit | Agreed rate | PO qty | PO rate 
 
 
 def read(path):
-    return path.read_bytes().decode("utf-8-sig")
+    return seal.read_record(path)
 
 
 def inputs(house):
@@ -34,7 +34,7 @@ def inputs(house):
     if path is None:
         sys.exit(f"No read-back for {house} in 02 read/.")
     text = read(path)
-    problems = [f"{path.name} {why}" for why in seal.approval_problems(text, path.name)]
+    problems = [f"{path.name} {why}" for why in seal.file_approval_problems(path, text)]
     problems += chain_problems(path, text, ROOT)
     if problems:
         sys.exit("Nothing was compared. Send the house back to 02 read:\n- " + "\n- ".join(problems))

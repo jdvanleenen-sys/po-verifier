@@ -185,7 +185,8 @@ He sees one table of everything that was read and replies yes. If a row is wrong
 right number and the AI writes a new numbered read-back with that row fixed, then shows the table
 again. Only a plain yes closes this stage (see "What counts as Sam's yes" in `../CONTEXT.md`).
 Write his yes, name and date into the read-back, then run `python "02 read/seal.py" "02 read/<house>/read-back-N.md"`.
-Never set `status: approved` by hand. If he says "I don't know" about a row, that row's grid cell
+Run it only after `grid.py check <house> --final` passes: the seal records the grid's sha256, and the
+grid never changes after it. Never set `status: approved` by hand. If he says "I don't know" about a row, that row's grid cell
 says `ask Sam:` and the read-back stays a draft.
 
 A read-back's `from:` names exactly one file or folder: `01 intake/<house>/` for read-back 1, and

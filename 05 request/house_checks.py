@@ -49,3 +49,35 @@ def lot_from_pos(texts):
     """The lot and block numbers when every PO and EPO that prints one prints the same; else None."""
     found = {tuple(re.findall(r"\d+", m.group(1))) for t in texts if (m := LOT.search(t))}
     return list(found.pop()) if len(found) == 1 else None
+
+
+def next_free(folder, stem):
+    """The next free file name for a numbered record, such as read-back-3.md."""
+    taken = [int(m.group(1)) for p in Path(folder).glob(f"{stem}-*.md")
+             if (m := re.match(rf"{re.escape(stem)}-(\d+)\.md$", p.name))]
+    return f"{stem}-{max(taken, default=0) + 1}.md"
+
+
+def fix_advice(root, house):
+    """How to correct records that do not agree, with the real next numbers and no circle."""
+    root = Path(root)
+    read_back = next_free(root / "02 read" / house, "read-back")
+    review = next_free(root / "04 review" / house, "review")
+    return ("To fix: never edit a file Sam approved. If the read-back is wrong, write " + read_back +
+            " with the correction, show it to Sam and seal his yes; compare.py then writes a new variance "
+            "from it. A variance is never written or corrected by hand. If only the review is wrong, write "
+            + review + " from the variance, show it to Sam and seal his yes. Then build again.")
+
+
+HTML_LINE = re.compile(r"^html sha256:\s*([0-9a-f]{64})\s*$", re.M)
+
+
+def html_problem(html, checks_text):
+    """request.html is the one build printed: its sha256, not its file time (a copy or a sync moves
+    file times without changing a byte)."""
+    m = HTML_LINE.search(checks_text)
+    if not m:
+        return "script-checks.md does not record request.html's sha256. Build again."
+    if not Path(html).is_file() or m.group(1) != sha256(html):
+        return "request.html changed after the last build. Build again."
+    return None
