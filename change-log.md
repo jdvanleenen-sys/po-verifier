@@ -1,5 +1,15 @@
 # Change log
 
+## 2026-11-09, every printed figure checked; the size slot is an allowlist (loop run 2, group A)
+The second attack on a real house got these past the code. The size slot now accepts, after its
+number and unit, only nothing, a comma and a remark, or plain words before the first comma, so
+"124 ft (x2)", "124 ft ×2", "13 – 14 ft", "13 ½ ft" and "13 ft / 16 ft" ask Sam. The price list
+refuses two active rows whose names differ only by a dash, a space or capitals. Every amount on
+the request prints its cents, and "Total requested" reads the amount right after it. Each row's
+PO rate is read off the PDF and the row must print exactly its amounts. The tax line's name must
+be the tax the PO charges (PST is not GST). 11 tests in `tests/test_run2_reading.py`; the po-styles
+test pipeline now prints each row's own PO rate, as a real request does.
+
 ## 2026-11-09, standing answers: never ask what Sam already answered
 The first front-to-back loop run on a real house asked Sam 18 questions; several had answers the
 folder already held or that never change from house to house (lines not in his notes, payment

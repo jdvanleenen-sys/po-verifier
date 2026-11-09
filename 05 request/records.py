@@ -71,3 +71,20 @@ def section(found, *words):
 def approved(text):
     """A record counts only when sealed by 02 read/seal.py after Sam's plain yes, and unchanged since."""
     return not approval_problems(text)
+
+
+TAX_NAME = re.compile(r"\b(gst/hst|hst|gst|pst|qst)\b", re.I)
+
+
+def tax_names(read_back_text):
+    """{PO number, lower case: the names of the taxes it charges (a non-zero amount)}, read from the
+    read-back's POs read table: 'GST/HST $0.00; PST $342.19' gives {'pst'}."""
+    out = {}
+    for r in section(tables(read_back_text), "pos read"):
+        po = column(r, "po number").strip().lower()
+        for part in column(r, "tax lines").split(";"):
+            names, amount = [n.lower() for n in TAX_NAME.findall(part)], to_amount(part)
+            if po and names and amount:
+                out.setdefault(po, set()).update(names)
+    return out
+

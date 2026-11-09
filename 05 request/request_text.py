@@ -100,7 +100,11 @@ def first_amount_after(text, label):
     at = text.find(label)
     if at < 0:
         return None
-    found = amounts(text[at + len(label):])
+    rest = text[at + len(label):]
+    first = MONEY.search(rest)
+    if first is None or "$" in rest[:first.start()]:
+        return None  # the first $ after the label is not a whole amount (no cents, or garbled)
+    found = amounts(rest)
     return found[0] if found else None
 
 

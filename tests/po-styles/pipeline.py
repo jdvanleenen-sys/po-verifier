@@ -229,7 +229,7 @@ def request_text(style, expected):
         taxes = by_number.get(po, style["pos"][0])["taxes"]
         heading = "No PO Work done on site that is on no PO." if po == NO_PO else f"PO {po} Interior paint."
         body = "".join("\n".join([r["label"], "EA", money(r["rate"]), f"{r['po_qty'].normalize():f}",
-                                  money(r["rate"]) if po != NO_PO else "", money(r["po_amount"]),
+                                  money(r["po_rate"]) if r.get("po_rate") is not None else "", money(r["po_amount"]),
                                   f"{r['measured_qty'].normalize():f}", money(r["measured_value"]),
                                   money(r["difference"], True), "Site count differs."]) + "\n" for r in rows)
         tax_label = " + ".join(f"{label} {Decimal(p).normalize():f}%" for label, p in taxes)
