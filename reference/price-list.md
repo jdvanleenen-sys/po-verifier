@@ -17,7 +17,8 @@ nothing here is sent to anyone.
 named **Price list**: one row per item, with the columns Item, Unit, Rate, Active first. Any column
 after those (such as Source, where a rate came from) is Sam's and is ignored. The demo list has 53
 rows, 52 active ("Whole-house interior" is not). Sam opens the file in Excel, changes a rate or
-adds a row, and saves it as it is. Nobody else changes it. Each house freezes a plain-text copy
+adds a row, and saves it as it is. A real contractor's
+list has its own rows and count: the workbook is the truth, never the examples in this file. Nobody else changes it. Each house freezes a plain-text copy
 (`02 read/<house>/price-list-N.csv`) when it is read, so a later change never changes a house
 already checked.
 
@@ -89,8 +90,10 @@ If the snapshot command refuses the file, tell Sam what it said and stop. He fix
   which one his number is.
 - **Single family and multi family have separate basic painting rows.** Use the PO's community or
   job type to tell which, and show the choice to Sam.
-- **Flat-rate prime and touch-up are their own rows** ("Wall prime, flat rate" and "Interior
-  paint touch-up, flat rate"), each EA. They are not part of "Basic SF Painting".
+- **Flat-rate prime and touch-up, when the list has them, are their own rows** (on the demo list,
+  "Wall prime, flat rate" and "Interior paint touch-up, flat rate"), each EA. They are not part of
+  "Basic SF Painting". A list without them sends prime and touch-up lines to the warning table, or
+  to a payment-split standing answer in contractor.md.
 - **"8' doors and trim" is painting the door and its trim, each.** "Upgrade std door to 8'" is an
   extra charge on top of it, not the same item.
 
