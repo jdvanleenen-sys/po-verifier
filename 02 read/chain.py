@@ -24,7 +24,10 @@ def chain_problems(path, text, root):
         problems.append(f"{path.name} leaves a gap: {', '.join(gaps)} is missing below it. Files are "
                         "numbered 1, 2, 3 with no gap, and none is ever deleted or renamed")
     origin = FROM.search(text)
-    if origin is not None:
+    if origin is None:
+        problems.append(f"{path.name} has no from: line. Every numbered record names the one file or folder "
+                        "it was made from, such as from: 02 read/<house>/read-back-1.md")
+    else:
         named = origin.group(1).strip().strip("`").strip()
         if not named or not (root / named).exists():
             problems.append(f"{path.name}: from: must name exactly one file or folder that exists, such as "

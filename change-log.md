@@ -11,6 +11,16 @@ by grid.py check) sets every row on an HTML PO against its own PO line, and coun
 as not checked. prices.py check reads a read-back saved in another encoding in plain words. 14 tests
 in tests/test_run3_reading.py.
 
+## 2026-11-09, loop run 3 group B: a yes is plain, a used record is never sealed
+Run 3's attack sealed "Yes, but take the lockers off." and "Yes?" as Sam's yes, re-sealed an
+approved review after a request was built from it, passed "I don't know, ask Joe" as a warning
+answer, passed a record with no from: line, and stopped commit with a traceback on a request check
+saved as ANSI. Now: a yes is "yes" alone or one of three plain forms; seal.py refuses a record
+another record already names in from: or "from review:"; a warning answer starts with add row,
+names or leave unpriced; every numbered record needs a from: line; request checks are read in plain
+words. CONTEXT.md says what the ledger does not guard against. 8 tests in
+tests/test_run3_approvals.py.
+
 ## 2026-11-09, loop run 3: per-foot rule, practice badge, proof line, set-apart rows
 Run 3 on a real house asked Sam for floor area and stringer feet that his setup already answers:
 the run-2 rule "a PO count on a per-foot line is not a size" ignored contractor.md's "How he writes

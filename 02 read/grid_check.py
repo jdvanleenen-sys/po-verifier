@@ -114,6 +114,9 @@ def check_grid(read_back_text, grid_text, snapshot_raw, final=False):
     return state["problems"], state["asks"]
 
 
+ANSWERS = ("add row", "names", "name ", "leave unpriced")
+
+
 def warning_problems(read_back_text):
     """Each 'not on the price list' item Sam has not answered, or that the warning table leaves out.
 
@@ -121,7 +124,7 @@ def warning_problems(read_back_text):
     """
     header, warned = table(under(read_back_text, "warning"))
     problems = [f"warning item {w[0]} '{w[1]}': no answer from Sam (add row / names item / leave unpriced)"
-                for w in warned if len(w) < len(header) or not w[-1].strip()]
+                for w in warned if len(w) < len(header) or not w[-1].strip().lower().startswith(ANSWERS)]
     rows_header, rows = table(under(read_back_text, "rows"))
     if "price list item" not in rows_header:
         return problems
