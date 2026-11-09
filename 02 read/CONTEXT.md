@@ -41,11 +41,14 @@ anything else he wrote.
 
 Write the "Sam measured" cell as his words in quotes first, then `;`, then the size slot, then
 `;` and anything else: `"Railing 13'"; 13 ft; no colour given (photo line 1)`. The size slot holds
-one plain number, with "count" before it or a unit after it if you like (', ft, LF, SF, EA), and
-nothing else but a remark in words ("0 here, counted on /027"). Code reads only that slot, the same
-way in the grid and the money gate. Never write in it a size you worked out: feet and inches
-(13'6"), a multiplier (124 ft x2), a range (10-12'), a number in words (ten), a row number (see
-row 3), or a comma for a decimal point (10,5). Write his words as he wrote them and leave the slot
+one plain number, with "count" before it or a unit after it if you like (', ft, feet, LF, SF,
+sq ft, EA, each). After that the code accepts only three things: nothing; a comma and a remark
+("3016, Sam confirmed"); or a remark of plain words with no number or sign before its first comma
+("0 here, counted on /027"). Anything else in the slot reads as no size. Code reads only that slot,
+the same way in the grid and the money gate. Never write in it a size you worked out: feet and
+inches (13'6"), a multiplier (124 ft x2, (x2), ×2), a range (10-12', 13 – 14 ft), a fraction
+(13 ½ ft), two sizes (13 ft / 16 ft), a number in words (ten), a row number (see row 3), or a comma
+for a decimal point (10,5). Write his words as he wrote them and leave the slot
 for his answer: the grid reads no size there and asks Sam, and his number goes in the slot when he
 gives it.
 

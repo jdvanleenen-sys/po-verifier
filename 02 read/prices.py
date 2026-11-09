@@ -121,9 +121,18 @@ def parse(raw):
         key = row["item"].lower()
         if key in rows and rows[key]["active"] and row["active"]:
             problems.append(f"price list line {n}: '{row['item']}' is on the list twice as active")
+        twin = next((r for k, r in rows.items() if k != key and r["active"] and alike(k) == alike(key)), None)
+        if twin and row["active"]:
+            problems.append(f"price list line {n}: '{row['item']}' and '{twin['item']}' differ only by a dash, "
+                            "a space or capitals, and both are active. Keep one, or name them apart")
         if key not in rows or row["active"]:
             rows[key] = row
     return rows, problems
+
+
+def alike(name):
+    """A name with dashes, spaces and capitals made alike: 'Railing - wood' and 'Railing — wood' match."""
+    return re.sub(r"\s*[-‐-―]\s*", "-", " ".join(name.split())).lower()
 
 
 def next_snapshot(folder):

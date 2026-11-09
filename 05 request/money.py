@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "02 read"))
 import prices  # noqa: E402
 from records import (  # noqa: E402,F401  (callers use money.column, money.read_text, ...)
-    NUMBER, AMOUNT, approval_problems, approved, column, read_text, section, tables, to_amount, to_number)
+    NUMBER, AMOUNT, approval_problems, approved, column, read_text, section, tables, tax_names, to_amount, to_number)
 import grid_check  # noqa: E402
 import grid_rules  # noqa: E402
 
@@ -126,7 +126,7 @@ def checked_row(v, rb, epos, problems):
         problems.append(f"{where}: says PO amount {v['po_amount']} and variance {v['variance']}; "
                         f"the read-back gives {po_amount} and {true_variance}")
     rate = rb["rate"] or Decimal(0)
-    return {"rate": rate, "po_qty": rb["po_qty"] or Decimal(0), "po_amount": po_amount,
+    return {"rate": rate, "po_qty": rb["po_qty"] or Decimal(0), "po_amount": po_amount, "po_rate": rb["unit_price"] if rb["po"] != NO_PO else None,
             "measured_qty": v["measured_qty"] or Decimal(0), "measured_value": (v["measured_qty"] or 0) * rate,
             "difference": true_variance}
 
@@ -291,7 +291,7 @@ def expected_request(records):
         house[1] += tax
     out["house"] = {"before": house[0], "tax": house[1], "total": house[0] + house[1]}
     out["po_numbers"] = sorted(set(rates))
-    out["epo_names"] = [e["name"] for e in epos]
+    out["epo_names"], out["tax_names"] = [e["name"] for e in epos], tax_names(records["read-back"])
     # Amounts a row's why or a PO rate may print besides the row and group figures.
     out["other_amounts"] = sorted({r["unit_price"] for r in rb_rows if r.get("unit_price") is not None} |
                                   {e["total"] for e in epos})
