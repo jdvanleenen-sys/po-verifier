@@ -9,6 +9,7 @@ import re
 from decimal import Decimal, InvalidOperation
 
 import prices
+import size_read
 
 ASK = "?"
 PASS, FAIL, NA, AT_RISK, ASK_SAM, NOT_COMPARABLE = (
@@ -17,10 +18,6 @@ STATUSES = (PASS, FAIL, NA, AT_RISK, ASK_SAM, NOT_COMPARABLE)
 NO_PO = "none"
 SELECTION = re.compile(r"selection:\s*([0-9][0-9.]*(?:e[+\-]?\d+)?)", re.I)
 NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?")
-SIZE_NUMBER = re.compile(r"(?:count\s+)?(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)", re.I)
-SIZE_UNIT = re.compile(r"\s*(?:'|(?:ft|feet|lf|sf|sq\.?\s?ft|ea|each)\b)", re.I)
-NOT_A_REMARK = re.compile(r"(?:\d|x\b|x\s*\d|by\b|in\b|inch|to\b|or\b|and\b|plus\b|[+&\-'\"()/×½¼¾–—])", re.I)
-WORDS_ONLY = re.compile(r"\s+[a-z][a-z ]*", re.I)
 MONEY = re.compile(r"\$\s*[\d,]+(?:\.\d+)?")
 DOT_FOR_COMMA = re.compile(r"\d{1,3}\.\d{3}")
 CONFIRMED = "sam confirmed"
@@ -77,41 +74,9 @@ def item_state(row):
     return "unpriced" if item.startswith(prices.UNPRICED) or not item else "priced"
 
 
-def size_slot(text):
-    """The ';' part after Sam's first quoted phrase, or else the second ';' part: his size or count."""
-    if '"' in text:
-        start = text.index('"')
-        end = text.find('"', start + 1)
-        if end < 0:
-            return None
-        parts = text[end + 1:].split(";")
-        return parts[1] if not parts[0].strip() and len(parts) > 1 else parts[0]
-    parts = text.split(";")
-    return parts[1] if len(parts) > 1 else None
-
-
 def measured_text(row):
-    """Sam's size or count from the size slot (size_slot), or None so the grid asks Sam: one plain
-    number, optionally "count " before it and a unit after it (', ft, feet, LF, SF, sq ft, EA,
-    each), then only what remark_ok allows. His words are the FIRST quoted phrase, so a quoted
-    source note later in the cell never moves where the size is read from."""
-    slot = (size_slot(cell(row, "sam measured")) or "").strip()
-    found = SIZE_NUMBER.match(slot)
-    if not found:
-        return None
-    rest = slot[found.end():]
-    unit = SIZE_UNIT.match(rest)
-    rest = rest[unit.end():] if unit else rest
-    return found.group(1) if remark_ok(rest) else None
-
-
-def remark_ok(rest):
-    """An allowlist of what may follow the size: nothing, a comma and a remark, or words with no
-    number or sign before the first comma. " (x2)", " ×2", " – 14 ft", " ½ ft" are refused."""
-    head, comma, tail = rest.partition(",")
-    if head.strip() and not (WORDS_ONLY.fullmatch(head) and not NOT_A_REMARK.match(head.strip())):
-        return False
-    return not (comma and NOT_A_REMARK.match(tail.strip()))
+    """Sam's size or count as written, or None so the grid asks Sam. See size_read.size_text."""
+    return size_read.size_text(cell(row, "sam measured"))
 
 
 def measured_qty(row):
