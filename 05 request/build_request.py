@@ -31,6 +31,7 @@ from pathlib import Path
 STAGE = Path(__file__).resolve().parent
 ROOT = STAGE.parent
 sys.path.insert(0, str(STAGE))
+import house_checks  # noqa: E402
 import money  # noqa: E402
 import printing  # noqa: E402
 import verify  # noqa: E402
@@ -65,6 +66,9 @@ def records(house):
     for key, (stage, stem) in named.items():
         match = re.search(rf"{re.escape(stage)}/{re.escape(house)}/({stem}-\d+\.md)", source)
         path = ROOT / stage / house / match.group(1) if match else latest(ROOT / stage / house, stem)
+        if match and not path.is_file():
+            sys.exit(f"The {key} named in the record before it, {stage}/{house}/{match.group(1)}, does not "
+                     "exist. Nothing was built.")
         if path is None or not path.is_file():
             sys.exit(f"No {key} for {house} in {stage}/. Nothing was built.")
         texts[key] = source = money.read_text(path)
@@ -137,8 +141,21 @@ def header_spec(house, n):
     fields = [m.group(1) for f in ("address", "lot") if (m := re.search(rf"^- {f}:\s*(.+)$", info, re.I | re.M))]
     names = {m.group(1).strip() for p in intake(house)[0] if (m := JOB_NAME.search(document_text(p)))}
     measured = re.search(r"^- date measured:\s*(\d{4}-\d{2}-\d{2})\s*$", info, re.I | re.M)
-    return {"document": f"VR-{n:04d}", "job_numbers": [x for f in fields for x in re.findall(r"\d+", f)] if fields else None,
+    who = house_checks.contractor.read(ROOT / "reference" / "contractor.md")
+    return {"contractor": who["shown"], "builders": who["builders"],"document": f"VR-{n:04d}", "job_numbers": [x for f in fields for x in re.findall(r"\d+", f)] if fields else None,
             "job_names": sorted(names), "measured": measured.group(1) if measured else None}
+
+
+def review_name(house):
+    review = latest(ROOT / "04 review" / house, "review")
+    return f"04 review/{house}/{review.name}" if review else None
+
+
+def stop_if_changed(house):
+    """The contractor and intake checks: refused before anything is printed or numbered."""
+    problems = house_checks.gate_problems(ROOT, house, records(house))
+    if problems:
+        sys.exit("Nothing was built or numbered:\n- " + "\n- ".join(problems))
 
 
 def expected_or_stop(house):
@@ -155,6 +172,7 @@ def build(house, notes_choice):
     if not (draft / "request.html").is_file():
         sys.exit(f"Put the filled-in layout at 05 request/drafts/{house}/request.html first.")
     expected = expected_or_stop(house)
+    stop_if_changed(house)
     docs, notes, others = intake(house)
     if notes_choice != "no" and not notes:
         sys.exit("Sam said attach his site notes, but there is no notes file in intake.")
@@ -173,7 +191,8 @@ def build(house, notes_choice):
                               header_spec(house, next_number(STAGE / house)))
     left_out = [p.name for p in notes if p not in attached]
     report = [f"# {house}, script checks", "", *[f"- {l}" for l in lines], "",
-              f"notes: {notes_choice}", *[f"not attached: {o}" for o in others],
+              f"notes: {notes_choice}", f"pdf sha256: {house_checks.sha256(merged)}",
+              *[f"not attached: {o}" for o in others],
               *[f"not attached: {n} (Sam left it out)" for n in left_out]]
     (draft / "script-checks.md").write_text("\n".join(report) + "\n", encoding="utf-8")
     print("\n".join(lines + [f"Not attached: {o}" for o in others]))
@@ -198,10 +217,20 @@ def commit(house):
         sys.exit("Run build first. Nothing was numbered.")
     if pdf.stat().st_mtime < (draft / "request.html").stat().st_mtime:
         sys.exit("request.html changed after the last build. Build again. Nothing was numbered.")
-    choice = re.search(r"^notes:\s*(yes|no|only:\S.*?)\s*$", money.read_text(checks), re.M)
+    checks_text = money.read_text(checks)
+    choice = re.search(r"^notes:\s*(yes|no|only:\S.*?)\s*$", checks_text, re.M)
     if not choice:
         sys.exit("script-checks.md does not record Sam's notes answer. Build again. Nothing was numbered.")
+    changed = house_checks.pdf_problem(pdf, checks_text)
+    if changed:
+        sys.exit(f"{changed} Nothing was numbered.")
     expected = expected_or_stop(house)
+    stop_if_changed(house)
+    review = review_name(house)
+    used = house_checks.review_used(STAGE / house, review)
+    if used:
+        sys.exit(f"{used} already comes from {review}. A new request needs a new review with Sam's yes. "
+                 "Nothing was numbered.")
     _, notes, _ = intake(house)
     attached = choose_notes(notes, choice.group(1))
     house_dir = STAGE / house
@@ -214,13 +243,14 @@ def commit(house):
         sys.exit("This exact request is already numbered. Nothing was numbered.")
     n = next_number(house_dir)
     shutil.copy2(pdf, house_dir / f"vpo-request-{n}.pdf")
-    write_check(house_dir / f"request-check-{n}.md", house, n, lines, choice.group(1))
+    write_check(house_dir / f"request-check-{n}.md", house, n, lines, choice.group(1), review)
     print(f"Numbered as 05 request/{house}/vpo-request-{n}.pdf and request-check-{n}.md")
     return 0
 
 
-def write_check(path, house, n, lines, notes):
+def write_check(path, house, n, lines, notes, review):
     body = ["---", f"house: {house}", f"attempt: {n}", "stage: 05 request", f"request: vpo-request-{n}.pdf",
+            f"from review: {review}",
             "checked by: 05 request/build_request.py (all six checks run by the script on the PDF)", "---", "",
             f"# {house}, request check {n}", "", *[f"- {l}" for l in lines], "",
             f"Site notes attached as proof: {notes}", "", "## Sam's yes to send",

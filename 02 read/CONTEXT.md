@@ -133,7 +133,11 @@ check that was skipped shows as a blank cell, and a blank cell is refused.
    rebuild the grid with `--replace` (only while the read-back is a draft), and answer it again.
 5. Run `python "02 read/grid.py" check <house>`. It refuses a blank or `?` cell, a missing or extra
    row, a changed code cell, any `fail`, an at-risk row not under At risk, and a read-back whose POs
-   read, Rows or Extra items changed after the grid was built.
+   read, Rows or Extra items changed after the grid was built. It also refuses a PO made out to
+   anyone but the contractor in `../reference/contractor.md` (a different contractor is a different
+   copy of the folder, set up through `00 setup`), and any file in `01 intake/<house>/` that changed,
+   was added or is gone since `grid.py build` wrote the grid's Intake read table. Never edit that
+   table.
 
 The house leaves this stage only when `grid.py check <house> --final` passes, which also refuses
 any cell still marked `ask Sam`, any warning item with no answer from Sam, and any row marked

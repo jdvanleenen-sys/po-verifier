@@ -13,6 +13,7 @@ difference. This is a practice build. The data is made up and nothing is ever se
 | `reference/price-list.xlsx` | The price list, the only one. Sam keeps it in Excel; the checker reads its "Price list" sheet |
 | `02 read/grid.py` | The rule grid: every read-back row and PO against every rule, one cell each. Code fills what it can; the AI answers the rest one rule at a time. Its helpers: `grid_rules.py` (the rules), `grid_read.py`, `grid_check.py` |
 | `03 compare/compare.py` | Writes the variance by code from the approved read-back and its grid. Its arithmetic is `compare_rows.py`, kept apart from the money gate |
+| `02 read/contractor.py`, `02 read/intake_read.py` | Who the folder is for (read from `reference/contractor.md`; a PO to another vendor is refused), and the fingerprint of every intake file, written into each grid and checked before a request is built or numbered |
 | `02 read/prices.py` | Reads the Excel price list (through `price_excel.py`), checks it, freezes a copy per read-back (`price-list-N.csv`), and checks every rate in the read-back against it |
 | `reference/contractor.md` | Who the contractor is and his settings, written by `00 setup` |
 | `reference/walk-test.md` | The checklist for testing this folder cold |
@@ -23,7 +24,7 @@ difference. This is a practice build. The data is made up and nothing is ever se
 | `03 compare/` | The difference, worked out by calculation |
 | `04 review/` | Sam's decisions |
 | `05 request/` | The request for the site super, checked before Sam sees it |
-| `05 request/build_request.py` | Prints the request, merges the proof, runs the six checks on the PDF, and numbers only a request that passed. Its helpers: `money.py` (works out what the request must say from Sam's approved records, reading them with `records.py`), `verify.py` (the six checks, reading the PDF text with `request_text.py`, each row with `row_checks.py`, the header with `header_checks.py`), `printing.py` (the browser) |
+| `05 request/build_request.py` | Prints the request, merges the proof, runs the six checks on the PDF, and numbers only a request that passed. Its helpers: `money.py` (works out what the request must say from Sam's approved records, reading them with `records.py`), `house_checks.py` (the contractor, intake, draft-PDF and one-request-per-review checks), `verify.py` (the six checks, reading the PDF text with `request_text.py`, each row with `row_checks.py`, the header with `header_checks.py`), `printing.py` (the browser) |
 | `tests/` | Planted mistakes the money gate, the price check and the rule grid must refuse, and the variance code checked against the gate: `python -m unittest discover -s tests` |
 | `tests/houses/` | Six test houses with POs, site notes, Sam's answers and the key; `tests/cold_run.py` runs one cold and scores it. For testing the folder, not for the agent doing the job |
 | `05 request/drafts/` | The workbench for a request before it passes. Not the record |
