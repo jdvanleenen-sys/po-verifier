@@ -17,6 +17,7 @@ sys.path.insert(0, str(ROOT / "02 read"))
 import grid_check  # noqa: E402
 import grid_rules as rules  # noqa: E402
 import prices  # noqa: E402
+import seal  # noqa: E402
 from grid_read import as_dicts, table, under  # noqa: E402
 
 CONTRACTOR = ROOT / "reference" / "contractor.md"
@@ -38,10 +39,8 @@ def thresholds(text):
 
 
 def sams_yes(text):
-    status = re.search(r"^status:\s*(\S+)", text, re.M)
-    answer = re.search(r"^-\s*Answer:\s*(.+)$", text, re.M)
-    return bool(status and status.group(1).lower() == "approved"
-                and answer and re.search(r"\byes\b", answer.group(1), re.I))
+    """Sealed by 02 read/seal.py after Sam's plain yes, and unchanged since."""
+    return not seal.approval_problems(text)
 
 
 def money(value, signed=False):

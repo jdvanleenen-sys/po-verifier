@@ -4,6 +4,7 @@ attempt: 1
 stage: 02 read
 from: 01 intake/77-mockup-drive/
 status: approved
+sealed: read-back-1.md sha256 401ec984a09b9b5966aa0ceb5b672b56e0ddfe062067daee5373bdc2137e6103
 price list read: 2026-10-17, price-list-1.csv, sha256 2165c84360409d1a276ca421ac20d0999ddd1224ee6a5964e3ecffe54db9aeaa (53 rows, 52 active; the snapshot file was saved 2026-11-02 from the same price list, unchanged since 2026-10-15; see change-log)
 ---
 

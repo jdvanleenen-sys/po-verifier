@@ -34,6 +34,8 @@ sys.path.insert(0, str(STAGE))
 import money  # noqa: E402
 import printing  # noqa: E402
 import verify  # noqa: E402
+from chain import chain_problems  # noqa: E402  (money puts 02 read on the path)
+import seal  # noqa: E402
 
 DOCS = (".html", ".htm", ".pdf")
 NOTES = (".txt", ".md", ".jpg", ".jpeg", ".png", ".pdf")
@@ -54,12 +56,25 @@ def grid_path(read_back_path):
     return read_back_path.with_name(read_back_path.name.replace("read-back-", "grid-", 1))
 
 
+def record_stop(paths, texts):
+    """Stop when an approved record carries another file's seal or its numbering is broken."""
+    problems = []
+    for key, path in paths.items():
+        if key != "variance":
+            problems += [f"{path.name} {why}" for why in seal.seal_problems(texts[key], path.name)
+                         if "copied under a new name" in why]
+        problems += chain_problems(path, texts[key], ROOT)
+    if problems:
+        sys.exit("Sam's records are not in order, so nothing was built:\n- " + "\n- ".join(problems))
+
+
 def records(house):
     """The approved review, the variance it names, and the read-back that variance names."""
     review = latest(ROOT / "04 review" / house, "review")
     if review is None:
         sys.exit(f"No review for {house} in 04 review/. Nothing was built.")
     texts = {"review": money.read_text(review)}
+    paths = {"review": review}
     named = {"variance": ("03 compare", "variance"), "read-back": ("02 read", "read-back")}
     source = texts["review"]
     for key, (stage, stem) in named.items():
@@ -68,6 +83,8 @@ def records(house):
         if path is None or not path.is_file():
             sys.exit(f"No {key} for {house} in {stage}/. Nothing was built.")
         texts[key] = source = money.read_text(path)
+        paths[key] = path
+    record_stop(paths, texts)
     grid = grid_path(path)
     texts["grid"] = money.read_text(grid) if grid.is_file() else None
     texts["price-list"] = money.prices.snapshot_bytes(house, texts["read-back"])

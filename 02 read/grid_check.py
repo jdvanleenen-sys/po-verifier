@@ -2,6 +2,7 @@
 import re
 
 import grid_rules as rules
+import seal
 from grid_read import expected_cells, table, tables_hash, under
 
 HASH_LINE = re.compile(r"^read-back tables sha256:\s*([0-9a-f]{64})", re.M)
@@ -95,8 +96,11 @@ def check_grid(read_back_text, grid_text, snapshot_raw, final=False):
     if not recorded:
         return ["the grid has no 'read-back tables sha256:' line; build it with grid.py"], 0
     if recorded.group(1) != tables_hash(read_back_text):
-        state["problems"].append("the read-back's POs read, Rows or Extra items changed after the grid "
-                                 "was built. Rebuild the grid and answer it again")
+        if seal.is_approved(read_back_text):
+            state["problems"].append(f"the read-back {seal.CHANGED}")
+        else:
+            state["problems"].append("the read-back's POs read, Rows or Extra items changed after the grid "
+                                     "was built. Rebuild the grid and answer it again")
     expected = expected_cells(read_back_text, snapshot_raw)
     for grid in GRIDS:
         check_table(grid_text, expected, grid, final, state)
