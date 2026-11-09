@@ -1,5 +1,16 @@
 # Change log
 
+## 2026-11-09, loop run 3 (Group A): multipliers, invisible names, the po-line rule
+Run 3's attacker got four reading mistakes past the code on a real house. A multiplier in Sam's words
+or in the slot's remark ("10' x2", "two of them", "13 ft each side") was read as one size; it now
+reads as no size, so the grid asks Sam (02 read/size_read.py, split out of grid_rules.py). A price
+row whose name hid a zero-width space sat beside the real row at another rate; prices.py now refuses
+any name with an invisible character and names both lines of a dash twin. A row whose PO qty and line
+total were read off another line of the PO passed every check; the new po-line rule (po_lines.py, run
+by grid.py check) sets every row on an HTML PO against its own PO line, and counts rows on a PDF PO
+as not checked. prices.py check reads a read-back saved in another encoding in plain words. 14 tests
+in tests/test_run3_reading.py.
+
 ## 2026-11-09, loop run 3: per-foot rule, practice badge, proof line, set-apart rows
 Run 3 on a real house asked Sam for floor area and stringer feet that his setup already answers:
 the run-2 rule "a PO count on a per-foot line is not a size" ignored contractor.md's "How he writes

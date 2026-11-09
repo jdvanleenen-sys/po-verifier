@@ -24,6 +24,7 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 import price_excel
+import seal
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / "reference" / "price-list.xlsx"
@@ -36,6 +37,7 @@ PENDING = "pick one"
 READ_LINE = re.compile(r"^price list read:\s*(.+)$", re.M)
 SNAPSHOT_NAME = re.compile(r"price-list-\d+\.csv")
 FINGERPRINT = re.compile(r"sha256\s+([0-9a-f]{64})")
+INVISIBLE = re.compile("[ ­​-‏‪-‮⁠-⁤﻿]")
 
 
 def source_bytes(path=SOURCE):
@@ -86,6 +88,9 @@ def check_row(n, cells, problems):
     rate, active = to_rate(rate_cell), active_cell.lower()
     if not item:
         problems.append(f"price list line {n}: no Item")
+    elif INVISIBLE.search(item):
+        problems.append(f"price list line {n} ({INVISIBLE.sub('', item)}): the name has an invisible character "
+                        "(a zero-width or no-break space, or a stray byte-order mark). Retype the name in Excel")
     elif unit not in UNITS:
         problems.append(f"price list line {n} ({item}): unit '{unit}' is not one of {sorted(UNITS)}")
     elif rate is None:
@@ -94,7 +99,7 @@ def check_row(n, cells, problems):
     elif active not in YES | NO:
         problems.append(f"price list line {n} ({item}): Active '{active_cell}' is not TRUE or FALSE")
     else:
-        return {"item": " ".join(item.split()), "unit": unit, "rate": rate, "active": active in YES}
+        return {"item": " ".join(item.split()), "unit": unit, "rate": rate, "active": active in YES, "line": n}
     return None
 
 
@@ -123,15 +128,17 @@ def parse(raw):
             problems.append(f"price list line {n}: '{row['item']}' is on the list twice as active")
         twin = next((r for k, r in rows.items() if k != key and r["active"] and alike(k) == alike(key)), None)
         if twin and row["active"]:
-            problems.append(f"price list line {n}: '{row['item']}' and '{twin['item']}' differ only by a dash, "
-                            "a space or capitals, and both are active. Keep one, or name them apart")
+            problems.append(f"price list lines {twin['line']} and {n}: '{twin['item']}' and '{row['item']}' differ "
+                            "only by a dash, a space or capitals, and both are active. Keep one, or name them apart")
         if key not in rows or row["active"]:
             rows[key] = row
     return rows, problems
 
 
 def alike(name):
-    """A name with dashes, spaces and capitals made alike: 'Railing - wood' and 'Railing — wood' match."""
+    """A name with dashes, spaces, capitals and invisible characters made alike: 'Railing - wood' and
+    'Railing — wood' match."""
+    name = INVISIBLE.sub("", name)
     return re.sub(r"\s*[-‐-―]\s*", "-", " ".join(name.split())).lower()
 
 
@@ -245,7 +252,7 @@ def main(argv):
     path = latest_read_back(house)
     if path is None:
         sys.exit(f"No read-back for {house} in 02 read/.")
-    text = path.read_bytes().decode("utf-8-sig")
+    text = seal.read_record(path)
     problems = check_read_back(text, snapshot_bytes(house, text), pending_ok=True)
     if problems:
         sys.exit(f"{path.name}: the prices do not match the price list:\n- " + "\n- ".join(problems))

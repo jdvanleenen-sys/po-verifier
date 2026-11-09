@@ -43,14 +43,25 @@ Write the "Sam measured" cell as his words in quotes first, then `;`, then the s
 `;` and anything else: `"Railing 13'"; 13 ft; no colour given (photo line 1)`. The size slot holds
 one plain number, with "count" before it or a unit after it if you like (', ft, feet, LF, SF,
 sq ft, EA, each). After that the code accepts only three things: nothing; a comma and a remark
-("3016, Sam confirmed"); or a remark of plain words with no number or sign before its first comma
-("0 here, counted on /027"). Anything else in the slot reads as no size. Code reads only that slot,
-the same way in the grid and the money gate. Never write in it a size you worked out: feet and
-inches (13'6"), a multiplier (124 ft x2, (x2), ×2), a range (10-12', 13 – 14 ft), a fraction
-(13 ½ ft), two sizes (13 ft / 16 ft), a number in words (ten), a row number (see row 3), or a comma
-for a decimal point (10,5). Write his words as he wrote them and leave the slot
-for his answer: the grid reads no size there and asks Sam, and his number goes in the slot when he
-gives it.
+("3016, Sam confirmed"); or a remark of plain words before its first comma ("0 here, counted on
+/027"). A remark may not hold a sign, a number word (one to twenty), a digit (except in a PO
+number such as /027), or a word that multiplies (each, both, pair, double, twice, of them). Code
+reads the size only from that slot, the same way in the grid and the money gate, and it also reads
+his quoted words: if they multiply the size (10' x2, ×2, each side, both sides, a pair, double,
+twice, two of them) the cell reads as no size. In his words, "x" before the size itself ("8' doors
+x12" with 12 in the slot) is how he writes a count, and "12' x 12'" (a number with a unit after
+it) is a room size; neither counts as a multiplier. Anything else reads as no size. Never write in
+the slot a size you worked out: feet and inches (13'6"), a multiplier (124 ft x2, (x2), ×2), a
+range (10-12', 13 – 14 ft), a fraction (13 ½ ft), two sizes (13 ft / 16 ft), a number in words
+(ten), a row number (see row 3), or a comma for a decimal point (10,5). Write his words as he wrote
+them and leave the slot for his answer: the grid reads no size there and asks Sam, and his number
+goes in the slot when he gives it.
+
+Every row on a PO is also set against the PO itself (the po-line rule, `po_lines.py`, run by
+`grid.py check`): its PO qty, unit price and line total must be printed on the PO line that carries
+its "line as printed", so copy that line exactly. Only an HTML PO (one table row per line, as
+SupplyPro and BuildPro save them) can be read this way; rows on a PDF PO are counted in the check's
+output as not checked, and those rows are checked by eye.
 
 The rule grid puts some numbers to Sam by code before anything is priced, because each has cost real
 money in testing: a number that may be a thousands figure written with a dot for a comma ("3.016"
