@@ -18,6 +18,9 @@ from records import (  # noqa: E402,F401  (callers use money.column, money.read_
 import grid_check  # noqa: E402
 import grid_rules  # noqa: E402
 from taxes import epo_targets, group_rate, printed_rates  # noqa: E402,F401
+import variance_words  # noqa: E402
+
+SETUP = Path(__file__).resolve().parent.parent / "reference" / "contractor.md"
 
 CENT = Decimal("0.01")
 NO_PO = "none"
@@ -217,6 +220,8 @@ def expected_request(records):
     rb_rows, rates, epos = read_back(records["read-back"])
     set_aside = grid_check.not_comparable_rows(grid_text)
     variances = variance_rows(records["variance"], rb_rows, epos, problems, set_aside)
+    setup = records.get("setup", SETUP.read_text(encoding="utf-8-sig") if SETUP.is_file() else "")
+    problems += variance_words.problems(records["variance"], variances, setup)
     chosen = decisions(records["review"], variances, problems)
     targets = epo_targets(records["review"], chosen, set(rates), problems)
     groups, lines = {}, {rb["num"]: rb["line"] for rb in rb_rows}

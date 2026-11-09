@@ -25,4 +25,4 @@ Site notes attached as proof: yes / no
 - Answer:
 - Name:
 - Date:
-- sent: yes / no
+- sent:

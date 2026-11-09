@@ -1,5 +1,14 @@
 # Change log
 
+## 2026-11-09, loop run 4 group B: tax from a rounded amount, the main PO, empty and sent requests
+Run 4 on a real house: a PO that prints PST $225.69 on $4,513.70 and no percentage had its rate taken
+as 5.00011%, so a correct request printing "PST 5%" was refused and a no-PO row was refused for
+"different tax rates". The rate is now the plainest one that gives the printed tax (`taxes.py`, split
+out of money.py with the EPO targets). With a standing answer naming the main PO, work on no PO must
+go on the main PO (most priced lines). A request with no row on is refused. A request is sent only
+when its yes block reads `- sent: yes` (the template line is now `- sent:`). The money gate checks
+each variance row's Why and Call and the house-flag line (`variance_words.py`). 14 tests added.
+
 ## 2026-11-09, loop run 4: a read-back is not "used" by its own grid
 Run 4 (a real house) could not seal any read-back: the run-3 rule "a record another file was built
 from is never sealed" counted the read-back's own grid, which names it in from: and is built before

@@ -18,7 +18,9 @@ the builder's site super, who writes the EPO.
   value, the difference, and why.
 - **Tax on every group.** For each PO group: the difference before tax, each tax line, and the
   total. Use the tax lines and rates printed on that PO, worked out from its own subtotal and tax
-  amounts. Never assume a rate. Every request carries tax, because every sale has tax. The
+  amounts. Never assume a rate. A PO that prints the tax but no percentage has rounded it: its rate
+  is the plainest one (to 0.001%) that gives exactly that tax on its subtotal, so $225.69 on
+  $4,513.70 is 5%, printed "5%". The money gate works this out; print what it gives. Every request carries tax, because every sale has tax. The
   "no PO" group uses the rate on the house's other POs. If those POs carry different rates, stop
   and ask Sam.
 - **Items on no PO** go in their own group, marked "no PO", so the site super knows a new PO
@@ -105,7 +107,10 @@ The PDF is never written straight into the record. A print that goes wrong must 
    review it came from. It refuses a file that is not the built request, a request already
    numbered, a draft PDF whose sha256 is not the one build wrote in `script-checks.md`, and a
    second request from a review that already has one (a new request needs a new review).
-Build and commit refuse any row that is already on a request marked `sent: yes`: a row the builder
+Build and commit refuse a request with no row on: there is no request for that house (see "When
+nothing is on" in `04 review`). A request counts as sent only when its yes block reads exactly
+`- sent: yes`; a blank `- sent:` is not sent. Build and commit refuse any row that is already on a
+request marked `sent: yes`: a row the builder
 has been asked for is chased again through `06 outcome`, never by a second request. With a standing
 answer under "Work on no PO goes on" in `contractor.md`, a chosen row on no PO with "EPO goes on"
 blank is refused, unless the reason gives Sam's own different answer as "Sam: ...".

@@ -17,14 +17,24 @@ def printed_rates(subtotal, tax_cell):
 
     Where every tax line prints its percentage and that percentage of the subtotal is the amount it
     prints, the percentages are used, and each tax is worked out and rounded on its own, as the PO
-    does. Otherwise the one rate the printed figures give: all the tax over the subtotal."""
+    does. Otherwise the one rate the printed figures give, from all the tax over the subtotal: the
+    plainest rate (to 0.001%) that gives exactly the printed tax, since the PO rounded it; 225.69 on
+    4513.70 is 5%, not 5.00011%. If no such rate gives it, the exact quotient."""
     parts = [(TAX_PART.search(p), to_amount(a.group(0))) for p in tax_cell.split(";") if (a := TAX_AMOUNT.search(p))]
     charged = [(pct, amount) for pct, amount in parts if amount]
     if charged and all(pct for pct, _ in charged):
         fractions = tuple(Decimal(pct.group(1)) / 100 for pct, _ in charged)
         if all((subtotal * f).quantize(CENT, ROUND_HALF_UP) == amount for f, (_, amount) in zip(fractions, charged)):
             return fractions
-    return (sum((amount for _, amount in parts), Decimal(0)) / subtotal,)
+    total = sum((amount for _, amount in parts), Decimal(0))
+    return (plain_rate(subtotal, total),)
+
+
+def plain_rate(subtotal, tax):
+    """tax / subtotal, made plain when the PO's own rounding explains the difference."""
+    exact = tax / subtotal
+    plain = (exact * 100).quantize(Decimal("0.001"), ROUND_HALF_UP) / 100
+    return plain if (subtotal * plain).quantize(CENT, ROUND_HALF_UP) == tax else exact
 
 
 def epo_targets(text, chosen, house_pos, problems):
