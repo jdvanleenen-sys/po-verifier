@@ -8,15 +8,71 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "02 read"))
 import contractor  # noqa: E402
 import intake_read  # noqa: E402
+import records  # noqa: E402  (05 request, beside this file)
 
 PDF_LINE = re.compile(r"^pdf sha256:\s*([0-9a-f]{64})\s*$", re.M)
 FROM_REVIEW = re.compile(r"^from review:\s*(\S.*?)\s*$", re.M)
 
 
 def gate_problems(root, house, texts):
-    """The POs are this folder's contractor's, and intake is as the grid read it."""
+    """The POs are this folder's contractor's, intake is as the grid read it, no row is asked for
+    twice, and work on no PO follows the standing answer."""
+    root = Path(root)
+    setup = root / "reference" / "contractor.md"
     return (contractor.vendor_problems(texts["read-back"])
-            + intake_read.problems(Path(root) / "01 intake" / house, texts.get("grid"), house))
+            + intake_read.problems(root / "01 intake" / house, texts.get("grid"), house)
+            + sent_problems(root, root / "05 request" / house, texts["review"])
+            + standing_epo_problems(texts["review"], setup.read_text(encoding="utf-8-sig") if setup.is_file() else ""))
+
+
+SENT = re.compile(r"^-?\s*sent:\s*yes\b", re.I | re.M)
+
+
+def on_rows(review_text):
+    """{(PO number, item): row number} for every row Sam put on, read the way money.decisions reads it."""
+    rows = records.section(records.tables(review_text), "")
+    return {(records.column(r, "po number").strip().lower(), records.column(r, "item").strip().lower()):
+            records.column(r, "row").strip() for r in rows
+            if records.decision_word(records.column(r, "sam's decision")) == "on"}
+
+
+def sent_problems(root, house_dir, review_text):
+    """Every row of this review that is already on a request marked sent: yes. A sent row is chased
+    again through 06 outcome, never by a second request."""
+    problems, now = [], on_rows(review_text)
+    for check in sorted(Path(house_dir).glob("request-check-*.md")):
+        text = check.read_text(encoding="utf-8-sig", errors="replace")
+        m = FROM_REVIEW.search(text)
+        if not SENT.search(text) or not m or not (Path(root) / m.group(1)).is_file():
+            continue
+        before = on_rows((Path(root) / m.group(1)).read_text(encoding="utf-8-sig", errors="replace"))
+        pdf = check.name.replace("request-check-", "vpo-request-").replace(".md", ".pdf")
+        for (po, item), num in now.items():
+            if (po, item) in before:
+                problems.append(f"row {num} ({item}) was already asked for on {pdf}, sent. Ask Sam: a re-ask "
+                                "goes through 06 outcome, not a second request")
+    return problems
+
+
+ASK_EACH_TIME = ("ask each time", "not asked", "none", "not decided")
+
+
+def standing_epo_problems(review_text, setup_text):
+    """With a standing answer for work on no PO, a chosen row on no PO names its PO in 'EPO goes on',
+    unless the reason gives Sam's own different answer ("Sam: ...")."""
+    rule = contractor.answer(setup_text, "Work on no PO goes on").strip()
+    if not rule or rule.lower().startswith(ASK_EACH_TIME):
+        return []
+    problems = []
+    for r in records.section(records.tables(review_text), ""):
+        if (records.column(r, "po number").strip().lower() == "none"
+                and records.decision_word(records.column(r, "sam's decision")) == "on"
+                and not records.column(r, "epo goes on").strip()
+                and "sam:" not in records.column(r, "reason").lower()):
+            problems.append(f"review row {records.column(r, 'row').strip()} ({records.column(r, 'item').strip()}) is on "
+                            "no PO and 'EPO goes on' is blank, but the standing answer in contractor.md says: "
+                            f"{rule}. Fill EPO goes on, or write Sam's different answer in the reason as 'Sam: ...'")
+    return problems
 
 
 def sha256(path):
@@ -67,6 +123,26 @@ def fix_advice(root, house):
             " with the correction, show it to Sam and seal his yes; compare.py then writes a new variance "
             "from it. A variance is never written or corrected by hand. If only the review is wrong, write "
             + review + " from the variance, show it to Sam and seal his yes. Then build again.")
+
+
+SNAPSHOT = ("snapshot price-list", "has changed since the read-back was made")
+VARIANCE_EDIT = ("says po amount", "measured qty", "agreed rate", "po qty or rate differs")
+
+
+def stop_message(root, house, problems):
+    """The problems to print, each once, and the one fix that fits them. A missing or changed
+    snapshot makes every row fail its price, so only the snapshot lines are shown then."""
+    shown = list(dict.fromkeys(problems))
+    snapshot = [p for p in shown if any(s in p for s in SNAPSHOT)]
+    if snapshot:
+        return snapshot, ("To fix: put the original price list snapshot back. A snapshot is never edited or "
+                          "deleted. If it is lost, take a new snapshot, write "
+                          + next_free(Path(root) / "02 read" / house, "read-back")
+                          + " from it, show it to Sam and seal his yes.")
+    if any(p.startswith("variance row") and any(v in p.lower() for v in VARIANCE_EDIT) for p in shown):
+        return shown, ("To fix: never edit a variance. Delete the variance file that was changed and run "
+                       "compare.py again from the approved read-back.")
+    return shown, fix_advice(root, house)
 
 
 HTML_LINE = re.compile(r"^html sha256:\s*([0-9a-f]{64})\s*$", re.M)
