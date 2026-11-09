@@ -12,7 +12,7 @@ difference. This is a practice build. The data is made up and nothing is ever se
 | `reference/price-list.md` | Where the price list lives and how to read it |
 | `reference/price-list.xlsx` | The price list, the only one. Sam keeps it in Excel; the checker reads its "Price list" sheet |
 | `02 read/grid.py` | The rule grid: every read-back row and PO against every rule, one cell each. Code fills what it can; the AI answers the rest one rule at a time. Its helpers: `grid_rules.py` (the rules), `grid_read.py`, `grid_check.py` |
-| `02 read/seal.py` | Seals a record once Sam's plain yes is written: the only way a record becomes approved. `chain.py` checks each record's number, `attempt:` and `from:` |
+| `02 read/seal.py` | Seals a record once Sam's plain yes is written: the only way a record becomes approved. Writes the folder's `seals.md` ledger. `chain.py` checks each record's number, `attempt:` and `from:` |
 | `03 compare/compare.py` | Writes the variance by code from the approved read-back and its grid. Its arithmetic is `compare_rows.py`, kept apart from the money gate |
 | `02 read/contractor.py`, `02 read/intake_read.py` | Who the folder is for (read from `reference/contractor.md`; a PO to another vendor is refused), and the fingerprint of every intake file, written into each grid and checked before a request is built or numbered |
 | `02 read/prices.py` | Reads the Excel price list (through `price_excel.py`), checks it, freezes a copy per read-back (`price-list-N.csv`), and checks every rate in the read-back against it |
@@ -89,7 +89,11 @@ His yes, his name and the date are written into the "Sam's yes" block of the sta
 with the Answer starting with the word yes. Then, and only then, run
 `python "02 read/seal.py" <file>`. It refuses anything that is not a plain yes, sets `status:
 approved`, and seals the file: from then on every script refuses the file if a single character of
-it changes, or if it is copied under another number. **Never set `status: approved` by hand**, and
+it changes, or if it is copied under another number. seal.py also writes a line in the folder's
+`seals.md` ledger (for a read-back, with the sha256 of its grid), and refuses a file already in the
+ledger: an approved file is sealed once, never edited and sealed again. Every script refuses an
+approved file that is in no ledger line, whose seal is not the ledger's, or whose grid changed after
+the yes. Never edit `seals.md`. **Never set `status: approved` by hand**, and
 never seal a file Sam did not answer. A yes said in chat but not written to the file does not count.
 A correction to an approved file is a new numbered file with its own yes, never an edit.
 

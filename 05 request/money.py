@@ -13,7 +13,8 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "02 read"))
 import prices  # noqa: E402
 from records import (  # noqa: E402,F401  (callers use money.column, money.read_text, ...)
-    NUMBER, AMOUNT, approval_problems, approved, column, read_text, section, tables, to_amount, to_number)
+    NUMBER, AMOUNT, approval_problems, approved, column, decision_problem, decision_word, read_text, section,
+    tables, to_amount, to_number)
 import grid_check  # noqa: E402
 import grid_rules  # noqa: E402
 
@@ -192,13 +193,13 @@ def decisions(text, variances, problems):
             problems.append(f"review row '{item}' ({po}, row {key[2]}) is in the review twice")
         elif not keys:
             problems.append(f"review row '{item}' ({po}) is not in the variance")
-        elif not (decision.startswith("on") or decision.startswith("off")):
-            problems.append(f"review row '{key[1]}' has no on/off decision from Sam")
+        elif decision_word(decision) is None:
+            problems.append(f"review row '{key[1]}' {decision_problem(decision)}")
         elif to_amount(column(r, "variance")) != variances[key]["difference"]:
             problems.append(f"review row '{key[1]}' shows {column(r, 'variance')}, "
                             f"the variance is {variances[key]['difference']}")
         else:
-            chosen[key] = decision.startswith("on")
+            chosen[key] = decision_word(decision) == "on"
     return chosen
 
 

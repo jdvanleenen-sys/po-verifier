@@ -64,6 +64,7 @@ def record_stop(paths, texts):
         if key != "variance":
             problems += [f"{path.name} {why}" for why in seal.seal_problems(texts[key], path.name)
                          if "copied under a new name" in why]
+            problems += [f"{path.name} {why}" for why in seal.ledger_problems(path, texts[key])]
         problems += chain_problems(path, texts[key], ROOT)
     if problems:
         sys.exit("Sam's records are not in order, so nothing was built:\n- " + "\n- ".join(problems))
@@ -182,8 +183,7 @@ def expected_or_stop(house):
     expected, problems = money.expected_request(records(house))
     if problems:
         sys.exit("Sam's records do not agree, so nothing was built:\n- " + "\n- ".join(problems) +
-                 "\nTo fix: never edit a file Sam approved. Write the corrected record as the next number "
-                 "(read-back-2, variance-2 or review-2), show it to Sam, and get his yes again.")
+                 "\n" + house_checks.fix_advice(ROOT, house))
     return expected
 
 
@@ -212,6 +212,7 @@ def build(house, notes_choice):
     left_out = [p.name for p in notes if p not in attached]
     report = [f"# {house}, script checks", "", *[f"- {l}" for l in lines], "",
               f"notes: {notes_choice}", f"pdf sha256: {house_checks.sha256(merged)}",
+              f"html sha256: {house_checks.sha256(draft / 'request.html')}",
               *[f"not attached: {o}" for o in others],
               *[f"not attached: {n} (Sam left it out)" for n in left_out]]
     (draft / "script-checks.md").write_text("\n".join(report) + "\n", encoding="utf-8")
@@ -235,9 +236,10 @@ def commit(house):
     pdf, checks = draft / "vpo-request.pdf", draft / "script-checks.md"
     if not pdf.is_file() or not checks.is_file():
         sys.exit("Run build first. Nothing was numbered.")
-    if pdf.stat().st_mtime < (draft / "request.html").stat().st_mtime:
-        sys.exit("request.html changed after the last build. Build again. Nothing was numbered.")
     checks_text = money.read_text(checks)
+    stale = house_checks.html_problem(draft / "request.html", checks_text)
+    if stale:
+        sys.exit(f"{stale} Nothing was numbered.")
     choice = re.search(r"^notes:\s*(yes|no|only:\S.*?)\s*$", checks_text, re.M)
     if not choice:
         sys.exit("script-checks.md does not record Sam's notes answer. Build again. Nothing was numbered.")
