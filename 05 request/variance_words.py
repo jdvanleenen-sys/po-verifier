@@ -7,13 +7,30 @@ Written apart from 03 compare on purpose: if both shared one rule, a mistake in 
 import re
 from decimal import Decimal
 
-from records import column, section, tables
+from records import column, section, tables, to_amount
 
 NO_PO = "none"
 IGNORE = re.compile(r"Ignore line\s*\|\s*under \$([\d,]+)")
 FLAG = re.compile(r"Flag line\s*\|\s*\$([\d,]+) and up")
 HOUSE_FLAG = re.compile(r"House flagged on total:\s*(yes|no)\b", re.I)
 REDO = "The variance was changed by hand: delete it and run compare.py again"
+TOTALS = (("Total of POs", "po_amount"), ("Total measured value", "measured_value"), ("Total variance", "difference"))
+
+
+def total_problems(variance_text, figures):
+    """The totals lines are the sums of the compared rows' checked figures (loop run 6: a hand-edited
+    'Total variance' passed while every row was right)."""
+    out = []
+    for label, key in TOTALS:
+        m = re.search(rf"^-\s*{label}:\s*(.+)$", variance_text or "", re.M)
+        if not m or not figures or any(key not in f for f in figures.values()):
+            continue
+        want = sum((f[key] for f in figures.values()), Decimal(0))
+        said = to_amount(m.group(1))
+        if said != want:
+            out.append(f"the variance's '{label}' line says {money(said) if said is not None else 'nothing'}; "
+                       f"its rows add up to {money(want)}. {REDO}")
+    return out
 
 
 def limits(setup_text):
@@ -57,9 +74,10 @@ def why(po, f):
 
 def problems(variance_text, figures, setup_text):
     """Every Why, Call or house-flag line in the variance that its own figures do not give."""
+    totals = total_problems(variance_text, figures)
     found = limits(setup_text)
     if found is None:
-        return []
+        return totals
     ignore, flag = found
     out = []
     for r in section(tables(variance_text), "rows"):
@@ -80,4 +98,4 @@ def problems(variance_text, figures, setup_text):
     if said and said.group(1).lower() != want:
         out.append(f"the variance says the house is{'' if said.group(1).lower() == 'yes' else ' not'} flagged; "
                    f"its total {money(total)} against the flag line ${flag:,.2f} says {want}. {REDO}")
-    return out
+    return totals + out

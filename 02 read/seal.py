@@ -218,12 +218,23 @@ def grid_refusal(path):
             + "; ".join(said[1:] or said)]
 
 
+def review_refusal(path, text):
+    """For a review: what the request build would refuse (05 request/review_gate.py), or []."""
+    gate = path.parent.parent.parent / "05 request" / "review_gate.py"
+    if not path.name.startswith("review-") or not gate.is_file():
+        return []
+    sys.path.insert(0, str(gate.parent))
+    import review_gate
+    return review_gate.problems(path, text)
+
+
 def before_seal(path, text):
     """Everything the next stage would refuse about this record, checked before it is sealed: its
-    attempt:, from: and number (chain.py) and, for a read-back, its grid with --final."""
+    attempt:, from: and number (chain.py); for a read-back, its grid with --final; for a review,
+    what the request build would refuse."""
     root = path.parent.parent.parent
     found = [as_reason(path.name, p) for p in chain.chain_problems(path, text, root)]
-    return found or grid_refusal(path)
+    return found or grid_refusal(path) or review_refusal(path, text)
 
 
 def seal_file(path, today=None):

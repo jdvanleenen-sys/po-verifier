@@ -65,6 +65,7 @@ def read_back(text):
         "po_qty": to_number(column(r, "po qty")),
         "unit_price": to_amount(column(r, "unit price")),
         "rate": to_amount(column(r, "rate")),
+        "unit": (r.get("unit") or "").strip(),
         "measured": column(r, "sam measured"),
     } for r in section(found, "rows")]
     rates = {}
@@ -224,7 +225,7 @@ def expected_request(records):
     problems += variance_words.problems(records["variance"], variances, setup)
     chosen = decisions(records["review"], variances, problems)
     targets = epo_targets(records["review"], chosen, set(rates), problems)
-    groups, lines = {}, {rb["num"]: rb["line"] for rb in rb_rows}
+    groups, lines, units = {}, {rb["num"]: rb["line"] for rb in rb_rows}, {rb["num"]: rb["unit"] for rb in rb_rows}
     for (po, item, num), on in chosen.items():
         if on:
             group = targets.get((po, item, num), po)
@@ -237,7 +238,7 @@ def expected_request(records):
         tax = sum(((before * t).quantize(CENT, ROUND_HALF_UP) for t in taxes), Decimal(0))
         out["groups"][po] = {"before": before, "tax": tax, "total": before + tax}
         out.setdefault("rates", {})[po] = sum(taxes, Decimal(0))
-        out["rows_on"] += [{"po": po, "item": i, "row": n, "label": row_label(i, n, rows, lines), **v}
+        out["rows_on"] += [{"po": po, "item": i, "row": n, "label": row_label(i, n, rows, lines), "unit": units.get(n), **v}
                            for i, n, v in rows]
         house[0] += before
         house[1] += tax

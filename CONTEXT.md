@@ -107,8 +107,11 @@ a record something was built from is never approved after the fact. Before seali
 what the next stage would check, so a refused record never uses up a number: the record's
 `attempt:` (required, equal to its file number), its `from:` (required, naming an existing record of
 this house), no gap below it, and, for a read-back, `grid.py check <house> --final` (only the highest
-read-back is sealed). The Date under Sam's yes is written as YYYY-MM-DD, such as 2026-11-09; any
-other form is refused. What the seal does not
+read-back is sealed). For a review, it also runs what the request build would refuse
+(`05 request/review_gate.py`): its `from:` names a variance of this house, every decision is exactly
+on or off, every row's PO and item are exactly in that variance, every "EPO goes on" is a PO of this
+house and follows the standing answer. The Date under Sam's yes is written as YYYY-MM-DD, such as
+2026-11-09; anything else is refused, and on a review it must be a real day not after today. What the seal does not
 do: the ledger guards against mistakes, not against someone deleting its lines on purpose. The real
 guard is Sam giving his yes from his own screen, so no one else can write it for him.
 
