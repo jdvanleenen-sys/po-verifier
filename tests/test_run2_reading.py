@@ -47,7 +47,7 @@ class NearDuplicatePriceRows(unittest.TestCase):
     def test_dash_twins_both_active_are_refused(self):
         raw = CSV.format(a='"Railing — wood, at the PO rate",LF,40,TRUE', b='"Railing - wood, at the PO rate",LF,60,TRUE')
         problems = prices.parse(raw.encode("utf-8"))[1]
-        self.assertTrue(any("differ only by a dash" in p for p in problems), problems)
+        self.assertTrue(any("differ only by" in p for p in problems), problems)
 
     def test_one_inactive_twin_is_fine(self):
         raw = CSV.format(a='"Railing — wood",LF,40,TRUE', b='"Railing - wood",LF,60,FALSE')

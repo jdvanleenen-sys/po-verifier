@@ -22,6 +22,19 @@ FEET_INCHES = re.compile(r"\d\s*(?:'|ft\b|feet\b)\s*-?\s*\d+\s*(?:\"|in\b|inch)|
 NO_NOTE = "done as ordered"
 WORD_SIZE = re.compile(NUMBER_WORD.pattern + r"(?:[\s-]+[a-z]+)?\s*(?:'|ft\b|feet\b|foot\b|lf\b|sf\b|sq\b)", re.I)
 WORD_NUMBER = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?")
+STRAIGHT = str.maketrans({"“": '"', "”": '"', "„": '"', "‘": "'", "’": "'",
+                          "′": "'", "″": '"'})
+JOINED = re.compile(r"(?<![\w.'])\d+\s*x(?=\s|$)|[+&*]|\([^)]*\d[^)]*\)", re.I)
+CONFIRMED_N = re.compile(r",?\s*sam confirmed\s+(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)", re.I)
+
+
+def straight(said):
+    """Curly quotes as straight ones and prime marks as feet and inches, as typed on a phone or in Word."""
+    return (said or "").translate(STRAIGHT)
+
+
+def plain(number):
+    return number.replace(",", "").lstrip("0") or "0"
 
 
 def size_slot(text):
@@ -42,16 +55,19 @@ def size_text(said):
     number, optionally "count " before it and a unit after it (', ft, feet, LF, SF, sq ft, EA,
     each), then only what remark_ok allows. His words are the FIRST quoted phrase, so a quoted
     source note later in the cell never moves where the size is read from."""
-    slot = (size_slot(said or "") or "").strip()
+    said = straight(said)
+    confirmed = CONFIRMED_N.search(said)
+    slot = (size_slot(said) or "").strip()
     found = SIZE_NUMBER.match(slot)
     if not found:
         return None
     after = slot[found.end():]
     unit = SIZE_UNIT.match(after)
     rest = after[unit.end():] if unit else after
+    rest = CONFIRMED_N.sub("", rest) if confirmed else rest
     if EACH_SIDE.match(after) or not remark_ok(rest) or multiplied(rest):
         return None
-    if words_multiply(said or "", found.group(1)) or words_disagree(said or "", found.group(1)):
+    if words_multiply(said, found.group(1)) or words_disagree(said, found.group(1)):
         return None
     return found.group(1)
 
@@ -80,7 +96,7 @@ def words_multiply(said, size):
     start = said.find('"')
     end = said.find('"', start + 1) if start >= 0 else -1
     words = said[start + 1:end] if end > start else ""
-    if MULTIPLIER_WORD.search(words):
+    if MULTIPLIER_WORD.search(words) or JOINED.search(words):
         return True
     return any(m.group(1).lstrip("0") != size.replace(",", "").lstrip("0") for m in TIMES.finditer(words))
 
@@ -98,8 +114,11 @@ def words_disagree(said, size):
     in words ('sixteen feet'), no number at all (other than the exact words 'done as ordered'), or
     numbers none of which is the slot's ('Railing 16'' with 61 in the slot). An item name may carry
     its own size ('8' doors x12'), so the slot only has to be one of his numbers."""
-    if "sam confirmed" in said.lower() or not size.strip("0.,"):
-        return False  # Sam settled this number himself; a 0 already goes to him (size_doubt)
+    if not size.strip("0.,"):
+        return False  # a 0 already goes to Sam (size_doubt)
+    confirmed = CONFIRMED_N.search(said)
+    if confirmed and plain(confirmed.group(1)) == plain(size):
+        return False  # Sam settled this exact number himself: "Sam confirmed 3016"
     words = quoted(said)
     if not words.strip() or words.strip().lower() == NO_NOTE:
         return False  # no quoted words (the "stringers; 34 ft" form), or no note by standing answer

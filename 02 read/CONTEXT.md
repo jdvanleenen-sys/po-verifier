@@ -61,11 +61,14 @@ it) is a room size; neither counts as a multiplier. The slot must also be backed
 when his quoted words hold a number, the slot must be one of his numbers ("Railing 16'" with 61 in
 the slot reads as no size). His quoted words are read for the same traps as the slot: a range
 (13-14', 13 to 14), a pointer (see row 3, same, ditto, as above, do.), feet and inches (16 ft 6 in,
-16'6"), a number in words with a unit (sixteen feet), or a multiplier (x2, ×2, @, times, (2), 2 of,
-each, both, pair, twice) makes the cell read as no size. Quoted words with no number at all do not
+16'6"), a number in words with a unit (sixteen feet), or a multiplier or join (x2, ×2, @, times, (2), 2 of,
+each, both, pair, twice, a number then x at the start as in "2x Railing", +, &, *, a bracket holding a
+digit such as "(2 sides)") makes the cell read as no size. Curly quotes and prime marks (as typed on a
+phone or in Word: “ ” ‘ ’ ′ ″) are read as straight quotes, feet and inches first, so they never hide
+his words. Quoted words with no number at all do not
 back a size, except the exact words "done as ordered" (a standing answer). A cell with no quoted
-words ("stringers; 34 ft"), a 0 in the slot and a cell that ends "Sam confirmed" are read from the
-slot alone. Anything else reads as
+words ("stringers; 34 ft"), a 0 in the slot, and a cell holding "Sam confirmed <the slot's number>" are
+read from the slot alone; a bare "Sam confirmed" does not let a slot differ from his words. Anything else reads as
 no size. Never write in
 the slot a size you worked out: feet and inches (13'6"), a multiplier (124 ft x2, (x2), ×2), a
 range (10-12', 13 – 14 ft), a fraction (13 ½ ft), two sizes (13 ft / 16 ft), a number in words
@@ -92,7 +95,7 @@ money in testing: a number that may be a thousands figure written with a dot for
 for 3,016), a number ten times or more off its PO line, a 0 against a PO line (the whole line becomes
 a credit), and the same item, quantity and price on two different POs (probably ordered twice). Ask
 him. When he answers, write the number he gave in the row's "Sam measured" cell, after his own
-words, and end that cell with "Sam confirmed". Never write "Sam confirmed" for a row he was not
+words, and end that cell with "Sam confirmed <that number>", such as "Sam confirmed 3016". Never write "Sam confirmed" for a row he was not
 asked about.
 
 ## Standing answers: never ask what Sam already answered
