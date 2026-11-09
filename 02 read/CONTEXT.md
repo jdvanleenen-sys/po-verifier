@@ -84,7 +84,9 @@ it and do not ask:
 - **Payment splits** names a line: answer its warning `leave unpriced: payment split, standing
   answer, contractor.md`.
 - **Builder-named price list rows**: a PO line from that builder that fits the builder's own row
-  is matched to it, not listed as "pick one".
+  is matched to it, not listed as "pick one". A note of Sam's that gives no type ("Railing 16'")
+  takes the same row when the PO line it sits against was matched to the builder's row; say so in
+  the row's note so Sam sees it.
 Sam still sees every one of these in the table he says yes to; the standing answer only saves the
 question. When the answer says "ask each time", ask. Never ask Sam something his notes, the price
 list or an answer he already gave in this house settles.

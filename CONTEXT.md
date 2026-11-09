@@ -55,6 +55,8 @@ priced at) goes in `01 intake`. An EPO issued in answer to a request goes in `06
 contractor is a second copy of the folder, set up through `00 setup`.
 
 ## How things are named
+- **Sam:** the contractor this folder is set up for, whoever `reference/contractor.md` names. In a
+  real contractor's copy, read "Sam" as that person; the yes is always his.
 - **PO number:** the ORDER # printed on a PO. It is the job number, a slash, and a running number.
   It goes on every row and is never dropped.
 - **EPO and VPO:** two names for the same document. EPO is an extra purchase order; VPO is a
