@@ -105,8 +105,9 @@ it and do not ask:
   takes the same row when the PO line it sits against was matched to the builder's row; say so in
   the row's note so Sam sees it.
 - **When a PO line's own notes cut against a standing answer** (a builder's own railing row, but the
-  line says "iron spindle"), keep the standing answer's match, list the row under "At risk for this
-  house" with the words from the notes, and ask Sam in the table. Never decide it either way.
+  line says "iron spindle"), keep the standing answer's match and list the row under "At risk for this
+  house" with the words from the notes. Do not ask it as a separate question: Sam sees it in the table
+  he says yes to, and a standing answer is his answer until he changes it there.
 Sam still sees every one of these in the table he says yes to; the standing answer only saves the
 question. When the answer says "ask each time", ask. Never ask Sam something his notes, the price
 list or an answer he already gave in this house settles.
