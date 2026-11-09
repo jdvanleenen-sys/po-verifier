@@ -164,9 +164,10 @@ def used_by(path):
     path = Path(path).resolve()
     root, house, stage = path.parent.parent.parent, path.parent.name, path.parent.parent.name
     own = f"{stage}/{house}/{path.name}".lower()
+    own_grid = path.with_name(path.name.replace("read-back-", "grid-", 1)).resolve()  # built before the yes
     users = []
     for other in sorted(root.glob(f"*/{house}/*.md")):
-        if other.resolve() == path or other.name == LEDGER:
+        if other.resolve() == path or other.name == LEDGER or other.resolve() == own_grid:
             continue
         try:
             text = read_record(other)

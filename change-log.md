@@ -1,5 +1,11 @@
 # Change log
 
+## 2026-11-09, loop run 4: a read-back is not "used" by its own grid
+Run 4 (a real house) could not seal any read-back: the run-3 rule "a record another file was built
+from is never sealed" counted the read-back's own grid, which names it in from: and is built before
+Sam's yes. The tests missed it because the sample house was sealed before the rule. A read-back's own
+grid-N.md is now exempt; every other user still blocks. 2 tests added.
+
 ## 2026-11-09, loop run 3 (Group A): multipliers, invisible names, the po-line rule
 Run 3's attacker got four reading mistakes past the code on a real house. A multiplier in Sam's words
 or in the slot's remark ("10' x2", "two of them", "13 ft each side") was read as one size; it now
