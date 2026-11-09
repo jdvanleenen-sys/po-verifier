@@ -39,13 +39,20 @@ still pays Sam. Sam confirms the direction with the rest of the table.
 One row per thing he measured, in his own words: what it is, its size or count, the colour, and
 anything else he wrote.
 
+A row with no measurement of Sam's at all (a payment-split line, say) has `not in notes; standing
+answer, contractor.md` in that cell. When Sam answers an `ask Sam:` cell that is not a number (which
+price list row, say), write his words in that row's note in the next read-back, and answer the grid
+cell `pass: Sam picked <item> (<date>)`.
+
 Write the "Sam measured" cell as his words in quotes first, then `;`, then the size slot, then
 `;` and anything else: `"Railing 13'"; 13 ft; no colour given (photo line 1)`. The size slot holds
 one plain number, with "count" before it or a unit after it if you like (', ft, feet, LF, SF,
 sq ft, EA, each). After that the code accepts only three things: nothing; a comma and a remark
 ("3016, Sam confirmed"); or a remark of plain words before its first comma ("0 here, counted on
 /027"). A remark may not hold a sign, a number word (one to twenty), a digit (except in a PO
-number such as /027), or a word that multiplies (each, both, pair, double, twice, of them). Code
+number such as /027), or a word that multiplies (each, both, pair, double, twice, of them). These
+limits are on the size slot only; the parts after the next `;` are free notes and may hold digits
+("photo line 1"). Code
 reads the size only from that slot, the same way in the grid and the money gate, and it also reads
 his quoted words: if they multiply the size (10' x2, ×2, each side, both sides, a pair, double,
 twice, two of them) the cell reads as no size. In his words, "x" before the size itself ("8' doors

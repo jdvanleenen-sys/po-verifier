@@ -65,8 +65,9 @@ off, his yes, his name and the date. Each review makes one request. The request 
 `python "02 read/seal.py" "04 review/<house>/review-N.md"`. Never set `status: approved` by hand.
 
 **When nothing is on.** If every row matches, or Sam leaves every row off, there is no request.
-Sam's yes to the review still closes it: write "nothing to ask for" above the table, his yes, name
-and date, then seal it. The house stops here; `05 request` and `06 outcome` do nothing for it.
+Sam's yes to the review still closes it: write "nothing to ask for" above the table, put every row
+he saw in it as `off (Sam: <his words>)` so his decision is on record, then his yes, name and date,
+and seal it. The house stops here; `05 request` and `06 outcome` do nothing for it.
 
 ## What must never happen here
 The AI never makes a call for Sam and never fills in a decision he did not give. A row Sam did
