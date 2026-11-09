@@ -1,5 +1,58 @@
 # Change log
 
+## 2026-11-09, standing answers: never ask what Sam already answered
+The first front-to-back loop run on a real house asked Sam 18 questions; several had answers the
+folder already held or that never change from house to house (lines not in his notes, payment
+splits, which EPO extras go on, a builder's own price list row). Jeff: "why are you asking. use the
+price list." Setup now asks four standing questions once (00 setup, 11 to 14), contractor.md has a
+row for each, and 02 read and 04 review apply them instead of asking. Sam still sees each in the
+table he says yes to. The repo's stand-in answers are "ask each time", so the test houses run as
+before.
+
+## 2026-11-09, numbers and sizes are read one way, strictly (attack on a real house, group A)
+A run on a real house and an attack on its records found seven ways a wrong number got through:
+- A rate typed "24,50" in Excel was read as 2450 (+$24,500 on one row). A comma now counts only
+  between thousands (1,234); any other comma in a rate is refused with the row named, and in a cell
+  it is not a number (`prices.plain`, used by the grid too).
+- The size slot in "Sam measured" took the first number it found: 13'6" read as 13, "124 ft x2"
+  as 124, "10-12'" as 10, "ten" as a house number in the source note, "see row 3" as 3 ft,
+  "10,5" as 105. The slot must now be one plain number with an optional unit and a remark in
+  words; anything else reads as no size, so the grid asks Sam (`grid_rules.size_slot`,
+  `measured_text`). `02 read/CONTEXT.md` says how to write the cell.
+- The money gate accepted any number anywhere in Sam's cell as his measurement. It now reads the
+  size exactly as the grid does (`grid_rules.measured_qty`) and needs it to be equal.
+`tests/test_run1_reading.py`, 7 tests; 213 in all.
+
+## 2026-11-09, Sam's yes is sealed; records keep their numbers
+Found by the run 1 attack on a real house: "Not yet... will say yes" counted as a yes; an approved
+read-back or review could be edited, or copied under a new number, and still pass; a numbering gap,
+an `attempt:` that disagreed with the file name, and a `from:` written as prose all passed; compare
+wrote a second variance from the same read-back; the grid's count rule could not say "ask Sam".
+Now `02 read/seal.py` is the only way a record becomes approved: it needs an Answer that starts with
+yes, a name and a date, and writes a seal over the file's name and text that every script checks.
+`02 read/chain.py` checks number, `attempt:` and `from:` in compare and the request. compare refuses a
+second variance from one read-back. The count rule may be answered "ask Sam". The worked example is
+sealed. 17 tests added (`tests/test_seal.py`, one in `tests/test_grid.py`).
+
+## 2026-11-09, the request and intake gate (run 1 attack, group C)
+An attack on a real house's finished run got these past the code: a request numbered under an
+unconfirmed or wrong trade contractor, or a wrong builder; the draft PDF edited between build and
+commit; a second request numbered from the same review by retyping the document number; a PO
+changed by one byte, saved twice, or another house's PO dropped into intake after the read; and a
+bad date in house-info stopped with a traceback. Now:
+- `02 read/contractor.py`: every PO's vendor must be `reference/contractor.md`'s vendor number
+  (or name, with no number). `grid.py check` and the request build refuse anything else.
+- `02 read/intake_read.py`: `grid.py build` writes an Intake read table (file, sha256); `grid.py
+  check`, build and commit refuse any intake file changed, added or gone since. The sample house's
+  grid got its table.
+- Check 6 also reads the trade contractor (exactly as contractor.md gives it) and the builder (one
+  contractor.md names). A bad date measured is refused in words. Its document-number and foreign
+  job-name messages no longer invite the wrong fix.
+- `05 request/house_checks.py`: build writes the draft PDF's sha256 into `script-checks.md` and
+  commit refuses a different PDF; `request-check-N.md` names its review, and commit refuses a second
+  request from it. A review naming a missing variance now names that file.
+19 tests in `tests/test_request_gate.py`.
+
 ## 2026-11-09, Sam's words are the first quoted phrase
 Found on a real house: `measured_text` read the size after the LAST
 quote mark in the "Sam measured" cell. A source note in that cell, '(photo, under "12 Sample

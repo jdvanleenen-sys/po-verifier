@@ -12,7 +12,9 @@ difference. This is a practice build. The data is made up and nothing is ever se
 | `reference/price-list.md` | Where the price list lives and how to read it |
 | `reference/price-list.xlsx` | The price list, the only one. Sam keeps it in Excel; the checker reads its "Price list" sheet |
 | `02 read/grid.py` | The rule grid: every read-back row and PO against every rule, one cell each. Code fills what it can; the AI answers the rest one rule at a time. Its helpers: `grid_rules.py` (the rules), `grid_read.py`, `grid_check.py` |
+| `02 read/seal.py` | Seals a record once Sam's plain yes is written: the only way a record becomes approved. `chain.py` checks each record's number, `attempt:` and `from:` |
 | `03 compare/compare.py` | Writes the variance by code from the approved read-back and its grid. Its arithmetic is `compare_rows.py`, kept apart from the money gate |
+| `02 read/contractor.py`, `02 read/intake_read.py` | Who the folder is for (read from `reference/contractor.md`; a PO to another vendor is refused), and the fingerprint of every intake file, written into each grid and checked before a request is built or numbered |
 | `02 read/prices.py` | Reads the Excel price list (through `price_excel.py`), checks it, freezes a copy per read-back (`price-list-N.csv`), and checks every rate in the read-back against it |
 | `reference/contractor.md` | Who the contractor is and his settings, written by `00 setup` |
 | `reference/walk-test.md` | The checklist for testing this folder cold |
@@ -23,8 +25,8 @@ difference. This is a practice build. The data is made up and nothing is ever se
 | `03 compare/` | The difference, worked out by calculation |
 | `04 review/` | Sam's decisions |
 | `05 request/` | The request for the site super, checked before Sam sees it |
-| `05 request/build_request.py` | Prints the request, merges the proof, runs the six checks on the PDF, and numbers only a request that passed. Its helpers: `money.py` (works out what the request must say from Sam's approved records, reading them with `records.py`), `verify.py` (the six checks, reading the PDF text with `request_text.py`, each row with `row_checks.py`, the header with `header_checks.py`), `printing.py` (the browser) |
-| `tests/` | Planted mistakes the money gate, the price check and the rule grid must refuse, and the variance code checked against the gate: `python -m unittest discover -s tests` |
+| `05 request/build_request.py` | Prints the request, merges the proof, runs the six checks on the PDF, and numbers only a request that passed. Its helpers: `money.py` (works out what the request must say from Sam's approved records, reading them with `records.py`), `house_checks.py` (the contractor, intake, draft-PDF and one-request-per-review checks), `verify.py` (the six checks, reading the PDF text with `request_text.py`, each row with `row_checks.py`, the header with `header_checks.py`), `printing.py` (the browser) |
+| `tests/` (left out of a tester's copy) | Planted mistakes the money gate, the price check and the rule grid must refuse, and the variance code checked against the gate: `python -m unittest discover -s tests` |
 | `tests/houses/` | Six test houses with POs, site notes, Sam's answers and the key; `tests/cold_run.py` runs one cold and scores it. For testing the folder, not for the agent doing the job |
 | `05 request/drafts/` | The workbench for a request before it passes. Not the record |
 | `06 outcome/` | What the builder paid against each request |
@@ -81,9 +83,15 @@ contractor is a second copy of the folder, set up through `00 setup`.
 
 ## What counts as Sam's yes
 Only a plain yes to the whole table. "I don't know", a question, a partial answer or silence
-leaves the stage open, and the next stage does not start. His yes, his name and the date are
-written into the stage's output file before the next stage reads it, and the file's `status`
-changes from `draft` to `approved`. A yes said in chat but not written to the file does not count.
+leaves the stage open, and the next stage does not start. An "I don't know" about one row leaves
+that row open: its grid cell says `ask Sam:`, and the stage cannot close until he answers it.
+His yes, his name and the date are written into the "Sam's yes" block of the stage's output file,
+with the Answer starting with the word yes. Then, and only then, run
+`python "02 read/seal.py" <file>`. It refuses anything that is not a plain yes, sets `status:
+approved`, and seals the file: from then on every script refuses the file if a single character of
+it changes, or if it is copied under another number. **Never set `status: approved` by hand**, and
+never seal a file Sam did not answer. A yes said in chat but not written to the file does not count.
+A correction to an approved file is a new numbered file with its own yes, never an edit.
 
 ## Nothing is overwritten
 Every house output is numbered: `read-back-N.md`, `variance-N.md`, `review-N.md`,

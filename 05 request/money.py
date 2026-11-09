@@ -13,8 +13,9 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "02 read"))
 import prices  # noqa: E402
 from records import (  # noqa: E402,F401  (callers use money.column, money.read_text, ...)
-    NUMBER, AMOUNT, approved, column, read_text, section, tables, to_amount, to_number)
+    NUMBER, AMOUNT, approval_problems, approved, column, read_text, section, tables, to_amount, to_number)
 import grid_check  # noqa: E402
+import grid_rules  # noqa: E402
 
 CENT = Decimal("0.01")
 NO_PO = "none"
@@ -117,9 +118,9 @@ def checked_row(v, rb, epos, problems):
         if v["po_qty"] != rb["po_qty"] or v["po_rate"] != rb["unit_price"]:
             problems.append(f"{where}: PO qty or rate differs from the read-back")
         po_amount = (rb["po_qty"] or 0) * (rb["unit_price"] or 0) + epo_amount(rb, epos)
-    measured_numbers = {to_number(n) for n in NUMBER.findall(rb["measured"])}
-    if v["measured_qty"] not in measured_numbers:
-        problems.append(f"{where}: measured qty {v['measured_qty']} is not in Sam's notes as read back")
+    sam_size = grid_rules.measured_qty({"sam measured": rb["measured"]})
+    if v["measured_qty"] != sam_size:
+        problems.append(f"{where}: measured qty {v['measured_qty']} is not Sam's size as read back ({grid_rules.show(sam_size)})")
     true_variance = (v["measured_qty"] or 0) * (rb["rate"] or 0) - po_amount
     if v["po_amount"] != po_amount or v["variance"] != true_variance:
         problems.append(f"{where}: says PO amount {v['po_amount']} and variance {v['variance']}; "
@@ -259,8 +260,7 @@ def expected_request(records):
     """
     problems = []
     for name in ("read-back", "review"):
-        if not approved(records[name]):
-            problems.append(f"the {name} does not carry Sam's approval (status: approved and his yes)")
+        problems += [f"the {name} {why}" for why in approval_problems(records[name])]
     problems += prices.check_read_back(records["read-back"], records.get("price-list"))
     grid_text = records.get("grid")
     if grid_text is None:

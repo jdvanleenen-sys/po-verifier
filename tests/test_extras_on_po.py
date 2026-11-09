@@ -12,6 +12,7 @@ from decimal import Decimal
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sealing import resealed  # noqa: E402
 from test_money_gate import money, texts, verify  # noqa: E402
 
 OLD_HEAD = "| Reason, if a flagged row is taken off |\n|---|---|---|---|---|---|\n"
@@ -35,7 +36,7 @@ def review_with(garage_target, doors_target=""):
 
 def expected(review):
     records = texts()
-    records["review"] = review
+    records["review"] = resealed("review-1.md", review)
     return money.expected_request(records)
 
 

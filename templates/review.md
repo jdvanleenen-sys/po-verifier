@@ -17,6 +17,8 @@ no PO: the PO whose EPO it should go on, or blank for its own "No PO" group.
 |---|---|---|---|---|---|---|---|
 
 ## Sam's yes
+When Sam says yes: write his answer (starting with yes), name and date here, then run
+`python "02 read/seal.py" <this file>`. Never set status: approved by hand.
 - Answer:
 - Name:
 - Date:

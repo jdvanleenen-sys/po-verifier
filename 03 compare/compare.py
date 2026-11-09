@@ -16,7 +16,9 @@ from compare_rows import ROOT, money
 import grid  # noqa: E402  (compare_rows puts 02 read on the path)
 import grid_check  # noqa: E402
 import prices  # noqa: E402
+from chain import chain_problems  # noqa: E402
 from grid_rules import show  # noqa: E402
+import seal  # noqa: E402
 
 ROW_HEADER = ("| Row | PO number | Item | Unit | Agreed rate | PO qty | PO rate | PO amount | Measured qty | "
               "Measured value | Variance | Why | Call |")
@@ -32,8 +34,13 @@ def inputs(house):
     if path is None:
         sys.exit(f"No read-back for {house} in 02 read/.")
     text = read(path)
-    if not calc.sams_yes(text):
-        sys.exit(f"{path.name} does not carry Sam's yes. Send the house back to 02 read.")
+    problems = [f"{path.name} {why}" for why in seal.approval_problems(text, path.name)]
+    problems += chain_problems(path, text, ROOT)
+    if problems:
+        sys.exit("Nothing was compared. Send the house back to 02 read:\n- " + "\n- ".join(problems))
+    done = already_compared(ROOT / "03 compare" / house, house, path.name)
+    if done:
+        sys.exit(done)
     grid_file = grid.grid_path_for(path)
     if not grid_file.exists():
         sys.exit(f"No {grid_file.name} beside {path.name}. Send the house back to 02 read.")
@@ -42,6 +49,16 @@ def inputs(house):
     if problems:
         sys.exit(f"{grid_file.name} does not pass, so nothing was compared:\n- " + "\n- ".join(problems))
     return path, text, grid_text, calc.thresholds(read(calc.CONTRACTOR))
+
+
+def already_compared(folder, house, read_back_name):
+    """The refusal when a variance already comes from this read-back, or None."""
+    source = f"from: 02 read/{house}/{read_back_name}"
+    for done in sorted(folder.glob("variance-*.md")):
+        if source in read(done).splitlines():
+            return (f"{done.name} already comes from {read_back_name}. Nothing was compared: a new variance "
+                    "needs a new read-back with Sam's yes.")
+    return None
 
 
 def row_line(r, ignore, flag):

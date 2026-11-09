@@ -85,8 +85,14 @@ class Refused(unittest.TestCase):
                                                            "| pass: 34 LF against PO qty 30 | pass: extra |"))
 
     def test_read_back_row_changed_after_the_grid(self):
-        self.assertRefused("changed after the grid", read_back=planted(READ_BACK, '"stringers 34 ft"; 34 ft',
+        draft = planted(READ_BACK, "status: approved", "status: draft")
+        self.assertRefused("changed after the grid", read_back=planted(draft, '"stringers 34 ft"; 34 ft',
                                                                        '"stringers 36 ft"; 36 ft'))
+
+    def test_approved_read_back_changed_after_the_grid_gets_the_seal_message(self):
+        found = problems(read_back=planted(READ_BACK, '"stringers 34 ft"; 34 ft', '"stringers 36 ft"; 36 ft'))
+        self.assertTrue(any("changed after Sam's yes" in p for p in found), found)
+        self.assertFalse(any("Rebuild the grid" in p for p in found), found)
 
     def test_line_total_that_does_not_add_up(self):
         changed = planted(READ_BACK, "| 7 | $60.00 | $420.00 |", "| 7 | $60.00 | $430.00 |")

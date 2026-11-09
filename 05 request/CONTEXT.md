@@ -54,6 +54,11 @@ issued for the row (say so in the why). A no-PO row prints its PO amount as `$0.
 script reads every one of these from the row it belongs to.
 
 ## Filling in the header
+- **Trade contractor:** exactly as `../reference/contractor.md` gives it: the business name and,
+  in brackets, the vendor number (for example "Sample Painting Co. (V00999)"). Never a name from
+  the POs, never "not confirmed". If the POs are made out to someone else, the house is not this
+  folder's: stop (the grid check already refuses it).
+- **Builder:** the builder as the POs print it; it must be one `contractor.md` names.
 - **Prepared:** the date the request is built.
 - **Document:** `VR-` and the request number this commit will give, four digits (the next free
   number in `<house>/`, so `VR-0001` for a house's first request).
@@ -81,8 +86,14 @@ The PDF is never written straight into the record. A print that goes wrong must 
    fails, fix the draft and build again.
 3. Only when all six pass, run `python "05 request/build_request.py" commit <house>`. It runs the
    six checks again on the draft PDF, trusting nothing written about it, and only then copies it
-   in as the next numbered `vpo-request-N.pdf` and writes `request-check-N.md`. It refuses a file
-   that is not the built request, a request already numbered, or a draft changed after its build.
+   in as the next numbered `vpo-request-N.pdf` and writes `request-check-N.md`, which names the
+   review it came from. It refuses a file that is not the built request, a request already
+   numbered, a draft PDF whose sha256 is not the one build wrote in `script-checks.md`, and a
+   second request from a review that already has one (a new request needs a new review).
+Build and commit also refuse a house whose POs are made out to anyone but this folder's
+contractor, and any file in `01 intake/<house>/` that changed, was added or is gone since the rule
+grid's Intake read table was written. A file dropped in after the read is never attached: it means
+a new read-back.
 If the build says Sam's records do not agree, never edit a file he approved to make it pass: write
 the corrected record as the next number, show it to Sam, and get his yes again.
 `drafts/` is a workbench, not the record. Anything in it may be deleted.
@@ -106,7 +117,8 @@ machine with `python -m unittest discover -s tests` from the folder root.
    page he left out is. A PO counts only from its own page; its number on an EPO or notes page
    does not.
 6. The header names the right job (the address and lot numbers in `house-info.md`, and each PO's
-   job name, and the date measured in `house-info.md`) and the document number this commit gives (`VR-0002` for a house's second request);
+   job name, and the date measured in `house-info.md`), the trade contractor exactly as
+   `contractor.md` gives it, a builder `contractor.md` names, and the document number this commit gives (`VR-0002` for a house's second request);
    the page count printed equals the actual pages, and the footer is on the last page.
 
 Each line reads `pass: <evidence>` or `fail: <what is on the PDF, and what was expected>`. If any

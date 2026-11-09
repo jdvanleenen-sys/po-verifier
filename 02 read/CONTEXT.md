@@ -39,6 +39,16 @@ still pays Sam. Sam confirms the direction with the rest of the table.
 One row per thing he measured, in his own words: what it is, its size or count, the colour, and
 anything else he wrote.
 
+Write the "Sam measured" cell as his words in quotes first, then `;`, then the size slot, then
+`;` and anything else: `"Railing 13'"; 13 ft; no colour given (photo line 1)`. The size slot holds
+one plain number, with "count" before it or a unit after it if you like (', ft, LF, SF, EA), and
+nothing else but a remark in words ("0 here, counted on /027"). Code reads only that slot, the same
+way in the grid and the money gate. Never write in it a size you worked out: feet and inches
+(13'6"), a multiplier (124 ft x2), a range (10-12'), a number in words (ten), a row number (see
+row 3), or a comma for a decimal point (10,5). Write his words as he wrote them and leave the slot
+for his answer: the grid reads no size there and asks Sam, and his number goes in the slot when he
+gives it.
+
 The rule grid puts some numbers to Sam by code before anything is priced, because each has cost real
 money in testing: a number that may be a thousands figure written with a dot for a comma ("3.016"
 for 3,016), a number ten times or more off its PO line, a 0 against a PO line (the whole line becomes
@@ -46,6 +56,20 @@ a credit), and the same item, quantity and price on two different POs (probably 
 him. When he answers, write the number he gave in the row's "Sam measured" cell, after his own
 words, and end that cell with "Sam confirmed". Never write "Sam confirmed" for a row he was not
 asked about.
+
+## Standing answers: never ask what Sam already answered
+Before any question to Sam, read the standing answers in `../reference/contractor.md` (lines not
+in his notes, payment splits, builder-named price list rows). When one answers the question, apply
+it and do not ask:
+- **Lines not in his notes** says done as ordered: write the row's "Sam measured" cell as
+  `"done as ordered"; <PO qty>; standing answer, contractor.md`. Its count is the PO's.
+- **Payment splits** names a line: answer its warning `leave unpriced: payment split, standing
+  answer, contractor.md`.
+- **Builder-named price list rows**: a PO line from that builder that fits the builder's own row
+  is matched to it, not listed as "pick one".
+Sam still sees every one of these in the table he says yes to; the standing answer only saves the
+question. When the answer says "ask each time", ask. Never ask Sam something his notes, the price
+list or an answer he already gave in this house settles.
 
 ## What each document is evidence for
 Each document is good evidence for one thing only. Read each for its own job.
@@ -133,7 +157,11 @@ check that was skipped shows as a blank cell, and a blank cell is refused.
    rebuild the grid with `--replace` (only while the read-back is a draft), and answer it again.
 5. Run `python "02 read/grid.py" check <house>`. It refuses a blank or `?` cell, a missing or extra
    row, a changed code cell, any `fail`, an at-risk row not under At risk, and a read-back whose POs
-   read, Rows or Extra items changed after the grid was built.
+   read, Rows or Extra items changed after the grid was built. It also refuses a PO made out to
+   anyone but the contractor in `../reference/contractor.md` (a different contractor is a different
+   copy of the folder, set up through `00 setup`), and any file in `01 intake/<house>/` that changed,
+   was added or is gone since `grid.py build` wrote the grid's Intake read table. Never edit that
+   table.
 
 The house leaves this stage only when `grid.py check <house> --final` passes, which also refuses
 any cell still marked `ask Sam`, any warning item with no answer from Sam, and any row marked
@@ -151,6 +179,14 @@ left off. This is where Sam looks first.
 He sees one table of everything that was read and replies yes. If a row is wrong, he gives the
 right number and the AI writes a new numbered read-back with that row fixed, then shows the table
 again. Only a plain yes closes this stage (see "What counts as Sam's yes" in `../CONTEXT.md`).
+Write his yes, name and date into the read-back, then run `python "02 read/seal.py" "02 read/<house>/read-back-N.md"`.
+Never set `status: approved` by hand. If he says "I don't know" about a row, that row's grid cell
+says `ask Sam:` and the read-back stays a draft.
+
+A read-back's `from:` names exactly one file or folder: `01 intake/<house>/` for read-back 1, and
+the read-back it corrects (`02 read/<house>/read-back-1.md`) for each one after. Its `attempt:` is
+its file number. compare and the request refuse a record whose `from:`, `attempt:` or numbering is
+wrong.
 
 ## What goes out
 For each attempt, `<house>/grid-N.md`, the rule grid, and `<house>/read-back-N.md` (N starts at 1), holding the confirmed

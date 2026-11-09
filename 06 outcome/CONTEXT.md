@@ -18,7 +18,8 @@ calculation, run and shown.
 
 ## How Sam confirms
 He sees one table: each request row, the EPO matched to it, and the result. Only a plain yes
-closes it (see "What counts as Sam's yes" in `../CONTEXT.md`). Whether to ask again for a row paid
+closes it (see "What counts as Sam's yes" in `../CONTEXT.md`). Write his yes, name and date, then
+run `python "02 read/seal.py" "06 outcome/<house>/outcome-N.md"`; never set `status: approved` by hand. Whether to ask again for a row paid
 in part or refused is Sam's call. A new ask goes back through `04 review`: a new review with the
 rows he wants to ask for again and his yes, then a new request in `05 request`.
 
