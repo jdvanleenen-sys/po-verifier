@@ -1,5 +1,12 @@
 # Change log
 
+## 2026-11-09, loop run 6 group A: curly quotes, joins, Sam confirmed <number>, price twins
+A real-house attack got money through four reading gaps. Curly quotes and prime marks (from a phone
+or Word) hid Sam's words from every check: they are now read as straight quotes, feet and inches.
+"2x Railing", "+", "&", "*" and a bracket holding a digit now read as no size. A bare "Sam confirmed"
+let any slot pass; now only "Sam confirmed <the slot's number>" does. Price-list twins are names equal
+once case, spaces, dashes and punctuation are taken out ("Hand rail" and "Handrail"). 10 tests added.
+
 ## 2026-11-09, loop run 5 group A: his quoted words, rate commas, mistyped PO numbers
 Run 5 on a real house got past the reader with "sixteen feet" (61 in the slot, a $1,932.00 request
 numbered), "2 @ 8'", "ditto", "16 ft 6 in", words with no number, a rate "2,900" read as $2,900, and a

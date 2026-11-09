@@ -55,7 +55,7 @@ Code reads the file. At `02 read`, before matching anything, run:
 python "02 read/prices.py" snapshot <house>
 ```
 
-It checks the file (four columns, a number in every rate, a known unit, no item active twice, and no two active items whose names differ only by a dash, a space or capitals, no item name with an invisible character such as a zero-width or no-break space; a comma in a rate only with its cents after it, so $1,000.00 reads, but 24,50 and 2,900 are refused:
+It checks the file (four columns, a number in every rate, a known unit, no item active twice, and no two active items whose names are the same once case, every space, dashes and punctuation are taken out ("Hand rail" and "Handrail", "(Builder X)" and "(Builder X.)"), no item name with an invisible character such as a zero-width or no-break space; a comma in a rate only with its cents after it, so $1,000.00 reads, but 24,50 and 2,900 are refused:
 write 24.50, 2900 or 2.90 with no comma)
 and copies it unchanged to `02 read/<house>/price-list-N.csv`. It prints one line; put that line
 in the read-back's front matter as `price list read:`. That copy is the price list for this

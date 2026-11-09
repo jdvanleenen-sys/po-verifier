@@ -46,7 +46,7 @@ class MeasuredScale(unittest.TestCase):
         self.assertEqual(status(cell), rules.PASS, cell)
 
     def test_sam_confirmed_clears_it(self):
-        cell = rules.measured(row("A-1/027", "3016", '"3.016 sf"; 3016, Sam confirmed', "Basic SF Painting"), {})
+        cell = rules.measured(row("A-1/027", "3016", '"3.016 sf"; 3016, Sam confirmed 3016', "Basic SF Painting"), {})
         self.assertEqual(status(cell), rules.PASS, cell)
         cell = rules.measured(row("A-1/033", "12", '"8\' doors 12"; 0 here, counted on /027, Sam confirmed'), {})
         self.assertEqual(status(cell), rules.PASS, cell)

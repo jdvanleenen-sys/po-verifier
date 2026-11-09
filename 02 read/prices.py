@@ -133,17 +133,17 @@ def parse(raw):
         twin = next((r for k, r in rows.items() if k != key and r["active"] and alike(k) == alike(key)), None)
         if twin and row["active"]:
             problems.append(f"price list lines {twin['line']} and {n}: '{twin['item']}' and '{row['item']}' differ "
-                            "only by a dash, a space or capitals, and both are active. Keep one, or name them apart")
+                            "only by spaces, dashes, punctuation or capitals, and both are active. Keep one, or name them apart")
         if key not in rows or row["active"]:
             rows[key] = row
     return rows, problems
 
 
 def alike(name):
-    """A name with dashes, spaces, capitals and invisible characters made alike: 'Railing - wood' and
-    'Railing — wood' match."""
-    name = INVISIBLE.sub("", name)
-    return re.sub(r"\s*[-‐-―]\s*", "-", " ".join(name.split())).lower()
+    """A name with case, every space, dashes, punctuation and invisible characters taken out:
+    'Railing - wood' and 'Railing — wood' match, and so do 'Hand rail' and 'Handrail', '(Builder X)'
+    and '(Builder X.)'."""
+    return re.sub(r"[\W_]", "", INVISIBLE.sub("", name).lower())
 
 
 def next_snapshot(folder):
