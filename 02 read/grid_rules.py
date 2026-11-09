@@ -83,10 +83,14 @@ def measured_text(row):
     Without quotes, a number further in, such as "not in notes; see row 13", is a pointer or a
     remark, never a measurement. With quotes, the first number after them is still taken, because
     read-backs write the size as '"8' doors x12"; count 12'; so never put a row number there.
+    His words are the FIRST quoted phrase: a quoted name later in the cell, such as a source note
+    '(photo, under "24 Tillatson Downs", line 2)', must not move where the size is read from.
     """
     text = cell(row, "sam measured")
     if '"' in text:
-        found = NUMBER.search(text[text.rindex('"') + 1:])
+        start = text.index('"')
+        end = text.find('"', start + 1)
+        found = NUMBER.search(text[end + 1:] if end > start else text[start + 1:])
     else:
         parts = text.split(";")
         found = NUMBER.match(parts[1].strip()) if len(parts) > 1 else None

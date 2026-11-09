@@ -30,6 +30,10 @@ class NoQuoteNoMeasurement(unittest.TestCase):
         cell = rules.measured(row("not matched to a note; see row 13"), {})
         self.assertTrue(cell.startswith(rules.ASK_SAM), cell)
 
+    def test_a_quoted_name_later_in_the_cell_is_not_the_measurement(self):
+        said = "\"Handrail 14'\"; 14 ft; no colour given (photo, under \"24 Tillatson Downs\", line 2)"
+        self.assertEqual(str(rules.measured_qty(row(said))), "14")
+
     def test_quoted_words_still_measure(self):
         self.assertEqual(str(rules.measured_qty(row('"Handrail 13\'"; 13 ft; no colour given'))), "13")
 

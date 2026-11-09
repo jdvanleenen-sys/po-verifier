@@ -1,5 +1,13 @@
 # Change log
 
+## 2026-11-09, Sam's words are the first quoted phrase
+Found on the second real house (24 Tillotson Downs): `measured_text` read the size after the LAST
+quote mark in the "Sam measured" cell. A source note in that cell, '(photo, under "24 Tillatson
+Downs", line 2)', moved it: "Handrail 14'" was read as 2 and passed the grid without a question,
+which would have put a -$103.50 credit on the request instead of -$4.50. "Railing 16'" was read as
+1 (the grid did flag that one, as ten times off). His words are now the first quoted phrase. 1 test
+added to `tests/test_grid_gaps.py`; 206 tests.
+
 ## 2026-11-08, the price list is an Excel file
 Jeff: the price list moves out of Airtable into an Excel file in the folder, and that is how it runs
 from now on. `reference/price-list.xlsx` replaces `reference/price-list.csv` (deleted; the demo
