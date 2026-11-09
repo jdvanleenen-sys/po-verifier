@@ -34,8 +34,10 @@ this stage. "I don't know" leaves it open; it is not a yes to the rows as shown.
 A row on no PO goes on the request in its own "No PO" group unless Sam names a PO for it in the
 "EPO goes on" column. Then it prints inside that PO's group, on its own line with PO qty 0, and
 that PO's EPO total includes it. Some builders put every extra on the main PO, the one that carries
-the whole list of work (some do: Jeff, 2026-11-08). Ask Sam which PO; never pick it
-for him. Only a row on no PO can be named onto a PO, and only a PO in this house.
+the whole list of work (some do: Jeff, 2026-11-08). If `../reference/contractor.md` has a standing
+answer under "Work on no PO goes on" for this builder, fill the column from it and write "standing
+answer, contractor.md" in the reason; Sam sees it in the table he says yes to. Otherwise ask Sam
+which PO; never pick it for him. Only a row on no PO can be named onto a PO, and only a PO in this house.
 
 ## What goes out
 `<house>/review-N.md`, copied from `../templates/review.md`, holding the variance file it came from, each row with Sam's decision, the reason for any flagged row he took

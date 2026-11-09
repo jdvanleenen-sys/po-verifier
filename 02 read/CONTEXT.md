@@ -57,6 +57,20 @@ him. When he answers, write the number he gave in the row's "Sam measured" cell,
 words, and end that cell with "Sam confirmed". Never write "Sam confirmed" for a row he was not
 asked about.
 
+## Standing answers: never ask what Sam already answered
+Before any question to Sam, read the standing answers in `../reference/contractor.md` (lines not
+in his notes, payment splits, builder-named price list rows). When one answers the question, apply
+it and do not ask:
+- **Lines not in his notes** says done as ordered: write the row's "Sam measured" cell as
+  `"done as ordered"; <PO qty>; standing answer, contractor.md`. Its count is the PO's.
+- **Payment splits** names a line: answer its warning `leave unpriced: payment split, standing
+  answer, contractor.md`.
+- **Builder-named price list rows**: a PO line from that builder that fits the builder's own row
+  is matched to it, not listed as "pick one".
+Sam still sees every one of these in the table he says yes to; the standing answer only saves the
+question. When the answer says "ask each time", ask. Never ask Sam something his notes, the price
+list or an answer he already gave in this house settles.
+
 ## What each document is evidence for
 Each document is good evidence for one thing only. Read each for its own job.
 

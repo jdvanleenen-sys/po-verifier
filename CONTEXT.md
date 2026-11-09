@@ -26,7 +26,7 @@ difference. This is a practice build. The data is made up and nothing is ever se
 | `04 review/` | Sam's decisions |
 | `05 request/` | The request for the site super, checked before Sam sees it |
 | `05 request/build_request.py` | Prints the request, merges the proof, runs the six checks on the PDF, and numbers only a request that passed. Its helpers: `money.py` (works out what the request must say from Sam's approved records, reading them with `records.py`), `house_checks.py` (the contractor, intake, draft-PDF and one-request-per-review checks), `verify.py` (the six checks, reading the PDF text with `request_text.py`, each row with `row_checks.py`, the header with `header_checks.py`), `printing.py` (the browser) |
-| `tests/` | Planted mistakes the money gate, the price check and the rule grid must refuse, and the variance code checked against the gate: `python -m unittest discover -s tests` |
+| `tests/` (left out of a tester's copy) | Planted mistakes the money gate, the price check and the rule grid must refuse, and the variance code checked against the gate: `python -m unittest discover -s tests` |
 | `tests/houses/` | Six test houses with POs, site notes, Sam's answers and the key; `tests/cold_run.py` runs one cold and scores it. For testing the folder, not for the agent doing the job |
 | `05 request/drafts/` | The workbench for a request before it passes. Not the record |
 | `06 outcome/` | What the builder paid against each request |

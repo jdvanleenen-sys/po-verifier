@@ -24,6 +24,16 @@ Write down his words; do not tidy them into something he did not say.
 10. For each price list line priced per square foot (a garage, walls, ceilings): is the number the
    floor area or the painted surface?
 
+Standing answers. Each one stops the same question being asked on every house. "Ask me each time"
+is a fine answer; then the folder asks.
+
+11. A PO line you did not write in your notes: is it done as ordered, or should I ask each time?
+12. Does any builder pay part of the work on separate POs and back it out of the main PO with a
+   minus line (a payment split)? Which lines, and are they left unpriced?
+13. Work you did that is on no PO: which PO's EPO does it go on, for each builder?
+14. A price list row named for a builder, such as "Railing, wood (Builder X)": is it that
+   builder's rate, used on that builder's POs without asking?
+
 This folder holds one contractor. A second contractor is a second copy of the folder.
 
 ## What goes out

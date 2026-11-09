@@ -1,5 +1,14 @@
 # Change log
 
+## 2026-11-09, standing answers: never ask what Sam already answered
+The first front-to-back loop run on a real house asked Sam 18 questions; several had answers the
+folder already held or that never change from house to house (lines not in his notes, payment
+splits, which EPO extras go on, a builder's own price list row). Jeff: "why are you asking. use the
+price list." Setup now asks four standing questions once (00 setup, 11 to 14), contractor.md has a
+row for each, and 02 read and 04 review apply them instead of asking. Sam still sees each in the
+table he says yes to. The repo's stand-in answers are "ask each time", so the test houses run as
+before.
+
 ## 2026-11-09, numbers and sizes are read one way, strictly (attack on a real house, group A)
 A run on a real house and an attack on its records found seven ways a wrong number got through:
 - A rate typed "24,50" in Excel was read as 2450 (+$24,500 on one row). A comma now counts only
