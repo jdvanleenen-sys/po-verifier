@@ -55,6 +55,25 @@ class NoSealAfterUse(unittest.TestCase):
                 seal.seal_file(review)
             self.assertIn("already used by request-check-1.md", caught.exception.args[0][0])
 
+    def test_a_read_back_is_not_used_by_its_own_grid(self):
+        # Loop run 4, 2026-11-09: grid-N.md names its read-back in from:, and the used-record rule
+        # counted it, so no new read-back could ever be sealed.
+        with tempfile.TemporaryDirectory() as d:
+            rb = Path(d) / "02 read" / "h" / "read-back-1.md"
+            rb.parent.mkdir(parents=True)
+            rb.write_text(record("yes, to the whole table"), encoding="utf-8")
+            (rb.parent / "grid-1.md").write_text("from: 02 read/h/read-back-1.md\n", encoding="utf-8")
+            self.assertIn("sealed: read-back-1.md", seal.seal_file(rb))
+
+    def test_another_read_backs_grid_still_counts_as_a_use(self):
+        with tempfile.TemporaryDirectory() as d:
+            rb = Path(d) / "02 read" / "h" / "read-back-1.md"
+            rb.parent.mkdir(parents=True)
+            rb.write_text(record("yes"), encoding="utf-8")
+            (rb.parent / "read-back-2.md").write_text("from: 02 read/h/read-back-1.md\n", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                seal.seal_file(rb)
+
     def test_an_unused_record_still_seals(self):
         with tempfile.TemporaryDirectory() as d:
             review = Path(d) / "04 review" / "h" / "review-1.md"
