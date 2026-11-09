@@ -51,6 +51,11 @@ Sam. A document that belongs to this house and came late starts a new house fold
 The same files, untouched, ready for the read stage (`../02 read/`).
 
 ## What must never happen here
+- After the files are dropped in, nothing writes to `house-info.md`, not even Sam's own
+  corrections ("the room is 12' x 12', so 384, not 392"; "no date, move past it"). His answers go in
+  the read-back's house section and rows, where his yes covers them. Found by a tester, 2026-11-07:
+  the agent had written Sam's correction into intake. Intake is fingerprinted from the first read, so
+  an edit before that is caught only by this rule.
 Nothing that arrives is edited, renamed or deleted. Nothing is read into numbers here. That is
 the next stage's job.
 
