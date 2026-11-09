@@ -24,10 +24,11 @@ def gate_problems(root, house, texts):
     return (contractor.vendor_problems(texts["read-back"])
             + intake_read.problems(root / "01 intake" / house, texts.get("grid"), house)
             + sent_problems(root, root / "05 request" / house, texts["review"])
-            + standing_epo_problems(texts["review"], setup.read_text(encoding="utf-8-sig") if setup.is_file() else ""))
+            + standing_epo_problems(texts["review"], setup.read_text(encoding="utf-8-sig") if setup.is_file() else "",
+                                    texts["read-back"]))
 
 
-SENT = re.compile(r"^-?\s*sent:\s*yes\b", re.I | re.M)
+SENT = re.compile(r"^-?\s*sent:\s*yes\s*\.?\s*$", re.I | re.M)
 
 
 def on_rows(review_text):
@@ -59,21 +60,43 @@ def sent_problems(root, house_dir, review_text):
 ASK_EACH_TIME = ("ask each time", "not asked", "none", "not decided")
 
 
-def standing_epo_problems(review_text, setup_text):
+def main_po(read_back_text):
+    """The house's main PO: the most priced lines; on a tie, the one carrying a minus line."""
+    count, minus = {}, set()
+    for r in records.section(records.tables(read_back_text or ""), "rows"):
+        po = records.column(r, "po number").strip()
+        if not po or po.lower() == "none":
+            continue
+        count.setdefault(po, 0)
+        if not records.column(r, "price list item").strip().lower().startswith(("not on the price list", "pick one")):
+            count[po] += 1
+        if (records.to_amount(records.column(r, "unit price")) or 0) < 0:
+            minus.add(po)
+    return max(count, key=lambda p: (count[p], p in minus), default=None)
+
+
+def standing_epo_problems(review_text, setup_text, read_back_text=""):
     """With a standing answer for work on no PO, a chosen row on no PO names its PO in 'EPO goes on',
-    unless the reason gives Sam's own different answer ("Sam: ...")."""
+    and when the answer says the main PO, that PO, unless the reason gives Sam's own different
+    answer ("Sam: ...")."""
     rule = contractor.answer(setup_text, "Work on no PO goes on").strip()
     if not rule or rule.lower().startswith(ASK_EACH_TIME):
         return []
+    main = main_po(read_back_text) if "main po" in rule.lower() else None
     problems = []
     for r in records.section(records.tables(review_text), ""):
-        if (records.column(r, "po number").strip().lower() == "none"
-                and records.decision_word(records.column(r, "sam's decision")) == "on"
-                and not records.column(r, "epo goes on").strip()
-                and "sam:" not in records.column(r, "reason").lower()):
-            problems.append(f"review row {records.column(r, 'row').strip()} ({records.column(r, 'item').strip()}) is on "
-                            "no PO and 'EPO goes on' is blank, but the standing answer in contractor.md says: "
+        named = records.column(r, "epo goes on").strip()
+        if (records.column(r, "po number").strip().lower() != "none"
+                or records.decision_word(records.column(r, "sam's decision")) != "on"
+                or "sam:" in records.column(r, "reason").lower()):
+            continue
+        where = f"review row {records.column(r, 'row').strip()} ({records.column(r, 'item').strip()}) is on no PO"
+        if not named:
+            problems.append(f"{where} and 'EPO goes on' is blank, but the standing answer in contractor.md says: "
                             f"{rule}. Fill EPO goes on, or write Sam's different answer in the reason as 'Sam: ...'")
+        elif main and named.lower() != main.lower():
+            problems.append(f"{where} and goes on {named}, but the standing answer says the main PO, which is "
+                            f"{main}. Name {main}, or write Sam's different answer in the reason as 'Sam: ...'")
     return problems
 
 

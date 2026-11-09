@@ -17,6 +17,10 @@ from records import (  # noqa: E402,F401  (callers use money.column, money.read_
     tables, tax_names, to_amount, to_number)
 import grid_check  # noqa: E402
 import grid_rules  # noqa: E402
+from taxes import epo_targets, group_rate, printed_rates  # noqa: E402,F401
+import variance_words  # noqa: E402
+
+SETUP = Path(__file__).resolve().parent.parent / "reference" / "contractor.md"
 
 CENT = Decimal("0.01")
 NO_PO = "none"
@@ -42,25 +46,6 @@ def takes_from_sam(which_way):
     """-1 for a back charge against Sam. A back charge against another trade still pays Sam: +1."""
     text = which_way.lower()
     return -1 if "back charge" in text and "other trade" not in text else 1
-
-
-TAX_PART = re.compile(r"(\d+(?:\.\d+)?)\s?%")
-TAX_AMOUNT = re.compile(r"\$[\d,]+\.\d\d")
-
-
-def printed_rates(subtotal, tax_cell):
-    """Each tax the PO charges, as a fraction: (0.05,) for GST, (0.05, 0.09975) for GST and QST.
-
-    Where every tax line prints its percentage and that percentage of the subtotal is the amount it
-    prints, the percentages are used, and each tax is worked out and rounded on its own, as the PO
-    does. Otherwise the one rate the printed figures give: all the tax over the subtotal."""
-    parts = [(TAX_PART.search(p), to_amount(a.group(0))) for p in tax_cell.split(";") if (a := TAX_AMOUNT.search(p))]
-    charged = [(pct, amount) for pct, amount in parts if amount]
-    if charged and all(pct for pct, _ in charged):
-        fractions = tuple(Decimal(pct.group(1)) / 100 for pct, _ in charged)
-        if all((subtotal * f).quantize(CENT, ROUND_HALF_UP) == amount for f, (_, amount) in zip(fractions, charged)):
-            return fractions
-    return (sum((amount for _, amount in parts), Decimal(0)) / subtotal,)
 
 
 def pos_listed(found):
@@ -203,29 +188,6 @@ def decisions(text, variances, problems):
     return chosen
 
 
-def epo_targets(text, chosen, house_pos, problems):
-    """The PO whose EPO each chosen row goes on, from the review's 'EPO goes on' column.
-
-    Blank means the row's own PO (a row on no PO stays in the "No PO" group). Only a row on no PO
-    may be named onto a PO, and only a PO in this house.
-    """
-    targets = {}
-    for r in section(tables(text), ""):
-        named = column(r, "epo goes on").strip()
-        num, item = column(r, "row").strip() or None, column(r, "item").strip().lower()
-        keys = [k for k in chosen if k[1] == item and num in (None, k[2])]
-        if not named or len(keys) != 1:
-            continue
-        key, target = keys[0], next((p for p in house_pos if p.lower() == named.lower()), named)
-        if target not in house_pos:
-            problems.append(f"review row '{item}' names {named} under 'EPO goes on', which is not a PO in this house")
-        elif key[0] != NO_PO and target != key[0]:
-            problems.append(f"review row '{item}' is on PO {key[0]}; only work on no PO can go on another PO's EPO")
-        else:
-            targets[key] = target
-    return targets
-
-
 LINE_REF = re.compile(r"^\(?(\d+(?:\.\d+)*)\)?\s")
 
 
@@ -237,19 +199,6 @@ def row_label(item, num, rows, lines):
         return item
     ref = LINE_REF.match(lines.get(num, "") + " ")
     return f"{item}, PO line {ref.group(1)}" if ref else f"{item}, {lines.get(num) or 'row ' + num}"
-
-
-def group_rate(po, rates, problems):
-    """The taxes for a PO group, from that PO's own printed figures; 'no PO' needs one house rate."""
-    if po != NO_PO:
-        if po not in rates:
-            problems.append(f"no printed tax found for {po} in the read-back")
-        return rates.get(po, (Decimal(0),))
-    distinct = set(rates.values())
-    if len(distinct) != 1:
-        problems.append("the POs carry different tax rates, so the 'no PO' group needs Sam to say which")
-        return (Decimal(0),)
-    return distinct.pop()
 
 
 def expected_request(records):
@@ -271,6 +220,8 @@ def expected_request(records):
     rb_rows, rates, epos = read_back(records["read-back"])
     set_aside = grid_check.not_comparable_rows(grid_text)
     variances = variance_rows(records["variance"], rb_rows, epos, problems, set_aside)
+    setup = records.get("setup", SETUP.read_text(encoding="utf-8-sig") if SETUP.is_file() else "")
+    problems += variance_words.problems(records["variance"], variances, setup)
     chosen = decisions(records["review"], variances, problems)
     targets = epo_targets(records["review"], chosen, set(rates), problems)
     groups, lines = {}, {rb["num"]: rb["line"] for rb in rb_rows}
