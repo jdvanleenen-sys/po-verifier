@@ -55,14 +55,26 @@ def decode(raw):
         return raw.decode("cp1252")
 
 
-def to_rate(cell):
-    """A rate as Excel may save it: 2.75, $2.75, 1,000 or $1,000.00. Anything else is None."""
-    text = cell.strip().replace("$", "").replace(",", "")
+GROUPED = re.compile(r"[+\-]?\d{1,3}(?:,\d{3})+(?:\.\d+)?")
+
+
+def plain(cell):
+    """A number as printed: 7, 2.75, $1,000.00, 1.0e+000. A comma counts only as a thousands
+    separator (1,234 or 12,345,678); any other comma, such as 24,50 for 24.50, is None, because a
+    comma for a decimal point is read as a hundred times the amount."""
+    text = (cell or "").strip().replace("$", "").strip()
+    if "," in text and not GROUPED.fullmatch(text):
+        return None
     try:
-        value = Decimal(text)
+        return Decimal(text.replace(",", "")) if text else None
     except InvalidOperation:
         return None
-    return value if value >= 0 else None
+
+
+def to_rate(cell):
+    """A rate as Excel may save it: 2.75, $2.75, 1,000 or $1,000.00. Anything else is None."""
+    value = plain(cell)
+    return value if value is not None and value >= 0 else None
 
 
 def check_row(n, cells, problems):
@@ -77,7 +89,8 @@ def check_row(n, cells, problems):
     elif unit not in UNITS:
         problems.append(f"price list line {n} ({item}): unit '{unit}' is not one of {sorted(UNITS)}")
     elif rate is None:
-        problems.append(f"price list line {n} ({item}): rate '{rate_cell}' is not a number")
+        hint = "; a comma is only for thousands (1,000): write a decimal with a point, 24.50" if "," in rate_cell else ""
+        problems.append(f"price list line {n} ({item}): rate '{rate_cell}' is not a number{hint}")
     elif active not in YES | NO:
         problems.append(f"price list line {n} ({item}): Active '{active_cell}' is not TRUE or FALSE")
     else:

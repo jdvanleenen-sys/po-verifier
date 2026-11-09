@@ -39,6 +39,16 @@ still pays Sam. Sam confirms the direction with the rest of the table.
 One row per thing he measured, in his own words: what it is, its size or count, the colour, and
 anything else he wrote.
 
+Write the "Sam measured" cell as his words in quotes first, then `;`, then the size slot, then
+`;` and anything else: `"Railing 13'"; 13 ft; no colour given (photo line 1)`. The size slot holds
+one plain number, with "count" before it or a unit after it if you like (', ft, LF, SF, EA), and
+nothing else but a remark in words ("0 here, counted on /027"). Code reads only that slot, the same
+way in the grid and the money gate. Never write in it a size you worked out: feet and inches
+(13'6"), a multiplier (124 ft x2), a range (10-12'), a number in words (ten), a row number (see
+row 3), or a comma for a decimal point (10,5). Write his words as he wrote them and leave the slot
+for his answer: the grid reads no size there and asks Sam, and his number goes in the slot when he
+gives it.
+
 The rule grid puts some numbers to Sam by code before anything is priced, because each has cost real
 money in testing: a number that may be a thousands figure written with a dot for a comma ("3.016"
 for 3,016), a number ten times or more off its PO line, a 0 against a PO line (the whole line becomes

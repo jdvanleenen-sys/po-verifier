@@ -17,6 +17,9 @@ STATUSES = (PASS, FAIL, NA, AT_RISK, ASK_SAM, NOT_COMPARABLE)
 NO_PO = "none"
 SELECTION = re.compile(r"selection:\s*([0-9][0-9.]*(?:e[+\-]?\d+)?)", re.I)
 NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?")
+SIZE_NUMBER = re.compile(r"(?:count\s+)?(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)", re.I)
+SIZE_UNIT = re.compile(r"\s*(?:'|(?:ft|feet|lf|sf|sq\.?\s?ft|ea|each)\b)", re.I)
+NOT_A_REMARK = re.compile(r"(?:\d|x\s*\d|in\b|inch|to\b|or\b|and\b|plus\b|[+&\-'\"])", re.I)
 MONEY = re.compile(r"\$\s*[\d,]+(?:\.\d+)?")
 DOT_FOR_COMMA = re.compile(r"\d{1,3}\.\d{3}")
 CONFIRMED = "sam confirmed"
@@ -47,12 +50,9 @@ PO_RULES = {
 
 
 def number(cell):
-    """A plain number as printed: 7, 2.75, $1,000.00 or 1.000000000000000e+000. None if not one."""
-    text = (cell or "").strip().replace("$", "").replace(",", "")
-    try:
-        return Decimal(text) if text else None
-    except InvalidOperation:
-        return None
+    """A plain number as printed: 7, 2.75, $1,000.00 or 1.000000000000000e+000. None if not one.
+    A comma counts only between thousands (prices.plain): 24,50 is not a number."""
+    return prices.plain(cell)
 
 
 def show(value):
@@ -76,25 +76,41 @@ def item_state(row):
     return "unpriced" if item.startswith(prices.UNPRICED) or not item else "priced"
 
 
-def measured_text(row):
-    """Sam's size or count as written: the first number after his quoted words, or, without quotes,
-    the number that opens the second ';' part (the size slot), as in "stringers; 34 ft".
-
-    Without quotes, a number further in, such as "not in notes; see row 13", is a pointer or a
-    remark, never a measurement. With quotes, the first number after them is still taken, because
-    read-backs write the size as '"8' doors x12"; count 12'; so never put a row number there.
-    His words are the FIRST quoted phrase: a quoted name later in the cell, such as a source note
-    '(photo, under "12 Sample Road", line 2)', must not move where the size is read from.
-    """
-    text = cell(row, "sam measured")
+def size_slot(text):
+    """The part of a "Sam measured" cell that holds his size or count: the ';' part after his first
+    quoted phrase, or, without quotes, the second ';' part, as in "stringers; 34 ft"."""
     if '"' in text:
         start = text.index('"')
         end = text.find('"', start + 1)
-        found = NUMBER.search(text[end + 1:] if end > start else text[start + 1:])
-    else:
-        parts = text.split(";")
-        found = NUMBER.match(parts[1].strip()) if len(parts) > 1 else None
-    return found.group(0) if found else None
+        if end < 0:
+            return None
+        parts = text[end + 1:].split(";")
+        return parts[1] if not parts[0].strip() and len(parts) > 1 else parts[0]
+    parts = text.split(";")
+    return parts[1] if len(parts) > 1 else None
+
+
+def measured_text(row):
+    """Sam's size or count as written, from the size slot (size_slot), or None.
+
+    The slot must open with one plain number: optionally "count " before it, a unit after it
+    (', ft, feet, LF, SF, sq ft, EA, each), then nothing, or a remark in words ("0 here, counted
+    on /027", "3016, Sam confirmed"). Anything else is no size, so the grid asks Sam: feet and
+    inches (13'6", 13 ft 6 in), a multiplier (124 ft x2), a range (10-12'), a number in words
+    (ten), a pointer (see row 3), or a comma that is not between thousands (10,5).
+    His words are the FIRST quoted phrase: a quoted name later in the cell, such as a source note
+    '(photo, under "12 Sample Road", line 2)', must not move where the size is read from.
+    """
+    slot = (size_slot(cell(row, "sam measured")) or "").strip()
+    found = SIZE_NUMBER.match(slot)
+    if not found:
+        return None
+    rest = slot[found.end():]
+    unit = SIZE_UNIT.match(rest)
+    rest = rest[unit.end():] if unit else rest
+    if rest and (rest[0] not in " ,	" or NOT_A_REMARK.match(rest.lstrip(" ,	"))):
+        return None
+    return found.group(1)
 
 
 def measured_qty(row):
