@@ -8,6 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "02 read"))
 import contractor  # noqa: E402
 import intake_read  # noqa: E402
+import seal  # noqa: E402
 
 PDF_LINE = re.compile(r"^pdf sha256:\s*([0-9a-f]{64})\s*$", re.M)
 FROM_REVIEW = re.compile(r"^from review:\s*(\S.*?)\s*$", re.M)
@@ -36,7 +37,7 @@ def pdf_problem(pdf, checks_text):
 def review_used(house_dir, review_name):
     """The numbered request that already comes from this review file, or None."""
     for check in sorted(Path(house_dir).glob("request-check-*.md")):
-        m = FROM_REVIEW.search(check.read_text(encoding="utf-8-sig"))
+        m = FROM_REVIEW.search(seal.read_record(check))
         if m and m.group(1) == review_name:
             return check.name.replace("request-check-", "vpo-request-").replace(".md", ".pdf")
     return None

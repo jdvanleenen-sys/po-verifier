@@ -118,6 +118,10 @@ Sam settles each one in one of three ways:
 3. **He says leave it unpriced.** It goes to compare marked "not on the price list", with no
    measured value and no call.
 
+His answer in the warning table starts with the way he settled it: `add row`, `names` (the item),
+or `leave unpriced`, then his words. Anything else, such as "I don't know, ask Joe", is no answer,
+and the house does not leave this stage.
+
 The AI never adds, changes or suggests a rate for a price list row. Sam's yes on the table does
 not settle a warning item. Each one needs its own answer.
 
@@ -191,7 +195,8 @@ Run it only after `grid.py check <house> --final` passes: the seal records the g
 grid never changes after it. Never set `status: approved` by hand. If he says "I don't know" about a row, that row's grid cell
 says `ask Sam:` and the read-back stays a draft.
 
-A read-back's `from:` names exactly one file or folder: `01 intake/<house>/` for read-back 1, and
+Every numbered record has a `from:` line; one without it is refused. A read-back's `from:` names
+exactly one file or folder: `01 intake/<house>/` for read-back 1, and
 the read-back it corrects (`02 read/<house>/read-back-1.md`) for each one after. Its `attempt:` is
 its file number. A `from:` names a record of this same house, in this stage or an earlier one,
 never another house's. compare and the request refuse a record whose `from:`, `attempt:` or

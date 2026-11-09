@@ -85,8 +85,11 @@ contractor is a second copy of the folder, set up through `00 setup`.
 Only a plain yes to the whole table. "I don't know", a question, a partial answer or silence
 leaves the stage open, and the next stage does not start. An "I don't know" about one row leaves
 that row open: its grid cell says `ask Sam:`, and the stage cannot close until he answers it.
-His yes, his name and the date are written into the "Sam's yes" block of the stage's output file,
-with the Answer starting with the word yes. Then, and only then, run
+His yes, his name and the date are written into the "Sam's yes" block of the stage's output file.
+The Answer is "yes" alone, or exactly "yes, to the whole table", "yes, to the table exactly as
+shown" or "yes, to the table with those decisions" (any case, a full stop allowed). Anything else,
+such as "Yes?", "Yes, but take row 7 off", "Yes and no" or "yes-ish", is not a yes: a condition or a
+question means the table changes first, and seal.py refuses it. Then, and only then, run
 `python "02 read/seal.py" <file>`. It refuses anything that is not a plain yes, sets `status:
 approved`, and seals the file: from then on every script refuses the file if a single character of
 it changes, or if it is copied under another number. seal.py also writes a line in the folder's
@@ -96,6 +99,10 @@ approved file that is in no ledger line, whose seal is not the ledger's, or whos
 the yes. Never edit `seals.md`. **Never set `status: approved` by hand**, and
 never seal a file Sam did not answer. A yes said in chat but not written to the file does not count.
 A correction to an approved file is a new numbered file with its own yes, never an edit.
+seal.py also refuses a record that another record already names in its `from:` or `from review:`
+line: a record something was built from is never approved after the fact. What the seal does not
+do: the ledger guards against mistakes, not against someone deleting its lines on purpose. The real
+guard is Sam giving his yes from his own screen, so no one else can write it for him.
 
 ## Nothing is overwritten
 Every house output is numbered: `read-back-N.md`, `variance-N.md`, `review-N.md`,
