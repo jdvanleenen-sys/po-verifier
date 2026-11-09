@@ -40,3 +40,12 @@ def review_used(house_dir, review_name):
         if m and m.group(1) == review_name:
             return check.name.replace("request-check-", "vpo-request-").replace(".md", ".pdf")
     return None
+
+
+LOT = re.compile(r"LOT/BLOCK(?:/UNIT)?:?\s*([\d/]+)")
+
+
+def lot_from_pos(texts):
+    """The lot and block numbers when every PO and EPO that prints one prints the same; else None."""
+    found = {tuple(re.findall(r"\d+", m.group(1))) for t in texts if (m := LOT.search(t))}
+    return list(found.pop()) if len(found) == 1 else None

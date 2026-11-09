@@ -156,7 +156,10 @@ def header_spec(house, n):
     folder = ROOT / "01 intake" / house
     info = money.read_text(folder / "house-info.md") if (folder / "house-info.md").is_file() else ""
     fields = [m.group(1) for f in ("address", "lot") if (m := re.search(rf"^- {f}:\s*(.+)$", info, re.I | re.M))]
-    names = {m.group(1).strip() for p in intake(house)[0] if (m := JOB_NAME.search(document_text(p)))}
+    texts = [document_text(p) for p in intake(house)[0]]
+    if fields and not re.search(r"^- lot:", info, re.I | re.M) and (lot := house_checks.lot_from_pos(texts)):
+        fields.append(" ".join(lot))
+    names = {m.group(1).strip() for t in texts if (m := JOB_NAME.search(t))}
     measured = re.search(r"^- date measured:\s*(\d{4}-\d{2}-\d{2})\s*$", info, re.I | re.M)
     who = house_checks.contractor.read(ROOT / "reference" / "contractor.md")
     return {"contractor": who["shown"], "builders": who["builders"],"document": f"VR-{n:04d}", "job_numbers": [x for f in fields for x in re.findall(r"\d+", f)] if fields else None,

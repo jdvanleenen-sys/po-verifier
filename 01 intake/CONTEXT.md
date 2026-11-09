@@ -29,7 +29,12 @@ One folder per house, named for the address, such as `77-mockup-drive`.
 2. There is at least one PO and one set of measurements.
 3. Every PO and EPO shows its PO number.
 
-If any of these is missing, ask Sam. Nothing moves on until all three pass.
+If any of these is missing, ask Sam. Nothing moves on until all three pass, with two exceptions:
+- **No date measured, and Sam says there is none** ("move past it"): write `- Date measured: not
+  recorded (Sam, <date he said it>)` in the read-back's house section and go on. The request prints
+  "Date not recorded". That is Sam's waiver, not a pass.
+- **No lot or builder from Sam:** never ask. Take them from the POs when every PO prints the same
+  lot and builder; the request prints the POs' lot. Ask only when the POs disagree.
 
 ## What goes out
 The same files, untouched, ready for the read stage (`../02 read/`).
