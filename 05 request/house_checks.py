@@ -42,16 +42,19 @@ def on_rows(review_text):
 
 
 def sent_problems(root, house_dir, review_text):
-    """Every row of this review that is already on a request marked sent: yes. A sent row is chased
-    again through 06 outcome, never by a second request."""
+    """Every row of this review that is already on a request marked sent: yes, in this house or any
+    other house folder of this copy (a late document starts <house>-2 with the same POs: loop run 6).
+    A sent row is chased again through 06 outcome, never by a second request."""
     problems, now = [], on_rows(review_text)
-    for check in sorted(Path(house_dir).glob("request-check-*.md")):
+    for check in sorted(Path(house_dir).parent.glob("*/request-check-*.md")):
         text = seal.read_record(check)
         m = FROM_REVIEW.search(text)
         if not SENT.search(text) or not m or not (Path(root) / m.group(1)).is_file():
             continue
         before = on_rows(seal.read_record(Path(root) / m.group(1)))
         pdf = check.name.replace("request-check-", "vpo-request-").replace(".md", ".pdf")
+        if check.parent.resolve() != Path(house_dir).resolve():
+            pdf = f"{pdf} in house {check.parent.name}"
         for (po, item), num in now.items():
             if (po, item) in before:
                 problems.append(f"row {num} ({item}) was already asked for on {pdf}, sent. Ask Sam: a re-ask "

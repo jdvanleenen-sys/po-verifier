@@ -96,6 +96,19 @@ def row_problems(row, plain, difference, between=()):
     return out + (quantity_problems(where, row, between) if full else [])
 
 
+def unit_problems(row, segment):
+    """The unit printed right after the item's name is the read-back row's unit (loop run 6: a
+    railing printed in SF passed every check)."""
+    want = normalise(row.get("unit") or "")
+    if not want:
+        return []
+    words = " ".join(segment.split())
+    if words != want and not words.startswith(want + " "):
+        got = " ".join(words.split()[:len(want.split())])
+        return [f"{name_of(row)} ({row['po']}): unit expected {row['unit']}, its row shows {got or 'nothing'}"]
+    return []
+
+
 def rows_by_po(rows):
     out = {}
     for row in rows:
@@ -139,7 +152,7 @@ def block_problems(po, rows, block):
         at = starts[name]
         segment = block[at + len(name):next(e for e in ends if e > at)]
         covered.append((at, at + len(name) + difference_end(segment)))
-        problems += row_problems(row, *read_row(segment))
+        problems += row_problems(row, *read_row(segment)) + unit_problems(row, segment)
     head = block.find(COLUMN_HEADINGS)
     first = head + len(COLUMN_HEADINGS) if head >= 0 else 0
     problems += stray_rows(rows[0]["po"], block, first, stop, covered)

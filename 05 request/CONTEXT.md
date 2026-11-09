@@ -56,9 +56,10 @@ issued for the row (say so in the why). A no-PO row prints its PO amount as `$0.
 script reads every one of these from the row it belongs to.
 
 ## Filling in the header
-- **The practice badge** ("PRACTICE SAMPLE. MADE-UP DATA." in the layout) prints only while
-  `../reference/contractor.md` is the practice stand-in. For a real contractor, delete that line
-  from the request.
+- **The practice badge** ("PRACTICE SAMPLE. MADE-UP DATA." in the layout) prints only in the
+  practice folder: `../reference/contractor.md`'s note says "practice stand-ins". A real
+  contractor's file may still call some answers "stand-in" (a line he has not set yet); he is still
+  a real contractor, so delete the badge line from the request. Check 6 refuses it otherwise.
 - **The proof line** names the site notes by their date, or, when the date was waived, as "the site
   notes (date not recorded)", with each notes file's name in brackets. With no notes attached it
   says "Site notes not attached". Check 5 reads this line: one that names a page Sam left out, or
