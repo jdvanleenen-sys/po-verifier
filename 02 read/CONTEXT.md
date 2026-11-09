@@ -185,7 +185,9 @@ check that was skipped shows as a blank cell, and a blank cell is refused.
    anyone but the contractor in `../reference/contractor.md` (a different contractor is a different
    copy of the folder, set up through `00 setup`), and any file in `01 intake/<house>/` that changed,
    was added or is gone since `grid.py build` wrote the grid's Intake read table. Never edit that
-   table.
+   table. Intake never changes across read-backs either: every later grid (and its build) is
+   checked against the house's first grid, so a PO edited before read-back 2 is refused, not
+   fingerprinted afresh.
 
 The house leaves this stage only when `grid.py check <house> --final` passes, which also refuses
 any cell still marked `ask Sam`, any warning item with no answer from Sam, and any row marked
