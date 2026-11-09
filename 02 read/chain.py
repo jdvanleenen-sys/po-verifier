@@ -29,4 +29,20 @@ def chain_problems(path, text, root):
         if not named or not (root / named).exists():
             problems.append(f"{path.name}: from: must name exactly one file or folder that exists, such as "
                             f"02 read/<house>/read-back-1.md; it says '{origin.group(1).strip()}'")
+        elif not same_house(named, path):
+            problems.append(f"{path.name}: from: names '{named}', which is not this house's "
+                            f"({path.parent.name}) own record. A record comes only from its own house, "
+                            "in its own stage or the stage before")
     return problems
+
+
+STAGES = ("01 intake", "02 read", "03 compare", "04 review", "05 request", "06 outcome")
+
+
+def same_house(named, path):
+    """The from: path is in this house's folder, in this record's stage or an earlier one."""
+    parts = named.replace("\\", "/").strip("/").split("/")
+    stage, house = path.parent.parent.name, path.parent.name
+    if len(parts) < 2 or parts[1] != house or parts[0] not in STAGES or stage not in STAGES:
+        return False
+    return STAGES.index(parts[0]) <= STAGES.index(stage)

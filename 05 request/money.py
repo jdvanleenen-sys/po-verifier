@@ -215,7 +215,7 @@ def epo_targets(text, chosen, house_pos, problems):
         keys = [k for k in chosen if k[1] == item and num in (None, k[2])]
         if not named or len(keys) != 1:
             continue
-        key, target = keys[0], po_key(named, house_pos)
+        key, target = keys[0], next((p for p in house_pos if p.lower() == named.lower()), named)
         if target not in house_pos:
             problems.append(f"review row '{item}' names {named} under 'EPO goes on', which is not a PO in this house")
         elif key[0] != NO_PO and target != key[0]:

@@ -58,8 +58,15 @@ script reads every one of these from the row it belongs to.
   in brackets, the vendor number (for example "Sample Painting Co. (V00999)"). Never a name from
   the POs, never "not confirmed". If the POs are made out to someone else, the house is not this
   folder's: stop (the grid check already refuses it).
-- **Builder:** the builder as the POs print it; it must be one `contractor.md` names.
-- **Prepared:** the date the request is built.
+- **Job:** the address, then the lot and block: from `house-info.md`, or, when it gives no lot, the
+  lot every PO prints ("28 Sample Road, lot 19, block 8").
+- **Builder:** the builder as every PO prints it on its FROM line, whole; it must also be one
+  `contractor.md` names, whole ("Homes" for "Sample Homes Ltd." is refused).
+- **Community:** exactly as every PO prints it on its FROM line.
+- **Measured on site:** the date in `house-info.md`. When it gives none (Sam waived it), print
+  "Date not recorded"; never a date Sam did not give.
+- **Prepared:** the date the request is built: on or after Sam's yes on the review, never later
+  than today.
 - **Document:** `VR-` and the request number this commit will give, four digits (the next free
   number in `<house>/`, so `VR-0001` for a house's first request).
 - **Tax:** name each tax as the PO prints it (for example "GST/HST 5%").
@@ -118,9 +125,11 @@ machine with `python -m unittest discover -s tests` from the folder root.
 5. Every PO and EPO in the read-back is attached, each notes page Sam named is attached, and no
    page he left out is. A PO counts only from its own page; its number on an EPO or notes page
    does not.
-6. The header names the right job (the address and lot numbers in `house-info.md`, and each PO's
-   job name, and the date measured in `house-info.md`), the trade contractor exactly as
-   `contractor.md` gives it, a builder `contractor.md` names, and the document number this commit gives (`VR-0002` for a house's second request);
+6. The header names the right job (the address and lot numbers in `house-info.md`, or the lot
+   every PO prints when it gives none, and each PO's job name, and the date measured in
+   `house-info.md` or "Date not recorded"), the trade contractor exactly as `contractor.md` gives
+   it, the builder and community every PO prints (the builder also named in `contractor.md`), a
+   prepared date between Sam's yes on the review and today, and the document number this commit gives (`VR-0002` for a house's second request);
    the page count printed equals the actual pages, and the footer is on the last page.
 
 Each line reads `pass: <evidence>` or `fail: <what is on the PDF, and what was expected>`. If any
