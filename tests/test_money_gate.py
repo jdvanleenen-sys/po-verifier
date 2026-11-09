@@ -116,7 +116,7 @@ class Records(unittest.TestCase):
         self.assertProblem("the read-back gives", variance=("+$300.00", "+$3,000.00"))
 
     def test_measured_qty_not_in_sams_notes_is_refused(self):
-        self.assertProblem("not in Sam's notes", variance=("| 12 | $720.00", "| 13 | $780.00"))
+        self.assertProblem("not Sam's size as read back", variance=("| 12 | $720.00", "| 13 | $780.00"))
 
     def test_row_missing_from_variance_is_refused(self):
         line = next(l for l in texts()["variance"].splitlines() if "Railing, wood" in l)

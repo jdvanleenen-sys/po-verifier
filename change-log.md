@@ -1,5 +1,19 @@
 # Change log
 
+## 2026-11-09, numbers and sizes are read one way, strictly (attack on a real house, group A)
+A run on a real house and an attack on its records found seven ways a wrong number got through:
+- A rate typed "24,50" in Excel was read as 2450 (+$24,500 on one row). A comma now counts only
+  between thousands (1,234); any other comma in a rate is refused with the row named, and in a cell
+  it is not a number (`prices.plain`, used by the grid too).
+- The size slot in "Sam measured" took the first number it found: 13'6" read as 13, "124 ft x2"
+  as 124, "10-12'" as 10, "ten" as a house number in the source note, "see row 3" as 3 ft,
+  "10,5" as 105. The slot must now be one plain number with an optional unit and a remark in
+  words; anything else reads as no size, so the grid asks Sam (`grid_rules.size_slot`,
+  `measured_text`). `02 read/CONTEXT.md` says how to write the cell.
+- The money gate accepted any number anywhere in Sam's cell as his measurement. It now reads the
+  size exactly as the grid does (`grid_rules.measured_qty`) and needs it to be equal.
+`tests/test_run1_reading.py`, 7 tests; 213 in all.
+
 ## 2026-11-09, Sam's words are the first quoted phrase
 Found on a real house: `measured_text` read the size after the LAST
 quote mark in the "Sam measured" cell. A source note in that cell, '(photo, under "12 Sample
