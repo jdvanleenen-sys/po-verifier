@@ -80,3 +80,6 @@ The review stage (`../04 review/`) works from that file.
 
 ## What must never happen here
 Nothing is decided here. No row is chased or dropped. That is Sam's job in the review stage.
+
+The money gate in `05 request` works out every row's Why and Call, and the house-flag line,
+again from the figures. A variance changed by hand is refused: delete it and run compare.py.

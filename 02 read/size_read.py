@@ -15,6 +15,9 @@ NUMBER_WORD = re.compile(r"\b(?:one|two|three|four|five|six|seven|eight|nine|ten
                          r"fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\b", re.I)
 LOOSE_DIGIT = re.compile(r"(?<![/\d])\d")
 EACH_SIDE = re.compile(r"\s*each\s+sides?\b", re.I)
+RANGE = re.compile(r"\d\s*'?\s*(?:-|–|—|to)\s*\d", re.I)
+POINTER = re.compile(r"\bsee\b|\bsame as\b|\brow\s*#?\s*\d", re.I)
+WORD_NUMBER = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?")
 
 
 def size_slot(text):
@@ -44,7 +47,9 @@ def size_text(said):
     rest = after[unit.end():] if unit else after
     if EACH_SIDE.match(after) or not remark_ok(rest) or multiplied(rest):
         return None
-    return None if words_multiply(said or "", found.group(1)) else found.group(1)
+    if words_multiply(said or "", found.group(1)) or words_disagree(said or "", found.group(1)):
+        return None
+    return found.group(1)
 
 
 def remark_ok(rest):
@@ -74,3 +79,24 @@ def words_multiply(said, size):
     if MULTIPLIER_WORD.search(words):
         return True
     return any(m.group(1).lstrip("0") != size.replace(",", "").lstrip("0") for m in TIMES.finditer(words))
+
+
+def quoted(said):
+    """Sam's own words: the first quoted phrase in the cell, or '' when there is none."""
+    start = said.find('"')
+    end = said.find('"', start + 1) if start >= 0 else -1
+    return said[start + 1:end] if end > start else ""
+
+
+def words_disagree(said, size):
+    """Sam's quoted words do not back the size in the slot: they hold a range ('13-14''), a pointer
+    ('see row 3', 'same as'), or numbers none of which is the slot's ('Railing 16'' with 61 in the
+    slot). Words with no number ('done as ordered') back any slot. An item name may carry its own
+    size ('8' doors x12'), so the slot only has to be one of his numbers."""
+    if "sam confirmed" in said.lower() or not size.strip("0.,"):
+        return False  # Sam settled this number himself; a 0 already goes to him (size_doubt)
+    words = quoted(said)
+    if RANGE.search(words) or POINTER.search(words):
+        return True
+    his = {n.replace(",", "").lstrip("0") or "0" for n in WORD_NUMBER.findall(words)}
+    return bool(his) and (size.replace(",", "").lstrip("0") or "0") not in his

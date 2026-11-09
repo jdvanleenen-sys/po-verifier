@@ -1,7 +1,7 @@
 """The po-line rule: every read-back row on a PO is set against that PO's own file in 01 intake.
 
-The row's PO qty, unit price and line total must all be printed on the PO line that carries its
-description. A row whose numbers were read off another line (16 x 40.00 put on the doors line, both
+The row's PO qty, unit price and line total must be printed, in that order, on the PO line that
+carries its description. A row whose numbers were read off another line (16 x 40.00 put on the doors line, both
 $40 lines, so the subtotal still adds up) is refused. Run by grid.py check. Only an HTML PO (one table
 row per PO line, as SupplyPro and BuildPro save them) can be read this way; rows on a PDF PO are
 counted and named as not checked, never passed.
@@ -49,6 +49,18 @@ def segments(path):
     return flat(raw), [flat(tr) for tr in ROW.findall(raw)]
 
 
+def in_order(printed, want):
+    """The row's qty, unit price and line total appear on the PO line in that order (other numbers,
+    such as an option code, may sit between them). 125 x 2.00 = 250.00 read off a line printing
+    2 ... 125.00 ... 250.00 is out of order, so it fails."""
+    at = 0
+    for w in want:
+        at = next((i + 1 for i in range(at, len(printed)) if printed[i] == w), None)
+        if at is None:
+            return False
+    return True
+
+
 def po_files(folder):
     return [p for p in sorted(folder.iterdir()) if p.is_file() and p.suffix.lower() in (".html", ".htm", ".pdf")]
 
@@ -68,7 +80,7 @@ def row_problem(r, docs):
     said = f"{show(want[0])} x {show(want[1])} = {show(want[2])}"
     if not found:
         return f"row {num}, po-line: fail: PO {po} in 01 intake prints no line '{rules.cell(r, 'line as printed')}'"
-    if any(all(w in numbers(seg) for w in want) for seg in found):
+    if any(in_order(numbers(seg), want) for seg in found):
         return None
     printed = numbers(found[0])[-3:]
     shown = f"{show(printed[0])} x {show(printed[1])} = {show(printed[2])}" if len(printed) == 3 else "other numbers"

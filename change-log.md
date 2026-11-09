@@ -1,5 +1,30 @@
 # Change log
 
+## 2026-11-09, loop run 4 group A: po-line order, the slot backed by Sam's words
+Run 4's attacker swapped a row's qty and unit price (125 x $2.00 for 2 x $125.00, the same total):
+the po-line rule passed it, because it only checked the three numbers were somewhere on the PO line,
+and it would have flagged +$15,375. It now needs them in order: qty, then unit price, then total.
+The size slot was never set against Sam's quoted words, so "Railing 16'" with 61 in the slot (+$1,840),
+a range ("13-14'") or a pointer ("see row 3") passed as a size. The slot must now be one of the numbers
+in his words, and a range or pointer there asks Sam. A 0 and a "Sam confirmed" number are exempt. Both
+real houses still read every row as before. 5 tests in `tests/test_run4_reading.py`.
+
+## 2026-11-09, loop run 4 group B: tax from a rounded amount, the main PO, empty and sent requests
+Run 4 on a real house: a PO that prints PST $225.69 on $4,513.70 and no percentage had its rate taken
+as 5.00011%, so a correct request printing "PST 5%" was refused and a no-PO row was refused for
+"different tax rates". The rate is now the plainest one that gives the printed tax (`taxes.py`, split
+out of money.py with the EPO targets). With a standing answer naming the main PO, work on no PO must
+go on the main PO (most priced lines). A request with no row on is refused. A request is sent only
+when its yes block reads `- sent: yes` (the template line is now `- sent:`). The money gate checks
+each variance row's Why and Call and the house-flag line (`variance_words.py`). 14 tests added.
+
+## 2026-11-09, loop run 4 group C: intake against the first read; no seal over a gap
+Run 4's attack edited a PO in intake before writing read-back 2; grid-2 fingerprinted the edited file
+afresh and nothing noticed (a44). grid.py build, grid.py check, build and commit now also compare
+intake with the house's first grid: a file changed, added or removed since the first read is refused.
+seal.py also refused nothing for a record leaving a numbering gap (only the request caught it later,
+a28); it now refuses it when the seal is asked for. 6 tests in tests/test_run4_intake.py.
+
 ## 2026-11-09, loop run 4: a read-back is not "used" by its own grid
 Run 4 (a real house) could not seal any read-back: the run-3 rule "a record another file was built
 from is never sealed" counted the read-back's own grid, which names it in from: and is built before

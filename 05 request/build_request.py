@@ -165,6 +165,8 @@ def expected_or_stop(house):
     if problems:
         shown, advice = house_checks.stop_message(ROOT, house, problems)
         sys.exit("Sam's records do not agree, so nothing was built:\n- " + "\n- ".join(shown) + "\n" + advice)
+    if not expected["rows_on"]:
+        sys.exit("Sam put no row on: there is no request for this house. Nothing was built or numbered.")
     return expected
 
 
@@ -257,7 +259,7 @@ def write_check(path, house, n, lines, notes, review):
             "checked by: 05 request/build_request.py (all six checks run by the script on the PDF)", "---", "",
             f"# {house}, request check {n}", "", *[f"- {l}" for l in lines], "",
             f"Site notes attached as proof: {notes}", "", "## Sam's yes to send",
-            "- Answer:", "- Name:", "- Date:", "- sent: yes / no", ""]
+            "- Answer:", "- Name:", "- Date:", "- sent:", ""]
     path.write_text("\n".join(body), encoding="utf-8")
 
 

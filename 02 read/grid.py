@@ -61,6 +61,9 @@ def build(house, replace=False):
     snapshot = prices.snapshot_bytes(house, text)
     if snapshot is None:
         sys.exit("The read-back names no price list snapshot in its folder. Run prices.py snapshot first.")
+    changed = intake_read.since_first_problems(ROOT / "01 intake" / house, ROOT / "02 read" / house, house, below=n)
+    if changed:
+        sys.exit(f"{target.name} was not built:\n- " + "\n- ".join(changed))
     grid_text = render(house, n, text, snapshot) + "\n".join(intake_read.section(ROOT / "01 intake" / house))
     target.write_text(grid_text, encoding="utf-8")
     asks = len(re.findall(r"\| \?(?= \|)", grid_text))
@@ -74,7 +77,7 @@ def main(argv):
     if argv[1] == "build":
         print(build(house, "--replace" in flags))
         return
-    _, path = numbered(house, "read-back")
+    n, path = numbered(house, "read-back")
     if path is None:
         sys.exit(f"No read-back for {house} in 02 read/.")
     text, grid_file = read(path), grid_path_for(path)
@@ -86,6 +89,7 @@ def main(argv):
         problems += [f"{path.name} {why}" for why in seal.file_approval_problems(path, text)]
     problems += contractor.vendor_problems(text)
     problems += intake_read.problems(ROOT / "01 intake" / house, grid_text, house)
+    problems += intake_read.since_first_problems(ROOT / "01 intake" / house, ROOT / "02 read" / house, house, below=n)
     line_problems, unchecked = po_lines.check(ROOT / "01 intake" / house, text)
     problems += line_problems
     if problems:
