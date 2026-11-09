@@ -10,10 +10,10 @@ difference. This is a practice build. The data is made up and nothing is ever se
 |---|---|
 | `CLAUDE.md`, `the-page.md` | Where to start, and who this is for and why |
 | `reference/price-list.md` | Where the price list lives and how to read it |
-| `reference/price-list.csv` | The price list, the only one. Sam keeps it in Excel |
+| `reference/price-list.xlsx` | The price list, the only one. Sam keeps it in Excel; the checker reads its "Price list" sheet |
 | `02 read/grid.py` | The rule grid: every read-back row and PO against every rule, one cell each. Code fills what it can; the AI answers the rest one rule at a time. Its helpers: `grid_rules.py` (the rules), `grid_read.py`, `grid_check.py` |
 | `03 compare/compare.py` | Writes the variance by code from the approved read-back and its grid. Its arithmetic is `compare_rows.py`, kept apart from the money gate |
-| `02 read/prices.py` | Checks the price list, freezes a copy per read-back (`price-list-N.csv`), and checks every rate in the read-back against it |
+| `02 read/prices.py` | Reads the Excel price list (through `price_excel.py`), checks it, freezes a copy per read-back (`price-list-N.csv`), and checks every rate in the read-back against it |
 | `reference/contractor.md` | Who the contractor is and his settings, written by `00 setup` |
 | `reference/walk-test.md` | The checklist for testing this folder cold |
 | `reference/request-layout.html`, `request-layout-sample.pdf` | How the request looks |

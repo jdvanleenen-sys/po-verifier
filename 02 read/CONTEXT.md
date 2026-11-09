@@ -80,7 +80,7 @@ can see why they did not fit. Never show the PO's own rate as the suggested rate
 Sam's to set.
 
 Sam settles each one in one of three ways:
-1. **He adds the item to the price list himself,** in Excel (`../reference/price-list.csv`). The AI
+1. **He adds the item to the price list himself,** in Excel (`../reference/price-list.xlsx`). The AI
    then takes a new snapshot, writes a new numbered read-back from it, and matches the item to
    the new row.
 2. **He names an existing item** that it should match.

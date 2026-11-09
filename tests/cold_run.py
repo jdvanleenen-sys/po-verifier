@@ -39,7 +39,8 @@ def as_painter(style, dest):
     """A PO style's house belongs to its own painter: his price list and setup go in the copy."""
     sys.path.insert(0, str(STYLES))
     import pipeline  # noqa: E402
-    (dest / "reference" / "price-list.csv").write_bytes(pipeline.price_csv(style))
+    import price_excel  # noqa: E402  (02 read is on the path through pipeline)
+    price_excel.write_workbook(pipeline.price_csv(style), dest / "reference" / "price-list.xlsx")
     setup = dest / "reference" / "contractor.md"
     text = setup.read_text(encoding="utf-8")
     text = text.replace("Sample Painting Co. (vendor V00999)", f"{style['painter']} (vendor {style['vendor_no'] or 'none'})")

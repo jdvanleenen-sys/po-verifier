@@ -3,7 +3,7 @@
     python -m unittest discover -s tests -v
 
 For each house in tests/houses/houses.json this re-reads the generated POs and EPOs, prices every
-row from reference/price-list.csv, applies the thresholds in reference/contractor.md, and checks
+row from reference/price-list.xlsx, applies the thresholds in reference/contractor.md, and checks
 the expected variance total, house flag and request totals. A wrong answer key fails here before
 it can mislead a test run. No browser needed.
 """
@@ -23,7 +23,7 @@ sys.path.insert(0, str(HOUSES))
 import make_houses  # noqa: E402
 
 SPEC = json.loads((HOUSES / "houses.json").read_text(encoding="utf-8"))["houses"]
-PRICE_LIST = prices.parse(prices.SOURCE.read_bytes())[0]
+PRICE_LIST = prices.parse(prices.source_bytes())[0]
 CENT = Decimal("0.01")
 
 

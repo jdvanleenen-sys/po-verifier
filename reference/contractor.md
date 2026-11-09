@@ -13,7 +13,7 @@ Stand-in answers for the practice build. Not a real contractor. A real one is wr
 | Business, and who signs | Sample Painting Co. (vendor V00999). Signs as Sam. |
 | Trade | Interior painting |
 | Builders, and how POs arrive | Sample Builder Ltd., through SupplyPro |
-| Price list | `reference/price-list.csv`. Sam keeps it in Excel. |
+| Price list | `reference/price-list.xlsx`. Sam keeps it in Excel. |
 | Ignore line | under $50 |
 | Flag line | $100 and up. $50 to under $100 is Sam's call. |
 | Flag the house when small rows add up | Yes, when the house total is $100 or more, plus or minus |

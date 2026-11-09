@@ -36,7 +36,7 @@ class PriceFile(unittest.TestCase):
         self.assertEqual(str(rows["railing, wood"]["rate"]), "38")
 
     def test_the_real_price_list_reads_clean(self):
-        rows, problems = prices.parse(prices.SOURCE.read_bytes())
+        rows, problems = prices.parse(prices.source_bytes())
         self.assertEqual(problems, [])
         self.assertEqual(sum(r["active"] for r in rows.values()), 52)
 

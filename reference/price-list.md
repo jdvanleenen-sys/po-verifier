@@ -13,13 +13,20 @@ one place.
 nothing here is sent to anyone.
 
 ## Where it lives
-**`reference/price-list.csv`, and nowhere else.** One row per item, 53 rows, 52 active
-("Whole-house interior" is not). Sam keeps it in Excel: he opens the file, changes a rate or adds
-a row, and saves it with **File, Save As, "CSV UTF-8 (Comma delimited)"**. Nobody else changes it.
+**`reference/price-list.xlsx`, and nowhere else.** An Excel workbook. The checker reads the sheet
+named **Price list**: one row per item, with the columns Item, Unit, Rate, Active first. Any column
+after those (such as Source, where a rate came from) is Sam's and is ignored. The demo list has 53
+rows, 52 active ("Whole-house interior" is not). Sam opens the file in Excel, changes a rate or
+adds a row, and saves it as it is. Nobody else changes it. Each house freezes a plain-text copy
+(`02 read/<house>/price-list-N.csv`) when it is read, so a later change never changes a house
+already checked.
 
 - The rates are made up for the demo. The item names and units follow a real painter's price
   sheet, so practice POs will not always find a match.
 - No login, connector or account is needed to read it, so anyone testing the folder has it.
+- Why Excel (Jeff, 2026-11-08): the painter keeps his own list where he can open and edit it, and
+  this is how the folder runs from now on, not through Airtable. Later, other software he uses can
+  point at the same one file.
 - Why a file and not a database (Jeff, 2026-11-02): a database made every tester need access to
   it, and the folder needs one price list, not a system. If Sam's list later lives in a database,
   an export to this file keeps everything below the same.

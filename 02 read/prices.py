@@ -1,10 +1,10 @@
 """The price list: one file, read by code, frozen per read-back.
 
-The price list is reference/price-list.csv. Sam keeps it in Excel and saves it as
-"CSV UTF-8 (Comma delimited)". Nobody else changes it.
+The price list is reference/price-list.xlsx, kept by Sam in Excel (see price_excel.py). Nobody
+else changes it.
 
   python "02 read/prices.py" snapshot <house>
-      Checks reference/price-list.csv, copies it unchanged to 02 read/<house>/price-list-N.csv
+      Checks the price list, freezes it as plain text in 02 read/<house>/price-list-N.csv
       (the next free N), and prints the line to put in the read-back's front matter:
       price list read: <date>, price-list-N.csv, sha256 <fingerprint>
 
@@ -18,14 +18,15 @@ import csv
 import hashlib
 import io
 import re
-import shutil
 import sys
 from datetime import date
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
+import price_excel
+
 ROOT = Path(__file__).resolve().parent.parent
-SOURCE = ROOT / "reference" / "price-list.csv"
+SOURCE = ROOT / "reference" / "price-list.xlsx"
 HEADER = ["item", "unit", "rate", "active"]
 UNITS = {"Floor SF", "SF", "LF", "EA", "per room", "per kitchen", "Hours", "Incl."}
 YES = {"true", "yes", "y", "1", "x"}
@@ -35,6 +36,11 @@ PENDING = "pick one"
 READ_LINE = re.compile(r"^price list read:\s*(.+)$", re.M)
 SNAPSHOT_NAME = re.compile(r"price-list-\d+\.csv")
 FINGERPRINT = re.compile(r"sha256\s+([0-9a-f]{64})")
+
+
+def source_bytes(path=SOURCE):
+    """The price list as the CSV text every check reads, made from the Excel file."""
+    return price_excel.workbook_csv(path)
 
 
 def fingerprint(raw):
@@ -114,8 +120,8 @@ def next_snapshot(folder):
 
 
 def snapshot(house):
-    """Copy the checked price list into the house's read folder, unchanged. Returns the front-matter line."""
-    raw = SOURCE.read_bytes()
+    """Freeze the checked price list in the house's read folder. Returns the front-matter line."""
+    raw = source_bytes()
     rows, problems = parse(raw)
     if problems:
         sys.exit("The price list has problems, so nothing was read. Ask Sam to fix them in Excel:\n- "
@@ -123,7 +129,7 @@ def snapshot(house):
     folder = ROOT / "02 read" / house
     folder.mkdir(parents=True, exist_ok=True)
     target = next_snapshot(folder)
-    shutil.copyfile(SOURCE, target)
+    target.write_bytes(raw)
     active = sum(1 for r in rows.values() if r["active"])
     return (f"price list read: {date.today().isoformat()}, {target.name}, sha256 {fingerprint(raw)} "
             f"({len(rows)} rows, {active} active)")

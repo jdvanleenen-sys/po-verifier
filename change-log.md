@@ -1,5 +1,17 @@
 # Change log
 
+## 2026-11-08, the price list is an Excel file
+Jeff: the price list moves out of Airtable into an Excel file in the folder, and that is how it runs
+from now on. `reference/price-list.xlsx` replaces `reference/price-list.csv` (deleted; the demo
+rows are unchanged, checked row for row). `02 read/price_excel.py` (new) reads the "Price list"
+sheet's first four columns (Item, Unit, Rate, Active); later columns such as Source are ignored.
+`prices.py` turns that into the same CSV text as before, so the per-house snapshot
+(`price-list-N.csv`), its fingerprint and every check are unchanged. A missing file, a missing
+sheet or openpyxl not installed stops with a plain message. `reference/contractor.md`: only the
+file path in the price list line changed (Sam's answer, "keeps it in Excel", is unchanged); done
+outside `00 setup` because the file moved. Needs openpyxl (`python -m pip install openpyxl`).
+9 tests in `tests/test_excel_price_list.py`; 205 tests.
+
 ## 2026-11-08, work on no PO can go on a PO's EPO
 Jeff: the main PO carries the whole list of work; the other POs are for prime and touch-ups. Extras
 belong on the main PO's one EPO, each on its own line so the builder can track it. The review now
