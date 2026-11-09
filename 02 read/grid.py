@@ -8,7 +8,9 @@
       Refuses the grid if any cell is blank or "?", a row or PO is missing or extra, a code cell
       was changed, any cell is "fail", an "at risk" row is not under At risk, or the read-back's
       tables changed after the grid was built. --final (03 compare and the money gate) also
-      refuses "ask Sam". Without it, "ask Sam" cells pass and are counted.
+      refuses "ask Sam". Without it, "ask Sam" cells pass and are counted. It also refuses a PO
+      made out to anyone but reference/contractor.md's contractor, and any file in 01 intake that
+      changed, was added or is gone since the grid's Intake read table was written.
 
 The grid is how a skipped check stops being silent: the number of cells is fixed by code before
 anyone checks anything, and a blank cell is a refusal.
@@ -17,6 +19,8 @@ import re
 import sys
 from pathlib import Path
 
+import contractor
+import intake_read
 import prices
 import seal
 from grid_check import check_grid
@@ -54,7 +58,7 @@ def build(house, replace=False):
     snapshot = prices.snapshot_bytes(house, text)
     if snapshot is None:
         sys.exit("The read-back names no price list snapshot in its folder. Run prices.py snapshot first.")
-    grid_text = render(house, n, text, snapshot)
+    grid_text = render(house, n, text, snapshot) + "\n".join(intake_read.section(ROOT / "01 intake" / house))
     target.write_text(grid_text, encoding="utf-8")
     asks = len(re.findall(r"\| \?(?= \|)", grid_text))
     return f"{target.name} written: {asks} cell(s) are '?' for you to answer, one rule at a time."
@@ -73,9 +77,12 @@ def main(argv):
     text, grid_file = read(path), grid_path_for(path)
     if not grid_file.exists():
         sys.exit(f"No {grid_file.name} for {path.name}. Run: python \"02 read/grid.py\" build {house}")
-    problems, asks = check_grid(text, read(grid_file), prices.snapshot_bytes(house, text), "--final" in flags)
+    grid_text = read(grid_file)
+    problems, asks = check_grid(text, grid_text, prices.snapshot_bytes(house, text), "--final" in flags)
     if seal.is_approved(text):
         problems += [f"{path.name} {why}" for why in seal.approval_problems(text, path.name)]
+    problems += contractor.vendor_problems(text)
+    problems += intake_read.problems(ROOT / "01 intake" / house, grid_text, house)
     if problems:
         sys.exit(f"{grid_file.name} is refused:\n- " + "\n- ".join(problems))
     note = f" {asks} cell(s) wait on Sam; the house cannot leave 02 read until he answers." if asks else ""

@@ -48,3 +48,14 @@ status, a colon, and what you looked at. Never change a cell code filled.
 | MKR-02402401/012 | pass: 1000 = 1000 | pass: 1000 + 50 = 1050 | pass: listed once | pass: every PO is to Sample Painting Co., V00999 (attn Office) | pass: prints 77 Mockup Drive, Sampleton, AB T0X 0X0; Sam gave 77 Mockup Drive |
 | MKR-02402401/027 | pass: 8305 + 420 + 836 + 270 = 9831 | pass: 9831 + 491.55 = 10322.55 | pass: listed once | pass: every PO is to Sample Painting Co., V00999 (attn Office) | pass: prints 77 Mockup Drive, Sampleton, AB T0X 0X0; Sam gave 77 Mockup Drive |
 | MKR-02402401/041 | pass: 500 = 500 | pass: 500 + 25 = 525 | pass: listed once | pass: every PO is to Sample Painting Co., V00999 (attn Office) | pass: prints 77 Mockup Drive, Sampleton, AB T0X 0X0; Sam gave 77 Mockup Drive |
+
+## Intake read
+Every file in `01 intake` when this grid was built. Written by `grid.py`; never edit it. A request is refused if any of these changes.
+
+| File | sha256 |
+|---|---|
+| `house-info.md` | fd66a970a4549794a796f57ddc71f9bde2e5946664d3aeb111e35ce4dba480f6 |
+| `PO MKR-02402401-012.html` | 503ed02f13eb0b0c8dc79e5788840620bc73724146f305d8c07771283d82b44f |
+| `PO MKR-02402401-027.html` | e5e16c23df55b99b881a3dd13172d740d1de487ac2f746f5d726f177ad3c0f2f |
+| `PO MKR-02402401-041.html` | 1c1350f239462ba8f4a81240b3107ba595d2caad1eef01fcad8a1c1eb23f6548 |
+| `site-notes.txt` | a8681b67f99c2d7ed39f3156c7853d301e673bd9d3a9125872227e5aaced54f7 |

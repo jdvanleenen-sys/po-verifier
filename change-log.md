@@ -25,6 +25,25 @@ yes, a name and a date, and writes a seal over the file's name and text that eve
 second variance from one read-back. The count rule may be answered "ask Sam". The worked example is
 sealed. 17 tests added (`tests/test_seal.py`, one in `tests/test_grid.py`).
 
+## 2026-11-09, the request and intake gate (run 1 attack, group C)
+An attack on a real house's finished run got these past the code: a request numbered under an
+unconfirmed or wrong trade contractor, or a wrong builder; the draft PDF edited between build and
+commit; a second request numbered from the same review by retyping the document number; a PO
+changed by one byte, saved twice, or another house's PO dropped into intake after the read; and a
+bad date in house-info stopped with a traceback. Now:
+- `02 read/contractor.py`: every PO's vendor must be `reference/contractor.md`'s vendor number
+  (or name, with no number). `grid.py check` and the request build refuse anything else.
+- `02 read/intake_read.py`: `grid.py build` writes an Intake read table (file, sha256); `grid.py
+  check`, build and commit refuse any intake file changed, added or gone since. The sample house's
+  grid got its table.
+- Check 6 also reads the trade contractor (exactly as contractor.md gives it) and the builder (one
+  contractor.md names). A bad date measured is refused in words. Its document-number and foreign
+  job-name messages no longer invite the wrong fix.
+- `05 request/house_checks.py`: build writes the draft PDF's sha256 into `script-checks.md` and
+  commit refuses a different PDF; `request-check-N.md` names its review, and commit refuses a second
+  request from it. A review naming a missing variance now names that file.
+19 tests in `tests/test_request_gate.py`.
+
 ## 2026-11-09, Sam's words are the first quoted phrase
 Found on a real house: `measured_text` read the size after the LAST
 quote mark in the "Sam measured" cell. A source note in that cell, '(photo, under "12 Sample

@@ -9,7 +9,9 @@ run, not a rebuild of the stages.
 Ask one question at a time, in plain words, and wait for each answer. Do not ask them all at once.
 Write down his words; do not tidy them into something he did not say.
 
-1. Your business name, and the name you sign with.
+1. Your business name, the name you sign with, and your vendor number exactly as the builders'
+   POs print it. Write it as `Name (vendor V12345). Signs as ...`, or `(vendor none)` if the POs
+   print no number: the grid checks every PO against it, and the request prints it.
 2. Your trade.
 3. Which builders send you POs, and through what system (for example SupplyPro, email).
 4. Where your price list lives, and who keeps it up to date.
