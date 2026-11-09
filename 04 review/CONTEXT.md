@@ -23,6 +23,8 @@ grouped by PO. The Row number is how the script tells apart one item on several 
   on asks the builder to reverse the back charge. Say so in plain words, and Sam answers on or off.
   (Found by the 62 Messy Bay test house, 2026-11-02.)
 - **If the house total is flagged:** every ignore row as well, so he sees the small ones together.
+- **If it is not flagged:** every ignore row still appears, under the table as "For information",
+  so he can name one; each stays off unless he does.
 
 **How a decision is written.** The decision cell is exactly `on` or `off`, alone or followed by a
 remark in brackets: `off (Sam: leave the doors off)`. A blank cell, or anything else ("on hold",

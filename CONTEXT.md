@@ -12,7 +12,7 @@ difference. This is a practice build. The data is made up and nothing is ever se
 | `reference/price-list.md` | Where the price list lives and how to read it |
 | `reference/price-list.xlsx` | The price list, the only one. Sam keeps it in Excel; the checker reads its "Price list" sheet |
 | `02 read/grid.py` | The rule grid: every read-back row and PO against every rule, one cell each. Code fills what it can; the AI answers the rest one rule at a time. Its helpers: `grid_rules.py` (the rules), `grid_read.py`, `grid_check.py` |
-| `02 read/seal.py` | Seals a record once Sam's plain yes is written: the only way a record becomes approved. Writes the folder's `seals.md` ledger. `chain.py` checks each record's number, `attempt:` and `from:` |
+| `02 read/seal.py` | Seals a record once Sam's plain yes is written: the only way a record becomes approved. Writes the house's own `seals.md` ledger beside the record (one per house per stage). `chain.py` checks each record's number, `attempt:` and `from:` |
 | `03 compare/compare.py` | Writes the variance by code from the approved read-back and its grid. Its arithmetic is `compare_rows.py`, kept apart from the money gate |
 | `02 read/contractor.py`, `02 read/intake_read.py` | Who the folder is for (read from `reference/contractor.md`; a PO to another vendor is refused), and the fingerprint of every intake file, written into each grid and checked before a request is built or numbered |
 | `02 read/prices.py` | Reads the Excel price list (through `price_excel.py`), checks it, freezes a copy per read-back (`price-list-N.csv`), and checks every rate in the read-back against it |
@@ -103,7 +103,12 @@ never seal a file Sam did not answer. A yes said in chat but not written to the 
 A correction to an approved file is a new numbered file with its own yes, never an edit.
 seal.py also refuses a record that another record already names in its `from:` or `from review:`
 line (a read-back's own grid does not count), and a record that leaves a numbering gap below it:
-a record something was built from is never approved after the fact. What the seal does not
+a record something was built from is never approved after the fact. Before sealing, seal.py runs
+what the next stage would check, so a refused record never uses up a number: the record's
+`attempt:` (required, equal to its file number), its `from:` (required, naming an existing record of
+this house), no gap below it, and, for a read-back, `grid.py check <house> --final` (only the highest
+read-back is sealed). The Date under Sam's yes is written as YYYY-MM-DD, such as 2026-11-09; any
+other form is refused. What the seal does not
 do: the ledger guards against mistakes, not against someone deleting its lines on purpose. The real
 guard is Sam giving his yes from his own screen, so no one else can write it for him.
 

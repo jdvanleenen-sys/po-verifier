@@ -74,7 +74,10 @@ def plain(cell):
 
 
 def to_rate(cell):
-    """A rate as Excel may save it: 2.75, $2.75, 1,000 or $1,000.00. Anything else is None."""
+    """A rate as Excel may save it: 2.75, $2.75, 1000 or $1,000.00. A comma is read only with the
+    cents after it ($1,000.00): "2,900" could be 2900 or 2.90, so it is None and Sam retypes it."""
+    if "," in (cell or "") and "." not in cell.split(",")[-1]:
+        return None
     value = plain(cell)
     return value if value is not None and value >= 0 else None
 
@@ -94,7 +97,8 @@ def check_row(n, cells, problems):
     elif unit not in UNITS:
         problems.append(f"price list line {n} ({item}): unit '{unit}' is not one of {sorted(UNITS)}")
     elif rate is None:
-        hint = "; a comma is only for thousands (1,000): write a decimal with a point, 24.50" if "," in rate_cell else ""
+        hint = ("; a rate with a comma reads two ways (2,900 is 2900 or 2.90): write it with no comma, "
+                "2900 or 2.90" if "," in rate_cell else "")
         problems.append(f"price list line {n} ({item}): rate '{rate_cell}' is not a number{hint}")
     elif active not in YES | NO:
         problems.append(f"price list line {n} ({item}): Active '{active_cell}' is not TRUE or FALSE")

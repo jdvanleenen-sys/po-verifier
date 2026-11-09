@@ -166,6 +166,12 @@ def stop_message(root, house, problems):
                           "deleted. If it is lost, take a new snapshot, write "
                           + next_free(Path(root) / "02 read" / house, "read-back")
                           + " from it, show it to Sam and seal his yes.")
+    if any("changed after sam's yes" in p.lower() for p in shown):
+        # An approved record was edited: the variance rows then disagree with it too, but deleting the
+        # variance is the wrong fix (loop run 5, a08). Undo the edit first.
+        return shown, ("To fix: undo the edit to the approved file named above; an approved file never changes. "
+                       "A correction is the next read-back (" + next_free(Path(root) / "02 read" / house,
+                       "read-back") + ") or review with its own yes. Do not delete or rewrite the variance.")
     if any(p.startswith("variance row") and any(v in p.lower() for v in VARIANCE_EDIT) for p in shown):
         return shown, ("To fix: never edit a variance. Delete the variance file that was changed and run "
                        "compare.py again from the approved read-back.")

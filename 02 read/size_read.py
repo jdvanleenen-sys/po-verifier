@@ -10,13 +10,17 @@ SIZE_UNIT = re.compile(r"\s*(?:'|(?:ft|feet|lf|sf|sq\.?\s?ft|ea|each)\b)", re.I)
 NOT_A_REMARK = re.compile(r"(?:\d|x\b|x\s*\d|by\b|in\b|inch|to\b|or\b|and\b|plus\b|[+&\-'\"()/×½¼¾–—])", re.I)
 WORDS_ONLY = re.compile(r"\s+[a-z][a-z ]*", re.I)
 TIMES = re.compile(r"(?<![a-z])[x×]\s*(\d+(?:\.\d+)?)(?![\d.]|\s*(?:'|\"|ft\b|feet\b|in\b))", re.I)
-MULTIPLIER_WORD = re.compile(r"\b(?:each|both|pairs?|double|twice|of them)\b", re.I)
+MULTIPLIER_WORD = re.compile(r"\b(?:each|both|pairs?|double|twice|of them|times)\b|@|\(\s*\d+\s*\)|\b\d+\s+of\b",
+                             re.I)
 NUMBER_WORD = re.compile(r"\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|"
                          r"fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\b", re.I)
 LOOSE_DIGIT = re.compile(r"(?<![/\d])\d")
 EACH_SIDE = re.compile(r"\s*each\s+sides?\b", re.I)
 RANGE = re.compile(r"\d\s*'?\s*(?:-|–|—|to)\s*\d", re.I)
-POINTER = re.compile(r"\bsee\b|\bsame as\b|\brow\s*#?\s*\d", re.I)
+POINTER = re.compile(r"\bsee\b|\bsame\b|\bditto\b|\bas above\b|\bdo\.(?!\w)|\brow\s*#?\s*\d", re.I)
+FEET_INCHES = re.compile(r"\d\s*(?:'|ft\b|feet\b)\s*-?\s*\d+\s*(?:\"|in\b|inch)|\d\s*'\s*\d", re.I)
+NO_NOTE = "done as ordered"
+WORD_SIZE = re.compile(NUMBER_WORD.pattern + r"(?:[\s-]+[a-z]+)?\s*(?:'|ft\b|feet\b|foot\b|lf\b|sf\b|sq\b)", re.I)
 WORD_NUMBER = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?")
 
 
@@ -90,13 +94,16 @@ def quoted(said):
 
 def words_disagree(said, size):
     """Sam's quoted words do not back the size in the slot: they hold a range ('13-14''), a pointer
-    ('see row 3', 'same as'), or numbers none of which is the slot's ('Railing 16'' with 61 in the
-    slot). Words with no number ('done as ordered') back any slot. An item name may carry its own
-    size ('8' doors x12'), so the slot only has to be one of his numbers."""
+    ('see row 3', 'same as', 'ditto', 'as above'), feet and inches ('16 ft 6 in', '16'6"'), a number
+    in words ('sixteen feet'), no number at all (other than the exact words 'done as ordered'), or
+    numbers none of which is the slot's ('Railing 16'' with 61 in the slot). An item name may carry
+    its own size ('8' doors x12'), so the slot only has to be one of his numbers."""
     if "sam confirmed" in said.lower() or not size.strip("0.,"):
         return False  # Sam settled this number himself; a 0 already goes to him (size_doubt)
     words = quoted(said)
-    if RANGE.search(words) or POINTER.search(words):
+    if not words.strip() or words.strip().lower() == NO_NOTE:
+        return False  # no quoted words (the "stringers; 34 ft" form), or no note by standing answer
+    if RANGE.search(words) or POINTER.search(words) or FEET_INCHES.search(words) or WORD_SIZE.search(words):
         return True
     his = {n.replace(",", "").lstrip("0") or "0" for n in WORD_NUMBER.findall(words)}
-    return bool(his) and (size.replace(",", "").lstrip("0") or "0") not in his
+    return not his or (size.replace(",", "").lstrip("0") or "0") not in his

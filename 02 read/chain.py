@@ -29,7 +29,10 @@ def chain_problems(path, text, root):
     n = int(found.group(2))
     problems = []
     attempt = ATTEMPT.search(text)
-    if attempt and attempt.group(1).strip() != str(n):
+    if attempt is None:
+        problems.append(f"{path.name} has no attempt: line. Every numbered record carries attempt: N, the "
+                        "same N as its file name")
+    elif attempt.group(1).strip() != str(n):
         problems.append(f"{path.name} says attempt: {attempt.group(1).strip()}, but its file name says {n}. "
                         "The two must agree")
     problems += gap_problems(path)

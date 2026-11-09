@@ -1,5 +1,38 @@
 # Change log
 
+## 2026-11-09, loop run 5 group A: his quoted words, rate commas, mistyped PO numbers
+Run 5 on a real house got past the reader with "sixteen feet" (61 in the slot, a $1,932.00 request
+numbered), "2 @ 8'", "ditto", "16 ft 6 in", words with no number, a rate "2,900" read as $2,900, and a
+PO number with a 0 missing waved through as "on a PDF PO". Sam's quoted words are now read for the
+same traps as the slot, and words with no number back no size except "done as ordered"; a rate with a
+comma must show its cents ($1,000.00); a row whose PO number is no PO in intake fails po-line.
+Fixtures that relied on words with no number now carry the number. 6 tests added.
+
+## 2026-11-09, loop run 5 group B: the POs read table is checked against the PO files
+Attack a07 on a real house doubled the PST in the read-back's POs read table (keeping it adding up)
+and a request was numbered at 10% against a PO that prints 5%. Nothing compared that table with the
+PO file. New `02 read/po_totals.py`, run by `grid.py check`: each POs read row's subtotal, tax
+amounts by name and total must be the ones its HTML PO prints; a PO number no file prints is
+refused; a PDF PO is named for a check by eye. 7 tests added.
+
+## 2026-11-09, loop run 5 group C: the seal checks first, proof line, shared notes page, advice
+Run 5's attack (a real house) found seal.py sealing records the next stage refused (a missing from:
+target, a wrong or missing attempt:, a grid with an open "ask Sam" cell), so each fix used up a
+number. seal.py now runs chain.py and, for a read-back, `grid.py check --final` before sealing, and
+refuses all of them; attempt: is required. A Date under Sam's yes must be YYYY-MM-DD (a non-ISO date
+had switched off the prepared-date check). Check 5 reads the request's "Proof attached." line
+against the notes attached (new `05 request/proof_line.py`). When house-info says the notes page
+covers two houses, only `--notes yes-other-house` or `--notes no` builds. An approved file edited
+after the yes gets "undo the edit", never "delete the variance"; a file added to intake after the
+read gets one message everywhere ("take it out, ask Sam; a late document starts <house>-2"). The
+sample request's proof line now names its notes file. 18 tests added (`tests/test_run5_gates.py`).
+
+## 2026-11-09, loop run 5: findings named twice become rules
+Two runs on the same real house both raised: unflagged ignore rows Sam could not see to name (they now show "For
+information"), and a PO line whose notes cut against a standing answer (now At risk, asked in the
+table, never decided). Also: a blank Answer gets "write Sam's yes first", note-match is code-filled
+n/a on done-as-ordered rows, price-list.md names no row count, seals.md is per house. 3 tests added.
+
 ## 2026-11-09, loop run 4 group A: po-line order, the slot backed by Sam's words
 Run 4's attacker swapped a row's qty and unit price (125 x $2.00 for 2 x $125.00, the same total):
 the po-line rule passed it, because it only checked the three numbers were somewhere on the PO line,

@@ -52,9 +52,13 @@ twice, two of them) the cell reads as no size. In his words, "x" before the size
 x12" with 12 in the slot) is how he writes a count, and "12' x 12'" (a number with a unit after
 it) is a room size; neither counts as a multiplier. The slot must also be backed by his words:
 when his quoted words hold a number, the slot must be one of his numbers ("Railing 16'" with 61 in
-the slot reads as no size), and when they hold a range (13-14', 13 to 14) or a pointer (see row 3,
-same as, row 3) the cell reads as no size. Words with no number ("done as ordered") back any slot;
-a 0 in the slot and a cell that ends "Sam confirmed" are Sam's own numbers. Anything else reads as
+the slot reads as no size). His quoted words are read for the same traps as the slot: a range
+(13-14', 13 to 14), a pointer (see row 3, same, ditto, as above, do.), feet and inches (16 ft 6 in,
+16'6"), a number in words with a unit (sixteen feet), or a multiplier (x2, ×2, @, times, (2), 2 of,
+each, both, pair, twice) makes the cell read as no size. Quoted words with no number at all do not
+back a size, except the exact words "done as ordered" (a standing answer). A cell with no quoted
+words ("stringers; 34 ft"), a 0 in the slot and a cell that ends "Sam confirmed" are read from the
+slot alone. Anything else reads as
 no size. Never write in
 the slot a size you worked out: feet and inches (13'6"), a multiplier (124 ft x2, (x2), ×2), a
 range (10-12', 13 – 14 ft), a fraction (13 ½ ft), two sizes (13 ft / 16 ft), a number in words
@@ -65,9 +69,16 @@ goes in the slot when he gives it.
 Every row on a PO is also set against the PO itself (the po-line rule, `po_lines.py`, run by
 `grid.py check`): its PO qty, unit price and line total must be printed, in that order, on the PO line that carries
 its "line as printed", so copy that line exactly. A qty and unit price swapped (125 x 2.00 for
-2 x 125.00, the same total) fails. Only an HTML PO (one table row per line, as
+2 x 125.00, the same total) fails. A row whose PO number is not the ORDER # of any PO in intake
+fails too (a 0 missing, as a builder's other system may print it): copy the number from the PO. Only an HTML PO (one table row per line, as
 SupplyPro and BuildPro save them) can be read this way; rows on a PDF PO are counted in the check's
 output as not checked, and those rows are checked by eye.
+
+The POs read table is set against the POs too (`po_totals.py`, run by `grid.py check`): each row's
+subtotal, each tax amount by its name (GST/HST, PST, ...) and the total must be exactly what that
+PO's file prints. Copy the tax lines as the PO names them, such as `GST/HST $0.00; PST $225.69`; a
+tax the PO prints as $0.00 may be left out. A PO number no file in intake prints is refused. A PO on
+a PDF is named in the check's output, and its totals are checked by eye.
 
 The rule grid puts some numbers to Sam by code before anything is priced, because each has cost real
 money in testing: a number that may be a thousands figure written with a dot for a comma ("3.016"
@@ -93,6 +104,9 @@ it and do not ask:
   is matched to it, not listed as "pick one". A note of Sam's that gives no type ("Railing 16'")
   takes the same row when the PO line it sits against was matched to the builder's row; say so in
   the row's note so Sam sees it.
+- **When a PO line's own notes cut against a standing answer** (a builder's own railing row, but the
+  line says "iron spindle"), keep the standing answer's match, list the row under "At risk for this
+  house" with the words from the notes, and ask Sam in the table. Never decide it either way.
 Sam still sees every one of these in the table he says yes to; the standing answer only saves the
 question. When the answer says "ask each time", ask. Never ask Sam something his notes, the price
 list or an answer he already gave in this house settles.
@@ -213,10 +227,11 @@ right number and the AI writes a new numbered read-back with that row fixed, the
 again. Only a plain yes closes this stage (see "What counts as Sam's yes" in `../CONTEXT.md`).
 Write his yes, name and date into the read-back, then run `python "02 read/seal.py" "02 read/<house>/read-back-N.md"`.
 Run it only after `grid.py check <house> --final` passes: the seal records the grid's sha256, and the
-grid never changes after it. Never set `status: approved` by hand. If he says "I don't know" about a row, that row's grid cell
+grid never changes after it. seal.py runs that check itself and refuses to seal a read-back it
+refuses, or one that is not the highest read-back. Never set `status: approved` by hand. If he says "I don't know" about a row, that row's grid cell
 says `ask Sam:` and the read-back stays a draft.
 
-Every numbered record has a `from:` line; one without it is refused. A read-back's `from:` names
+Every numbered record has a `from:` line and an `attempt:` line; one without either is refused, at the seal and after. A read-back's `from:` names
 exactly one file or folder: `01 intake/<house>/` for read-back 1, and
 the read-back it corrects (`02 read/<house>/read-back-1.md`) for each one after. Its `attempt:` is
 its file number. A `from:` names a record of this same house, in this stage or an earlier one,

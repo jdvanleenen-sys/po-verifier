@@ -34,7 +34,7 @@ sys.path.insert(0, str(STAGE))
 import house_checks  # noqa: E402
 import money  # noqa: E402
 import printing  # noqa: E402
-from proof_choice import choose_notes, proof_spec  # noqa: E402
+from proof_choice import choose_notes, other_house, proof_spec  # noqa: E402
 import verify  # noqa: E402
 from chain import chain_problems  # noqa: E402  (money puts 02 read on the path)
 import seal  # noqa: E402
@@ -179,7 +179,7 @@ def build(house, notes_choice):
     docs, notes, others = intake(house)
     if notes_choice != "no" and not notes:
         sys.exit("Sam said attach his site notes, but there is no notes file in intake.")
-    attached = choose_notes(notes, notes_choice)
+    attached = choose_notes(notes, notes_choice, other_house(ROOT / "01 intake" / house))
     for old in ("vpo-request.pdf", "request-only.pdf", "script-checks.md"):
         (draft / old).unlink(missing_ok=True)
     browser = printing.find_browser()
@@ -223,7 +223,7 @@ def commit(house):
     stale = house_checks.html_problem(draft / "request.html", checks_text)
     if stale:
         sys.exit(f"{stale} Nothing was numbered.")
-    choice = re.search(r"^notes:\s*(yes|no|only:\S.*?)\s*$", checks_text, re.M)
+    choice = re.search(r"^notes:\s*(yes-other-house|yes|no|only:\S.*?)\s*$", checks_text, re.M)
     if not choice:
         sys.exit("script-checks.md does not record Sam's notes answer. Build again. Nothing was numbered.")
     changed = house_checks.pdf_problem(pdf, checks_text)
@@ -237,7 +237,7 @@ def commit(house):
         sys.exit(f"{used} already comes from {review}. A new request needs a new review with Sam's yes. "
                  "Nothing was numbered.")
     _, notes, _ = intake(house)
-    attached = choose_notes(notes, choice.group(1))
+    attached = choose_notes(notes, choice.group(1), other_house(ROOT / "01 intake" / house))
     house_dir = STAGE / house
     lines = verify.run_checks(pdf, expected, proof_spec(expected, attached, notes),
                               header_spec(house, next_number(house_dir)))
@@ -267,7 +267,8 @@ def main():
     parser = argparse.ArgumentParser(description="Build, check and number a VPO request.")
     parser.add_argument("command", choices=["build", "commit"])
     parser.add_argument("house")
-    parser.add_argument("--notes", help="Sam's answer: attach his site notes? yes, no, or only:<file>,<file>")
+    parser.add_argument("--notes", help="Sam's answer: attach his site notes? yes, no, only:<file>,<file>, or "
+                        "yes-other-house when the notes page also holds another house")
     args = parser.parse_args()
     if args.command == "build":
         if args.notes is None:

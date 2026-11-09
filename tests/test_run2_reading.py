@@ -21,9 +21,9 @@ import row_checks  # noqa: E402
 import verify  # noqa: E402
 
 
-def row(slot):
+def row(slot, words="Railing words"):
     return {"#": "2", "po number": "A-1/094", "po qty": "16", "unit price": "40.00", "line total": "640.00",
-            "price list item": "Railing", "sam measured (his words)": f'"Railing words"; {slot}; no colour given'}
+            "price list item": "Railing", "sam measured (his words)": f'"{words}"; {slot}; no colour given'}
 
 
 class SizeSlotIsAnAllowlist(unittest.TestCase):
@@ -37,7 +37,7 @@ class SizeSlotIsAnAllowlist(unittest.TestCase):
         for slot, want in (("13 ft", "13"), ("count 12", "12"), ("0 here, counted on /027", "0"),
                            ("3016, Sam confirmed", "3016"), ("2,152 sf", "2152"), ("22.5'", "22.5")):
             with self.subTest(slot=slot):
-                self.assertEqual(rules.measured_qty(row(slot)), Decimal(want))
+                self.assertEqual(rules.measured_qty(row(slot, f"Railing {want}")), Decimal(want))
 
 
 CSV = "Item,Unit,Rate,Active\n{a}\n{b}\n"

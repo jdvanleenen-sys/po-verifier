@@ -40,11 +40,21 @@ def numbers(text):
     return out
 
 
+def pdf_text(path):
+    """A PDF's text layer, or '' when it cannot be read here (PyMuPDF missing or the file unreadable)."""
+    try:
+        import fitz  # noqa: PLC0415  (PyMuPDF; the request stage needs it anyway)
+        with fitz.open(path) as doc:
+            return " ".join(page.get_text() for page in doc)
+    except Exception:  # noqa: BLE001  (any failure means: not readable here)
+        return ""
+
+
 def segments(path):
     """(the file's whole text, its table rows) for an HTML PO. A PDF has no table rows to read, so it
-    gives (its name, None): its rows are counted as not checked, never passed."""
+    gives (its text, or its name if unreadable, None): its rows are counted as not checked, never passed."""
     if path.suffix.lower() == ".pdf":
-        return path.name, None
+        return pdf_text(path) or path.name, None
     raw = path.read_bytes().decode("utf-8", errors="replace")
     return flat(raw), [flat(tr) for tr in ROW.findall(raw)]
 
@@ -96,6 +106,12 @@ def check(folder, read_back_text):
     docs = [segments(p) for p in po_files(folder)]
     rows = [r for r in grid_read.as_dicts(grid_read.under(read_back_text, "rows")) if rules.po_of(r) != rules.NO_PO]
     html_pos = " ".join(text for text, segs in docs if segs is not None)
+    pdf_pos = " ".join(text for text, segs in docs if segs is None)
+    unreadable_pdf = any(segs is None and text.lower().endswith(".pdf") for text, segs in docs)
     checked = [r for r in rows if rules.po_of(r) in html_pos]
+    on_pdf = [r for r in rows if r not in checked and (rules.po_of(r) in pdf_pos or unreadable_pdf)]
+    nowhere = [f"row {r.get('#', '').strip()}, po-line: fail: {rules.po_of(r)} is not the ORDER # of any PO in "
+               "01 intake. Copy the PO number exactly as the PO prints it" for r in rows
+               if r not in checked and r not in on_pdf]
     found = (row_problem(r, docs) for r in checked)
-    return [p for p in found if p], len(rows) - len(checked)
+    return nowhere + [p for p in found if p], len(on_pdf)

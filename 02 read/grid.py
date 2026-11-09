@@ -12,7 +12,8 @@
       made out to anyone but reference/contractor.md's contractor, and any file in 01 intake that
       changed, was added or is gone since the grid's Intake read table was written, and (po-line,
       po_lines.py) any row whose PO qty, unit price and line total are not printed on its own line
-      of an HTML PO; rows on a PDF PO are counted as not checked.
+      of an HTML PO; rows on a PDF PO are counted as not checked. And (po_totals.py) any POs read
+      row whose subtotal, tax amounts or total are not the ones its HTML PO prints.
 
 The grid is how a skipped check stops being silent: the number of cells is fixed by code before
 anyone checks anything, and a blank cell is a refusal.
@@ -24,6 +25,7 @@ from pathlib import Path
 import contractor
 import intake_read
 import po_lines
+import po_totals
 import prices
 import seal
 from grid_check import check_grid
@@ -92,11 +94,15 @@ def main(argv):
     problems += intake_read.since_first_problems(ROOT / "01 intake" / house, ROOT / "02 read" / house, house, below=n)
     line_problems, unchecked = po_lines.check(ROOT / "01 intake" / house, text)
     problems += line_problems
+    total_problems, pdf_pos = po_totals.check(ROOT / "01 intake" / house, text)
+    problems += total_problems
     if problems:
         sys.exit(f"{grid_file.name} is refused:\n- " + "\n- ".join(problems))
     note = f" {asks} cell(s) wait on Sam; the house cannot leave 02 read until he answers." if asks else ""
     note += (f" po-line: {unchecked} row(s) are on a PDF PO and were not checked against its lines; "
              "check those by eye.") if unchecked else ""
+    note += (f" POs read: {', '.join(pdf_pos)} are on a PDF, so their subtotal, tax and total were not "
+             "checked against the file; check those by eye.") if pdf_pos else ""
     print(f"{grid_file.name}: every cell is filled and every code cell checks out.{note}")
 
 

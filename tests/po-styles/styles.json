@@ -75,7 +75,7 @@
                  "cols": [["ref", "Cost Code / Type"], ["sku", "Item No."], ["option", "Option No."], ["desc", "Description"], ["qty", "Qty"], ["unit", "UOM"], ["price", "Unit Cost"], ["amount", "Extended"]]},
       "pos": [{"number": "OP 4471203", "taxes": [["GST", "5"], ["PST BC", "7"]], "lines": [
         {"ref": "09-910 L", "sku": "PNT-WALL", "option": "-", "desc": "Paint walls", "unit": "SF", "qty": "1800", "price": "1.75", "item": "Walls, 2 coats", "measured": "1860", "words": "walls 1860"},
-        {"ref": "09-910 L", "sku": "PNT-STAIR", "option": "OPT-114", "desc": "Stairwell", "unit": "Incl.", "qty": "1", "price": "0.00", "item": "Stairwell", "measured": "1", "words": "stairwell done"},
+        {"ref": "09-910 L", "sku": "PNT-STAIR", "option": "OPT-114", "desc": "Stairwell", "unit": "Incl.", "qty": "1", "price": "0.00", "item": "Stairwell", "measured": "1", "words": "stairwell done 1"},
         {"ref": "09-920 L", "sku": "PNT-HDR", "option": "-", "desc": "Headers", "unit": "EA", "qty": "6", "price": "20.00", "item": "Headers", "measured": "6", "words": "headers 6"}]}],
       "on": [1], "expect": "request"
     },

@@ -60,7 +60,9 @@ script reads every one of these from the row it belongs to.
   `../reference/contractor.md` is the practice stand-in. For a real contractor, delete that line
   from the request.
 - **The proof line** names the site notes by their date, or, when the date was waived, as "the site
-  notes (date not recorded)".
+  notes (date not recorded)", with each notes file's name in brackets. With no notes attached it
+  says "Site notes not attached". Check 5 reads this line: one that names a page Sam left out, or
+  says "not attached" while notes are attached, is refused.
 - **Trade contractor:** exactly as `../reference/contractor.md` gives it: the business name and,
   in brackets, the vendor number (for example "Sample Painting Co. (V00999)"). Never a name from
   the POs, never "not confirmed". If the POs are made out to someone else, the house is not this
@@ -88,14 +90,17 @@ and always attached. So before the build, if a PDF in intake is Sam's notes but 
 those words, stop and tell Sam it would go to the builder whatever he answers; renaming it is his call.
 If there is more than one notes page, ask which: all of them, or only the pages he names. A page that is not for this house is never attached. A page that holds this house and another
 (one photo of notes for two houses) is attached only if Sam says so knowing the builder will see the
-other house's notes; ask him in those words. Write his answer into
+other house's notes; ask him in those words. When `01 intake/<house>/house-info.md` says the notes
+page covers two houses, the build refuses `--notes yes`: only `--notes yes-other-house` (Sam's yes
+in those words) or `--notes no` builds. Write his answer into
 the proof list on the request.
 
 ## How the PDF is made: draft first, number only what passes
 The PDF is never written straight into the record. A print that goes wrong must cost nothing.
 1. Copy the layout to `drafts/<house>/request.html` and fill it in from the review and variance.
 2. Run `python "05 request/build_request.py" build <house> --notes yes` (or `--notes no`, or
-   `--notes only:<file>,<file>` for just the pages he named; Sam's answer) from the folder root. Before printing, it checks that Sam's read-back and review are
+   `--notes only:<file>,<file>` for just the pages he named, or `--notes yes-other-house` for a
+   shared notes page; Sam's answer) from the folder root. Before printing, it checks that Sam's read-back and review are
    approved and that the variance agrees with them; then it prints the request with "page 1 of N"
    from the real count, attaches each PO and EPO once (a file saved twice goes once), adds the
    notes only if Sam said yes, and names any other file it did not attach. Then it runs all six

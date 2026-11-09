@@ -47,7 +47,7 @@ class MultipliersAskSam(unittest.TestCase):
                            ("\"GARAGE incl ceiling, 420 sf. said a change order was coming, never saw one.\"; "
                             "420 sf; no colour given", "420"),
                            ("\"Handrail 14'\"; 14 ft; no colour given (photo, under \"12 Sample Road\", line 2)", "14"),
-                           ("\"doors\"; 3 each", "3")):
+                           ("\"doors 3\"; 3 each", "3")):
             with self.subTest(said=said):
                 self.assertEqual(rules.measured_qty(row(said)), Decimal(want))
 

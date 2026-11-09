@@ -15,11 +15,10 @@ nothing here is sent to anyone.
 ## Where it lives
 **`reference/price-list.xlsx`, and nowhere else.** An Excel workbook. The checker reads the sheet
 named **Price list**: one row per item, with the columns Item, Unit, Rate, Active first. Any column
-after those (such as Source, where a rate came from) is Sam's and is ignored. The demo list has 53
-rows, 52 active ("Whole-house interior" is not). Sam opens the file in Excel, changes a rate or
-adds a row, and saves it as it is. A real contractor's
-list has its own rows and count: the workbook is the truth, never the examples in this file. Nobody else changes it. Each house freezes a plain-text copy
-(`02 read/<house>/price-list-N.csv`) when it is read, so a later change never changes a house
+after those (such as Source, where a rate came from) is Sam's and is ignored. The workbook is the
+truth for its rows and count, never the examples in this file. Sam opens the file in Excel, changes
+a rate or adds a row, and saves it as it is. Nobody else changes it. Each house freezes a plain-text
+copy (`02 read/<house>/price-list-N.csv`) when it is read, so a later change never changes a house
 already checked.
 
 - The rates are made up for the demo. The item names and units follow a real painter's price
@@ -56,7 +55,8 @@ Code reads the file. At `02 read`, before matching anything, run:
 python "02 read/prices.py" snapshot <house>
 ```
 
-It checks the file (four columns, a number in every rate, a known unit, no item active twice, and no two active items whose names differ only by a dash, a space or capitals, no item name with an invisible character such as a zero-width or no-break space; a comma in a rate only between thousands, so 24,50 is refused: write 24.50)
+It checks the file (four columns, a number in every rate, a known unit, no item active twice, and no two active items whose names differ only by a dash, a space or capitals, no item name with an invisible character such as a zero-width or no-break space; a comma in a rate only with its cents after it, so $1,000.00 reads, but 24,50 and 2,900 are refused:
+write 24.50, 2900 or 2.90 with no comma)
 and copies it unchanged to `02 read/<house>/price-list-N.csv`. It prints one line; put that line
 in the read-back's front matter as `price list read:`. That copy is the price list for this
 read-back. Then:

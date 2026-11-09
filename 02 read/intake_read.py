@@ -12,6 +12,13 @@ import re
 from pathlib import Path
 
 HEADING = "## Intake read"
+
+
+def added(house, name, when):
+    """One message for a file dropped into intake after the read, the same in grid.py and the
+    request script (loop run 5: the two used to give opposite advice)."""
+    return (f"01 intake/{house}/{name} was added after {when}. Take it out of 01 intake and ask Sam: a "
+            f"document that belongs to this house and came late starts a new house folder, {house}-2")
 GRID = re.compile(r"^grid-(\d+)\.md$")
 ROW = re.compile(r"^\|\s*`([^`]+)`\s*\|\s*([0-9a-f]{64})\s*\|\s*$")
 
@@ -48,8 +55,7 @@ def problems(folder, grid_text, house):
     now = fingerprints(folder)
     found = [f"01 intake/{house}/{n} changed after it was read. Intake never changes: put the original back"
              for n in sorted(set(now) & set(then)) if now[n] != then[n]]
-    found += [f"01 intake/{house}/{n} was added after the read. A new file means a new read-back "
-              "(check it is for this house first)" for n in sorted(set(now) - set(then))]
+    found += [added(house, n, "the read") for n in sorted(set(now) - set(then))]
     found += [f"01 intake/{house}/{n} was read but is gone. Intake never changes: put it back"
               for n in sorted(set(then) - set(now))]
     return found
@@ -83,9 +89,7 @@ def since_first_problems(folder, read_folder, house, below=None):
     now = fingerprints(folder)
     found = [f"01 intake/{house}/{n} changed after the first read ({name}): put the original back"
              for n in sorted(set(now) & set(then)) if now[n] != then[n]]
-    found += [f"01 intake/{house}/{n} was added after the first read ({name}). Intake never changes once a "
-              "house is read: take it out, and ask Sam how to handle a new document for this house"
-              for n in sorted(set(now) - set(then))]
+    found += [added(house, n, f"the first read ({name})") for n in sorted(set(now) - set(then))]
     found += [f"01 intake/{house}/{n} was read in {name} but is gone: put it back"
               for n in sorted(set(then) - set(now))]
     return found

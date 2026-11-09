@@ -59,8 +59,8 @@ class SizeSlotIsOnePlainNumber(unittest.TestCase):
     def test_plain_sizes_still_read(self):
         for said, want in (('"Railing 13\'"; 13 ft; no colour' + NOTE, "13"), ('"8\' doors x12"; count 12; no colour', "12"),
                            ('"done as ordered"; 2152; Sam confirmed', "2152"), ("stringers; 34 ft", "34"),
-                           ('"8\' doors 12"; 0 here, counted on /027', "0"), ('"floor"; 2,152 sf', "2,152"),
-                           ('"railing"; 22.5\'', "22.5")):
+                           ('"8\' doors 12"; 0 here, counted on /027', "0"), ('"floor 2,152 sf"; 2,152 sf', "2,152"),
+                           ('"railing 22.5\'"; 22.5\'', "22.5")):
             with self.subTest(said=said):
                 self.assertEqual(rules.measured_text(row(said)), want)
 

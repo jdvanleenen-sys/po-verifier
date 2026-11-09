@@ -25,6 +25,7 @@ RECORD = """---
 house: 12-sample-road
 attempt: 1
 status: draft
+from: 01 intake/12-sample-road
 ---
 
 # 12-sample-road, review 1
@@ -49,7 +50,13 @@ class Folder(unittest.TestCase):
         self.tmp.cleanup()
 
     def write(self, name, text):
-        path = self.dir / name
+        """A record goes in its house folder beside the intake folder its from: names (since loop
+        run 5, seal.py checks the chain before sealing). Any other file goes in the temp folder."""
+        stage = "02 read" if name.startswith(("read-back-", "grid-")) else "04 review"
+        folder = self.dir / stage / "12-sample-road" if name.endswith(".md") else self.dir
+        folder.mkdir(parents=True, exist_ok=True)
+        (self.dir / "01 intake" / "12-sample-road").mkdir(parents=True, exist_ok=True)
+        path = folder / name
         path.write_text(text, encoding="utf-8", newline="\n")
         return path
 

@@ -23,8 +23,13 @@ import seal  # noqa: E402
 
 
 def record(answer):
-    return (f"---\nhouse: h\nattempt: 1\nstage: 04 review\nstatus: draft\nfrom: 03 compare/h/variance-1.md\n---\n\n"
+    return (f"---\nhouse: h\nattempt: 1\nstage: 04 review\nstatus: draft\nfrom: 01 intake/h\n---\n\n"
             f"## Sam's yes\n- Answer: {answer}\n- Name: Sam\n- Date: 2026-11-09\n")
+
+
+def house(d):
+    """The intake folder every record() names in its from: line (seal.py checks it since loop run 5)."""
+    (Path(d) / "01 intake" / "h").mkdir(parents=True, exist_ok=True)
 
 
 class PlainYesOnly(unittest.TestCase):
@@ -45,6 +50,7 @@ class PlainYesOnly(unittest.TestCase):
 class NoSealAfterUse(unittest.TestCase):
     def test_a_review_a_request_was_built_from_is_not_sealed_again(self):
         with tempfile.TemporaryDirectory() as d:
+            house(d)
             review = Path(d) / "04 review" / "h" / "review-1.md"
             check = Path(d) / "05 request" / "h" / "request-check-1.md"
             review.parent.mkdir(parents=True)
@@ -59,6 +65,7 @@ class NoSealAfterUse(unittest.TestCase):
         # Loop run 4, 2026-11-09: grid-N.md names its read-back in from:, and the used-record rule
         # counted it, so no new read-back could ever be sealed.
         with tempfile.TemporaryDirectory() as d:
+            house(d)
             rb = Path(d) / "02 read" / "h" / "read-back-1.md"
             rb.parent.mkdir(parents=True)
             rb.write_text(record("yes, to the whole table"), encoding="utf-8")
@@ -67,6 +74,7 @@ class NoSealAfterUse(unittest.TestCase):
 
     def test_another_read_backs_grid_still_counts_as_a_use(self):
         with tempfile.TemporaryDirectory() as d:
+            house(d)
             rb = Path(d) / "02 read" / "h" / "read-back-1.md"
             rb.parent.mkdir(parents=True)
             rb.write_text(record("yes"), encoding="utf-8")
@@ -76,6 +84,7 @@ class NoSealAfterUse(unittest.TestCase):
 
     def test_an_unused_record_still_seals(self):
         with tempfile.TemporaryDirectory() as d:
+            house(d)
             review = Path(d) / "04 review" / "h" / "review-1.md"
             review.parent.mkdir(parents=True)
             review.write_text(record("yes"), encoding="utf-8")
@@ -110,6 +119,7 @@ class WarningAnswers(unittest.TestCase):
 class FromLineRequired(unittest.TestCase):
     def test_a_record_without_from_is_refused(self):
         with tempfile.TemporaryDirectory() as d:
+            house(d)
             path = Path(d) / "02 read" / "h" / "read-back-1.md"
             path.parent.mkdir(parents=True)
             text = "---\nhouse: h\nattempt: 1\nstatus: draft\n---\n"
@@ -121,6 +131,7 @@ class FromLineRequired(unittest.TestCase):
 class AnsiRequestCheck(unittest.TestCase):
     def test_plain_words_not_a_traceback(self):
         with tempfile.TemporaryDirectory() as d:
+            house(d)
             check = Path(d) / "request-check-1.md"
             check.write_bytes("from review: 04 review/h/review-1.md\n- Name: Sam B\xe9land —\n".encode("cp1252"))
             with self.assertRaises(SystemExit) as caught:

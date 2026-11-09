@@ -2,5 +2,5 @@ Coastline Finishes - site notes
 Measured 2026-10-30
 
 - walls 1860
-- stairwell done
+- stairwell done 1
 - headers 6

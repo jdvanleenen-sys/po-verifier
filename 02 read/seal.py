@@ -13,6 +13,7 @@ refused. Never set status: approved by hand, and never seal a file Sam did not a
 """
 import hashlib
 import re
+import subprocess
 import sys
 from datetime import date
 from pathlib import Path
@@ -28,6 +29,8 @@ SEAL = re.compile(r"^sealed:\s*(\S+)\s+sha256\s+([0-9a-f]{64})\s*$", re.M)
 SEAL_LINE = re.compile(r"^sealed:.*(?:\n|$)", re.M)
 STATUS = re.compile(r"^status:\s*(\S*)\s*$", re.M)
 ANSWER = re.compile(r"^-\s*Answer:[ \t]*(.*)$", re.M)
+DATE = re.compile(r"^-\s*Date:[ \t]*(.*)$", re.M)
+ISO_DAY = re.compile(r"\d{4}-\d{2}-\d{2}")
 FILLED = {"Name": re.compile(r"^-\s*Name:[ \t]*\S", re.M), "Date": re.compile(r"^-\s*Date:[ \t]*\S", re.M)}
 CHANGED = ("was changed after Sam's yes. Approved files never change: undo the edit; a correction is "
            "a new numbered file with its own yes")
@@ -70,10 +73,16 @@ def yes_problems(text):
     answer = ANSWER.search(text)
     said = answer.group(1).strip() if answer else ""
     problems = []
-    if not PLAIN_YES.fullmatch(said):
+    if not said:
+        problems.append("has no Answer yet: write Sam's yes, his name and the date first")
+    elif not PLAIN_YES.fullmatch(said):
         problems.append(f"has an Answer that is not a plain yes: '{said}'. A condition or a question means "
                         "the table changes first")
     problems += [f"has no {k} under Sam's yes" for k, pattern in FILLED.items() if not pattern.search(text)]
+    day = DATE.search(text)
+    if day and day.group(1).strip() and not ISO_DAY.fullmatch(day.group(1).strip()):
+        problems.append(f"has a Date under Sam's yes that is not a date as 2026-11-09: '{day.group(1).strip()}'. "
+                        "Write the date as YYYY-MM-DD")
     return problems
 
 
@@ -180,12 +189,49 @@ def used_by(path):
     return users
 
 
+def as_reason(name, problem):
+    """A chain or grid refusal, worded to follow '<file> was not sealed. It ...'."""
+    if problem.startswith(name + ": "):
+        return "has a problem: " + problem[len(name) + 2:]
+    return problem[len(name) + 1:] if problem.startswith(name + " ") else problem
+
+
+def grid_refusal(path):
+    """For a read-back: what `grid.py check <house> --final` refuses, or []. The next stage runs the
+    same check, so a read-back it would refuse is never sealed (loop run 5, 2026-11-09)."""
+    root, house = path.parent.parent.parent, path.parent.name
+    script = root / "02 read" / "grid.py"
+    if not path.name.startswith("read-back-") or not script.is_file():
+        return []
+    higher = [p.name for p in path.parent.glob("read-back-*.md")
+              if chain.NUMBERED.match(p.name) and int(chain.NUMBERED.match(p.name).group(2)) >
+              int(chain.NUMBERED.match(path.name).group(2))]
+    if higher:
+        return [f"is not the highest read-back ({', '.join(sorted(higher))} exists). Only the latest "
+                "read-back is shown to Sam and sealed"]
+    done = subprocess.run([sys.executable, str(script), "check", house, "--final"], cwd=root,
+                          capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if done.returncode == 0:
+        return []
+    said = [line.strip("- ").strip() for line in (done.stdout + done.stderr).splitlines() if line.strip()]
+    return ["fails the grid check that compare runs next (grid.py check " + house + " --final): "
+            + "; ".join(said[1:] or said)]
+
+
+def before_seal(path, text):
+    """Everything the next stage would refuse about this record, checked before it is sealed: its
+    attempt:, from: and number (chain.py) and, for a read-back, its grid with --final."""
+    root = path.parent.parent.parent
+    found = [as_reason(path.name, p) for p in chain.chain_problems(path, text, root)]
+    return found or grid_refusal(path)
+
+
 def seal_file(path, today=None):
     """Seal the record at path and write its ledger line. Raises ValueError with the reasons not to."""
     path = Path(path)
-    gap = chain.gap_problems(path)
-    if gap:
-        raise ValueError([why.replace(f"{path.name} leaves", "leaves", 1) for why in gap])
+    ahead = before_seal(path, read_record(path))
+    if ahead:
+        raise ValueError(ahead)
     users = used_by(path)
     if users:
         raise ValueError([f"is already used by {', '.join(users)}: a record another file was built from is "

@@ -36,6 +36,13 @@ If any of these is missing, ask Sam. Nothing moves on until all three pass, with
 - **No lot or builder from Sam:** never ask. Take them from the POs when every PO prints the same
   lot and builder; the request prints the POs' lot. Ask only when the POs disagree.
 
+**When the notes page covers two houses,** write so in `house-info.md` ("It covers two houses"); the
+request then needs Sam's yes in those words before the page goes to the builder.
+
+**A document that arrives after the first read** never goes into this house's intake: intake
+never changes once a house is read, and the scripts refuse a file added later. Take it out and ask
+Sam. A document that belongs to this house and came late starts a new house folder, `<house>-2`.
+
 ## What goes out
 The same files, untouched, ready for the read stage (`../02 read/`).
 

@@ -50,7 +50,7 @@ def as_painter(style, dest):
     setup.write_text(text, encoding="utf-8")
     doc = dest / "reference" / "price-list.md"
     count = len(style["prices"])
-    doc.write_text(doc.read_text(encoding="utf-8").replace(
+    doc.write_text(doc.read_text(encoding="utf-8").replace(  # no-op since the doc names no count
         '53 rows, 52 active\n("Whole-house interior" is not)', f"{count} rows, {count} active"), encoding="utf-8")
 
 

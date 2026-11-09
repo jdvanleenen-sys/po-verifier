@@ -13,6 +13,7 @@ from decimal import Decimal
 from request_text import (  # noqa: F401  (pdf_pages, split_request, normalise: used by callers)
     box_note, FOOTER_TEXT, amounts, first_amount_after, group_blocks, normalise, pdf_pages,
     SUBTOTAL, printed_groups, shown, split_request)
+import proof_line
 from header_checks import header_problems
 from row_checks import block_problems, rows_by_po
 
@@ -225,7 +226,7 @@ def check_house(request, expected):
                 f"${house['before']:.2f} before tax + ${house['tax']:.2f} tax = ${house['total']:.2f}")
 
 
-def check_proof(proof_pages, proof):
+def check_proof(proof_pages, proof, request=None):
     """Every PO and EPO attached; each notes page Sam named attached; each one he left out absent.
     A notes page is found by its file name, printed as the heading of its proof page. A PO counts
     as attached only from a page of its own: its number on an EPO page or a notes page does not count."""
@@ -249,6 +250,7 @@ def check_proof(proof_pages, proof):
     for name in proof["notes_left_out"]:
         if normalise(name) in text:
             problems.append(f"Sam left {name} out; it is attached")
+    problems += proof_line.problems(request, proof) if request is not None else []
     notes = ", ".join(proof["notes_attached"]) or "none (Sam said no)"
     evidence = (f"{len(proof['po_numbers'])} PO(s), {len(proof['epo_names'])} EPO(s), site notes: {notes}; "
                 f"{len(proof_pages)} proof page(s)")
@@ -281,4 +283,4 @@ def run_checks(pdf_path, expected, proof, header=None):
     request_pages, proof_pages = split_request(pages)
     request = " ".join(request_pages)
     return [check_rows(request, expected), check_differences(request, expected), check_tax(request, expected),
-            check_house(request, expected), check_proof(proof_pages, proof), check_pages(request_pages, header)]
+            check_house(request, expected), check_proof(proof_pages, proof, request), check_pages(request_pages, header)]

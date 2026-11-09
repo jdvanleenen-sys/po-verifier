@@ -187,6 +187,8 @@ def po_line_match(row, _):
 def note_match(row, _):
     if measured_qty(row) is None:
         return f"{NA}: nothing measured (see measured)"
+    if cell(row, "sam measured").strip().lower().startswith('"done as ordered"'):
+        return f"{NA}: no note of Sam's (done as ordered)"
     return no_item_yet(row) or ASK
 
 
