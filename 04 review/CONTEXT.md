@@ -35,6 +35,11 @@ One table for the house. He replies yes to accept it as shown, or names the rows
 change. The AI updates the table and shows it again until he says yes. Only a plain yes closes
 this stage. "I don't know" leaves it open; it is not a yes to the rows as shown.
 
+## Rows Sam sees but does not decide
+Rows compare set apart (not comparable, or left unpriced by Sam) have no decision. List them under
+the table as "For information", one line each with the PO, the line and why; they never go on the
+request.
+
 ## Work on no PO: which EPO it goes on
 A row on no PO goes on the request in its own "No PO" group unless Sam names a PO for it in the
 "EPO goes on" column. Then it prints inside that PO's group, on its own line with PO qty 0, and

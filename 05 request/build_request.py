@@ -163,7 +163,7 @@ def header_spec(house, n):
     names = {m.group(1).strip() for t in texts if (m := JOB_NAME.search(t))}
     measured = re.search(r"^- date measured:\s*(\d{4}-\d{2}-\d{2})\s*$", info, re.I | re.M)
     who = house_checks.contractor.read(ROOT / "reference" / "contractor.md")
-    return {"contractor": who["shown"], "builders": who["builders"],"document": f"VR-{n:04d}", "job_numbers": [x for f in fields for x in re.findall(r"\d+", f)] if fields else None,
+    return {"contractor": who["shown"], "builders": who["builders"], "practice": who.get("practice", True),"document": f"VR-{n:04d}", "job_numbers": [x for f in fields for x in re.findall(r"\d+", f)] if fields else None,
             "job_names": sorted(names), "measured": measured.group(1) if measured else None,
             **house_checks.header_extras(texts, money.read_text(r) if (r := latest(ROOT / "04 review" / house, "review")) else "")}
 

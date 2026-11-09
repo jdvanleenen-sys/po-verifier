@@ -112,6 +112,9 @@ def header_problems(request_pages, header):
             problems.append(f"the PO's job name {name} is not in the header. Check that PO is for this "
                             "house: a PO for another house comes out of intake (ask Sam), it never goes in the header")
     problems += measured_problems(head, header.get("measured"), "measured" in header)
+    if header.get("practice") is False and "practice sample" in text:
+        problems.append("the request says PRACTICE SAMPLE, but reference/contractor.md is a real contractor: "
+                        "delete the badge line from request.html")
     problems += who_problems(head, header) + facts_problems(head, header)
     want = int(header["document"].split("-")[1])
     found = sorted({int(n) for n in DOCUMENT.findall(text)})

@@ -31,7 +31,7 @@ def read(path=SETUP):
     vendor = "" if vendor.lower() in NO_VENDOR else vendor
     builders = answer(text, "Builders")
     return {"name": name, "vendor": vendor, "builders": builders,
-            "shown": f"{name} ({vendor})" if vendor else name}
+            "shown": f"{name} ({vendor})" if vendor else name, "practice": "practice stand-in" in text.lower()}
 
 
 def po_vendors(read_back_text):

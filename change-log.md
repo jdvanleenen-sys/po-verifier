@@ -1,5 +1,12 @@
 # Change log
 
+## 2026-11-09, loop run 3: per-foot rule, practice badge, proof line, set-apart rows
+Run 3 on a real house asked Sam for floor area and stringer feet that his setup already answers:
+the run-2 rule "a PO count on a per-foot line is not a size" ignored contractor.md's "How he writes
+measurements". It now defers to it. A real contractor's request no longer passes with the layout's
+PRACTICE SAMPLE badge (check 6 refuses it). The proof line has words for a waived date, and the
+review lists set-apart rows "For information". 4 tests added.
+
 ## 2026-11-09, every printed figure checked; the size slot is an allowlist (loop run 2, group A)
 The second attack on a real house got these past the code. The size slot now accepts, after its
 number and unit, only nothing, a comma and a remark, or plain words before the first comma, so

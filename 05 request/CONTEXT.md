@@ -54,6 +54,11 @@ issued for the row (say so in the why). A no-PO row prints its PO amount as `$0.
 script reads every one of these from the row it belongs to.
 
 ## Filling in the header
+- **The practice badge** ("PRACTICE SAMPLE. MADE-UP DATA." in the layout) prints only while
+  `../reference/contractor.md` is the practice stand-in. For a real contractor, delete that line
+  from the request.
+- **The proof line** names the site notes by their date, or, when the date was waived, as "the site
+  notes (date not recorded)".
 - **Trade contractor:** exactly as `../reference/contractor.md` gives it: the business name and,
   in brackets, the vendor number (for example "Sample Painting Co. (V00999)"). Never a name from
   the POs, never "not confirmed". If the POs are made out to someone else, the house is not this

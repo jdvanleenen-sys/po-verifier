@@ -66,8 +66,10 @@ in his notes, payment splits, builder-named price list rows). When one answers t
 it and do not ask:
 - **Lines not in his notes** says done as ordered: write the row's "Sam measured" cell as
   `"done as ordered"; <PO qty>; standing answer, contractor.md`. Its count is the PO's. When the PO
-  prints a count (EA) on a line the price list prices per foot or per square foot, the PO's count
-  is not a size: ask Sam for the size instead.
+  prints EA on a line the price list prices per foot or per square foot, the PO's number is a size
+  only if "How he writes measurements" in contractor.md says so for that kind of line (for example
+  "square footage is floor area, as the PO counts it", or "stringers are in feet"); then use it and
+  do not ask. If contractor.md does not say, ask Sam what the PO's number counts.
 - **Payment splits** names a line: answer its warning `leave unpriced: payment split, standing
   answer, contractor.md`.
 - **Builder-named price list rows**: a PO line from that builder that fits the builder's own row
