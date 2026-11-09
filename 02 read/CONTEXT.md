@@ -191,8 +191,9 @@ says `ask Sam:` and the read-back stays a draft.
 
 A read-back's `from:` names exactly one file or folder: `01 intake/<house>/` for read-back 1, and
 the read-back it corrects (`02 read/<house>/read-back-1.md`) for each one after. Its `attempt:` is
-its file number. compare and the request refuse a record whose `from:`, `attempt:` or numbering is
-wrong.
+its file number. A `from:` names a record of this same house, in this stage or an earlier one,
+never another house's. compare and the request refuse a record whose `from:`, `attempt:` or
+numbering is wrong.
 
 ## What goes out
 For each attempt, `<house>/grid-N.md`, the rule grid, and `<house>/read-back-N.md` (N starts at 1), holding the confirmed

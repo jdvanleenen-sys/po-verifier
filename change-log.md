@@ -21,6 +21,17 @@ a traceback. The "records do not agree" advice names the real next numbers and n
 variance. Commit compares request.html by sha256, not file times. 13 tests in
 `tests/test_run2_approvals.py`; 77 Mockup Drive has ledgers for its two sealed records.
 
+
+## 2026-11-09, loop run 2 (group C): the request header and the record chain
+The second attack on a real house got a request past all six checks with a date Sam never gave, a
+different community, and the builder cut to one word; a review naming another house's variance in
+its from: line; and "EPO goes on" with an extra digit read as the PO it contained. Check 6 now
+requires: "Date not recorded" when house-info gives no date; the community and builder every PO
+prints on its FROM line (the builder also named whole in contractor.md); a prepared date between
+Sam's yes on the review and today; and the PO lot when house-info gives none. A from: must name
+this house's own record, in its stage or an earlier one. "EPO goes on" must name a PO in this
+house exactly. 15 tests in `tests/test_run2_header_chain.py`.
+
 ## 2026-11-09, standing answers: never ask what Sam already answered
 The first front-to-back loop run on a real house asked Sam 18 questions; several had answers the
 folder already held or that never change from house to house (lines not in his notes, payment

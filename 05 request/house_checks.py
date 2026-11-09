@@ -81,3 +81,16 @@ def html_problem(html, checks_text):
     if not Path(html).is_file() or m.group(1) != sha256(html):
         return "request.html changed after the last build. Build again."
     return None
+
+
+FROM_LINE = re.compile(r"FROM:\s*(.*?)\s+-\s+(.*?)\s+ADDRESS:")
+YES_DATE = re.compile(r"^-\s*Date:\s*(\d{4}-\d{2}-\d{2})\s*$", re.M)
+
+
+def header_extras(texts, review_text):
+    """What else the header must agree with: the builder and community every PO prints on its FROM
+    line (None when the POs print none or disagree), and the date of Sam's yes on the review."""
+    found = {(m.group(1).strip(), m.group(2).strip()) for t in texts if (m := FROM_LINE.search(t))}
+    builder, community = found.pop() if len(found) == 1 else (None, None)
+    yes = YES_DATE.search(review_text or "")
+    return {"po_builder": builder, "community": community, "review_date": yes.group(1) if yes else None}
