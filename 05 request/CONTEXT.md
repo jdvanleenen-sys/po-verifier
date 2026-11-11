@@ -14,7 +14,9 @@ the builder's site super, who writes the EPO.
 ## What the request holds
 - **The house:** address, lot, builder, community, job name.
 - **The rows, grouped by PO number.** The site super writes one EPO per PO, so each PO gets its
-  own group, headed by its PO number. Each row shows the item, the PO quantity and amount, Sam's measured quantity and
+  own group, headed by its PO number only. Any words after the number may name only items that
+  are rows in that group, never a $0.00 row, a match or a row Sam left off (check 1 refuses it).
+  Each row shows the item, the PO quantity and amount, Sam's measured quantity and
   value, the difference, and why.
 - **Tax on every group.** For each PO group: the difference before tax, each tax line, and the
   total. Use the tax lines and rates printed on that PO, worked out from its own subtotal and tax
@@ -135,7 +137,8 @@ machine with `python -m unittest discover -s tests` from the folder root.
 ## The six checks (the script runs them; nobody writes them by hand)
 1. Every row on it is a row Sam approved in the review, and no row he left off is on it. Every
    dollar amount printed is one the records give (a row or group figure, a PO rate, an EPO total);
-   an amount nobody can trace back is refused.
+   an amount nobody can trace back is refused. No group heading names a price list item that is
+   not a row in that group.
 2. Each row's agreed rate, PO qty, PO amount, measured qty, measured value and difference, read from that row inside
    its own PO's block, equal the figures worked out from Sam's read-back. A right number printed
    somewhere else on the page does not count.

@@ -15,6 +15,7 @@ from request_text import (  # noqa: F401  (pdf_pages, split_request, normalise: 
     SUBTOTAL, printed_groups, shown, split_request)
 import proof_line
 from header_checks import header_problems, proof_count_problems
+from heading_check import heading_problems
 from row_checks import block_problems, rows_by_po
 
 D0 = Decimal(0)
@@ -76,6 +77,7 @@ def check_rows(request, expected):
     problems = [f"missing from the PDF: {m}" for m in missing]
     problems += [f"on the PDF but Sam chose it off: {p}" for p in present]
     problems += stray_amounts(request, expected) + without_cents(request)
+    problems += heading_problems(request, expected)
     return line(1, "Only approved rows and amounts, and all of them", problems,
                 f"{len(expected['rows_on'])} approved row(s) printed, {len(expected['rows_off'])} left off")
 

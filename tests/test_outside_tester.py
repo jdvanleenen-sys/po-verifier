@@ -10,8 +10,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "05 request"))
+sys.path.insert(0, str(ROOT / "tests"))
+import money  # noqa: E402
 import printing  # noqa: E402
 import verify  # noqa: E402
+from test_money_gate import texts  # noqa: E402
 
 SAMPLE = ROOT / "05 request" / "77-mockup-drive" / "vpo-request-1.pdf"
 PYTHON3_LINE = "On a Mac or Linux, type `python3` wherever these files say `python`."
@@ -76,6 +79,41 @@ class PageLine(unittest.TestCase):
         wording = printing.page_words(1, n).replace(f"({n + 1} pages", f"({n + 2} pages")
         result = verify.check_pages(self.printed(wording), proof_pages=n)
         self.assertFalse(passes(result), result)
+
+
+
+class GroupHeading(unittest.TestCase):
+    """A group was headed "Basic painting, doors, railing, stringers" though railing was a $0 row and
+    stringers were left off. A heading may name only items that are rows in that group."""
+    HEADING = "Interior paint and stain."
+
+    @classmethod
+    def setUpClass(cls):
+        cls.expected, problems = money.expected_request(texts())
+        assert not problems, problems
+        cls.request = " ".join(verify.split_request(verify.pdf_pages(SAMPLE))[0])
+
+    def check(self, heading):
+        self.assertIn(self.HEADING, self.request)
+        return verify.check_rows(self.request.replace(self.HEADING, heading, 1), self.expected)
+
+    def test_the_sample_heading_passes(self):
+        self.assertTrue(passes(self.check(self.HEADING)), self.check(self.HEADING))
+
+    def test_heading_naming_items_not_on_the_request_fails(self):
+        result = self.check("Basic painting, doors, railing, stringers.")
+        self.assertFalse(passes(result), result)
+        self.assertIn("Railing", result)
+        self.assertIn("Stringer", result)
+
+    def test_heading_naming_its_own_row_passes(self):
+        result = self.check("8' doors and trim. One EPO for this PO.")
+        self.assertTrue(passes(result), result)
+
+    def test_heading_naming_another_groups_row_fails(self):
+        result = self.check("Garage: prime and paint garage.")
+        self.assertFalse(passes(result), result)
+        self.assertIn("Prime and paint garage", result)
 
 
 if __name__ == "__main__":
