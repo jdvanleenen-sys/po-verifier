@@ -1,5 +1,16 @@
 # Change log
 
+## 2026-11-11, an outside tester's findings: python3, grid answers kept, headings, page line
+An outside tester (2026-11-07) found four things. On a stock Mac only `python3` exists: the map and
+README now say to type it there. `grid.py build --replace` rewrote a draft's grid and wiped every
+answered `?`: each grid now records a fingerprint per row and PO, `--replace` carries each answer
+whose row is unchanged and lists every answer it could not carry, with what it said, to ask again
+(no backup file: a copy in the house folder would read as a record that uses the read-back). A group
+heading named railing and stringers that were not on the request: a group is headed by its PO number
+only, and check 1 refuses a heading that names a price list item not in its group. The request page
+said "page 1 of 1" in a 6-page file: it now prints "Request page 1 of 1. Proof attached: 5 pages
+(6 pages in this file)." from the real counts, and check 6 checks both. 15 tests added.
+
 ## 2026-11-09, loop run 6 group A: curly quotes, joins, Sam confirmed <number>, price twins
 A real-house attack got money through four reading gaps. Curly quotes and prime marks (from a phone
 or Word) hid Sam's words from every check: they are now read as straight quotes, feet and inches.
