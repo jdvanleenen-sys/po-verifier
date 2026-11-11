@@ -209,7 +209,10 @@ check that was skipped shows as a blank cell, and a blank cell is refused.
    named under "At risk for this house" on a line that names that trap (unit, selection or notes).
    `not comparable:` is for a PO line that is not a count Sam can measure (see "Careful").
 4. Never change a cell code filled. If a code cell is wrong, the read-back is wrong: fix the row,
-   rebuild the grid with `--replace` (only while the read-back is a draft), and answer it again.
+   rebuild the grid with `--replace` (only while the read-back is a draft). `--replace` keeps
+   every answer whose row did not change, so you never copy the grid first. It lists each answer
+   it could not keep (its row changed or is gone), with what it said: answer each of those again,
+   and every `?` left. Never paste an old answer back into a row that changed.
 5. Run `python "02 read/grid.py" check <house>`. It refuses a blank or `?` cell, a missing or extra
    row, a changed code cell, any `fail`, an at-risk row not under At risk, and a read-back whose POs
    read, Rows or Extra items changed after the grid was built. It also refuses a PO made out to
