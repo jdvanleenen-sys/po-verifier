@@ -5,7 +5,8 @@ Two commands, run from the PO Verifier folder:
   python "05 request/build_request.py" build <house> --notes yes|no
       --notes is Sam's answer to "attach your site notes as proof?" Ask him first.
       Checks  Sam's approved read-back and review, and the variance, before anything is printed.
-      Prints  05 request/drafts/<house>/request.html to PDF with "page 1 of N" from the real count.
+      Prints  05 request/drafts/<house>/request.html to PDF with its page line from the real counts:
+              "Request page 1 of N. Proof attached: P pages (N+P pages in this file)."
       Merges  the proof from 01 intake/<house>/: each PO and EPO once (a file saved twice is
               attached once), then the site notes only if Sam said yes. Any other file is named,
               never silently sent.
@@ -183,9 +184,9 @@ def build(house, notes_choice):
     for old in ("vpo-request.pdf", "request-only.pdf", "script-checks.md"):
         (draft / old).unlink(missing_ok=True)
     browser = printing.find_browser()
-    request_pdf = printing.print_request(browser, draft)
     proofs = ([printing.proof_pdf(browser, p, draft) for p in docs]
               + [printing.proof_pdf(browser, p, draft, notes=True) for p in attached])
+    request_pdf = printing.print_request(browser, draft, sum(printing.page_count(p) for p in proofs))
     merged = draft / "vpo-request.pdf"
     printing.merge(request_pdf, proofs, merged)
     for tmp in draft.glob("_proof-*.pdf"):

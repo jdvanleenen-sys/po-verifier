@@ -14,7 +14,9 @@ the builder's site super, who writes the EPO.
 ## What the request holds
 - **The house:** address, lot, builder, community, job name.
 - **The rows, grouped by PO number.** The site super writes one EPO per PO, so each PO gets its
-  own group, headed by its PO number. Each row shows the item, the PO quantity and amount, Sam's measured quantity and
+  own group, headed by its PO number only. Any words after the number may name only items that
+  are rows in that group, never a $0.00 row, a match or a row Sam left off (check 1 refuses it).
+  Each row shows the item, the PO quantity and amount, Sam's measured quantity and
   value, the difference, and why.
 - **Tax on every group.** For each PO group: the difference before tax, each tax line, and the
   total. Use the tax lines and rates printed on that PO, worked out from its own subtotal and tax
@@ -33,7 +35,7 @@ the builder's site super, who writes the EPO.
 Follow `../reference/request-layout.html` for layout only. Its sample numbers match the answer
 for 77 Mockup Drive, but never copy them: every name and number comes from the variance and the
 review. A printed sample is `../reference/request-layout-sample.pdf`. The rules in the comment at
-the top of the layout apply: leave `{{PAGES}}` as it is, keep each "why" to one short sentence,
+the top of the layout apply: leave `{{PAGE_LINE}}` as it is (code fills it with "Request page 1 of N. Proof attached: P pages (N+P pages in this file)." from the real counts), keep each "why" to one short sentence,
 leave off any $0.00 tax line and say so in the tax note, and keep the last group and the footer
 together. Show only the rows Sam approved. Matches, ignored rows
 and rows Sam left off are not on the request.
@@ -102,8 +104,8 @@ The PDF is never written straight into the record. A print that goes wrong must 
 2. Run `python "05 request/build_request.py" build <house> --notes yes` (or `--notes no`, or
    `--notes only:<file>,<file>` for just the pages he named, or `--notes yes-other-house` for a
    shared notes page; Sam's answer) from the folder root. Before printing, it checks that Sam's read-back and review are
-   approved and that the variance agrees with them; then it prints the request with "page 1 of N"
-   from the real count, attaches each PO and EPO once (a file saved twice goes once), adds the
+   approved and that the variance agrees with them; then it prints the request with its page line
+   from the real counts, attaches each PO and EPO once (a file saved twice goes once), adds the
    notes only if Sam said yes, and names any other file it did not attach. Then it runs all six
    checks below on the PDF itself and writes them to `drafts/<house>/script-checks.md`. If one
    fails, fix the draft and build again.
@@ -135,7 +137,8 @@ machine with `python -m unittest discover -s tests` from the folder root.
 ## The six checks (the script runs them; nobody writes them by hand)
 1. Every row on it is a row Sam approved in the review, and no row he left off is on it. Every
    dollar amount printed is one the records give (a row or group figure, a PO rate, an EPO total);
-   an amount nobody can trace back is refused.
+   an amount nobody can trace back is refused. No group heading names a price list item that is
+   not a row in that group.
 2. Each row's agreed rate, PO qty, PO amount, measured qty, measured value and difference, read from that row inside
    its own PO's block, equal the figures worked out from Sam's read-back. A right number printed
    somewhere else on the page does not count.
@@ -153,7 +156,8 @@ machine with `python -m unittest discover -s tests` from the folder root.
    `house-info.md` or "Date not recorded"), the trade contractor exactly as `contractor.md` gives
    it, the builder and community every PO prints (the builder also named in `contractor.md`), a
    prepared date between Sam's yes on the review and today, and the document number this commit gives (`VR-0002` for a house's second request);
-   the page count printed equals the actual pages, and the footer is on the last page.
+   the page line's request, proof and whole-file counts equal the actual pages, and the footer is
+   on the last page.
 
 Each line reads `pass: <evidence>` or `fail: <what is on the PDF, and what was expected>`. If any
 check fails, nothing is numbered and Sam does not see the request.

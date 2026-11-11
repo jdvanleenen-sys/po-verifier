@@ -55,6 +55,28 @@ def tables_hash(read_back_text):
     return hashlib.sha256("\n".join(parts).encode("utf-8")).hexdigest()
 
 
+def flat(row):
+    return " | ".join(f"{k}={' '.join(v.split())}" for k, v in row.items())
+
+
+def short_hash(*parts):
+    return hashlib.sha256("\n".join(parts).encode("utf-8")).hexdigest()[:16]
+
+
+def row_prints(read_back_text, snapshot_raw):
+    """A short fingerprint of what each grid row's answers were worked from, keyed "row 3" or
+    "PO <number>". A row: its own line in Rows, and the price list snapshot. A PO: its own line in
+    POs read, the house (the address Sam gave), and the snapshot. grid_carry.py uses these so a
+    rebuilt grid keeps only the answers whose row did not change."""
+    snap = hashlib.sha256(snapshot_raw or b"").hexdigest()
+    the_house = " ".join(" ".join(under(read_back_text, "the house")).split())
+    prints = {f"row {r.get('#', '').strip()}": short_hash(flat(r), snap)
+              for r in prices.rows_table(read_back_text)}
+    prints.update({f"PO {p.get('po number', '').strip()}": short_hash(flat(p), the_house, snap)
+                   for p in as_dicts(under(read_back_text, "pos read"))})
+    return prints
+
+
 def house_facts(read_back_text, snapshot_raw):
     pos = as_dicts(under(read_back_text, "pos read"))
     return {"rows": prices.rows_table(read_back_text), "pos": pos,
@@ -89,7 +111,9 @@ def render(house, n, read_back_text, snapshot_raw):
     cells = expected_cells(read_back_text, snapshot_raw)
     head = ["---", f"house: {house}", f"attempt: {n}", "stage: 02 read",
             f"from: 02 read/{house}/read-back-{n}.md",
-            f"read-back tables sha256: {tables_hash(read_back_text)}", "---", "",
+            f"read-back tables sha256: {tables_hash(read_back_text)}",
+            "row sha256: " + "; ".join(f"{k} {v}" for k, v in row_prints(read_back_text, snapshot_raw).items()),
+            "---", "",
             f"# {house}, rule grid {n}", "",
             "Built by `02 read/grid.py`. Code filled every cell it can work out. Answer each `?` one",
             "column at a time: take one rule, answer it for every row, then the next rule. Write the",

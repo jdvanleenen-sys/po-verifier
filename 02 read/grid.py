@@ -2,7 +2,9 @@
 
   python "02 read/grid.py" build <house> [--replace]
       Writes 02 read/<house>/grid-N.md for read-back-N.md (the highest N). Code fills every cell it
-      can work out; the rest are "?". --replace rebuilds a grid whose read-back is still a draft.
+      can work out; the rest are "?". --replace rebuilds a grid whose read-back is still a draft:
+      each answer whose row is unchanged is carried into the new grid, and each answer that could
+      not be carried (its row changed or is gone) is listed with what it said, to ask again.
 
   python "02 read/grid.py" check <house> [--final]
       Refuses the grid if any cell is blank or "?", a row or PO is missing or extra, a code cell
@@ -23,6 +25,7 @@ import sys
 from pathlib import Path
 
 import contractor
+import grid_carry
 import intake_read
 import po_lines
 import po_totals
@@ -67,8 +70,13 @@ def build(house, replace=False):
     if changed:
         sys.exit(f"{target.name} was not built:\n- " + "\n- ".join(changed))
     grid_text = render(house, n, text, snapshot) + "\n".join(intake_read.section(ROOT / "01 intake" / house))
+    replacing = target.exists()
+    if replacing:  # a draft's grid: keep every answer whose row did not change, name the rest
+        grid_text, carried, lost = grid_carry.carry(read(target), grid_text)
     target.write_text(grid_text, encoding="utf-8")
     asks = len(re.findall(r"\| \?(?= \|)", grid_text))
+    if replacing:
+        return grid_carry.message(target.name, asks, carried, lost)
     return f"{target.name} written: {asks} cell(s) are '?' for you to answer, one rule at a time."
 
 

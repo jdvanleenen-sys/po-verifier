@@ -245,6 +245,7 @@ def expected_request(records):
     out["house"] = {"before": house[0], "tax": house[1], "total": house[0] + house[1]}
     out["po_numbers"] = sorted(set(rates))
     out["epo_names"], out["tax_names"] = [e["name"] for e in epos], tax_names(records["read-back"])
+    out["price_items"] = [r["item"] for r in prices.parse(records.get("price-list") or b"")[0].values()]
     # Amounts a row's why or a PO rate may print besides the row and group figures.
     out["other_amounts"] = sorted({r["unit_price"] for r in rb_rows if r.get("unit_price") is not None} |
                                   {e["total"] for e in epos})

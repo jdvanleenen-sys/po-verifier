@@ -146,3 +146,20 @@ def header_problems(request_pages, header):
                         "never typed by hand; if a request from this review is already numbered, a new one "
                         "needs a new review with Sam's yes")
     return problems
+
+
+PROOF_LINE = re.compile(r"proof attached: (\d+) pages? \((\d+) pages? in this file\)")
+
+
+def proof_count_problems(first, request_count, proof_pages):
+    """The page line's proof and whole-file counts are the real ones. A request numbered before the
+    page line named its proof (2026-11-11) prints no proof count; printing.py refuses a layout
+    without the new line, so every request printed since carries it."""
+    printed = PROOF_LINE.search(normalise(first))
+    if printed is None or proof_pages is None:
+        return []
+    proof, whole = int(printed.group(1)), int(printed.group(2))
+    problems = [f"says the proof is {proof} page(s); {proof_pages} are attached"] if proof != proof_pages else []
+    if whole != request_count + proof_pages:
+        problems.append(f"says {whole} page(s) in this file; it holds {request_count + proof_pages}")
+    return problems

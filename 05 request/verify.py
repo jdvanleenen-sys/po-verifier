@@ -14,7 +14,8 @@ from request_text import (  # noqa: F401  (pdf_pages, split_request, normalise: 
     box_note, FOOTER_TEXT, amounts, first_amount_after, group_blocks, normalise, pdf_pages,
     SUBTOTAL, printed_groups, shown, split_request)
 import proof_line
-from header_checks import header_problems
+from header_checks import header_problems, proof_count_problems
+from heading_check import heading_problems
 from row_checks import block_problems, rows_by_po
 
 D0 = Decimal(0)
@@ -76,6 +77,7 @@ def check_rows(request, expected):
     problems = [f"missing from the PDF: {m}" for m in missing]
     problems += [f"on the PDF but Sam chose it off: {p}" for p in present]
     problems += stray_amounts(request, expected) + without_cents(request)
+    problems += heading_problems(request, expected)
     return line(1, "Only approved rows and amounts, and all of them", problems,
                 f"{len(expected['rows_on'])} approved row(s) printed, {len(expected['rows_off'])} left off")
 
@@ -257,11 +259,12 @@ def check_proof(proof_pages, proof, request=None):
     return line(5, "Every proof document attached", problems, evidence)
 
 
-def check_pages(request_pages, header=None):
+def check_pages(request_pages, header=None, proof_pages=None):
     """Page count and footer; with a header spec from build_request, the job and document number too."""
     first = request_pages[0] if request_pages else ""
     printed = re.search(r"page 1 of (\d+)", first)
     problems = header_problems(request_pages, header) if header else []
+    problems += proof_count_problems(first, len(request_pages), proof_pages)
     if FOOTER_TEXT not in request_pages[-1]:
         problems.append("no sign-off footer found")
     if not printed:
@@ -283,4 +286,5 @@ def run_checks(pdf_path, expected, proof, header=None):
     request_pages, proof_pages = split_request(pages)
     request = " ".join(request_pages)
     return [check_rows(request, expected), check_differences(request, expected), check_tax(request, expected),
-            check_house(request, expected), check_proof(proof_pages, proof, request), check_pages(request_pages, header)]
+            check_house(request, expected), check_proof(proof_pages, proof, request),
+            check_pages(request_pages, header, len(proof_pages))]
