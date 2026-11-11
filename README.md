@@ -34,6 +34,8 @@ Two rules never bend: the AI never decides the money, and it never sends anythin
 ## Test it
 Want to break it? See **[_for-testers/TESTING.md](_for-testers/TESTING.md)**. There is a house waiting for you to run.
 
+On a Mac or Linux, type `python3` wherever these files say `python`.
+
 ## Status
 - The finished example, 77 Mockup Drive, checks out to the cent: `python -m unittest discover -s tests`
   re-adds it and plants 13 mistakes the money gate must refuse.

@@ -4,6 +4,8 @@
 It checks a builder's POs against what the trade measured on site, and builds the request for the
 difference. This is a practice build. The data is made up and nothing is ever sent.
 
+On a Mac or Linux, type `python3` wherever these files say `python`. On Windows keep `python`.
+
 ## What is here
 
 | Folder or file | What it holds |
