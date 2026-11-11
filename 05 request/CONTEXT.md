@@ -33,7 +33,7 @@ the builder's site super, who writes the EPO.
 Follow `../reference/request-layout.html` for layout only. Its sample numbers match the answer
 for 77 Mockup Drive, but never copy them: every name and number comes from the variance and the
 review. A printed sample is `../reference/request-layout-sample.pdf`. The rules in the comment at
-the top of the layout apply: leave `{{PAGES}}` as it is, keep each "why" to one short sentence,
+the top of the layout apply: leave `{{PAGE_LINE}}` as it is (code fills it with "Request page 1 of N. Proof attached: P pages (N+P pages in this file)." from the real counts), keep each "why" to one short sentence,
 leave off any $0.00 tax line and say so in the tax note, and keep the last group and the footer
 together. Show only the rows Sam approved. Matches, ignored rows
 and rows Sam left off are not on the request.
@@ -102,8 +102,8 @@ The PDF is never written straight into the record. A print that goes wrong must 
 2. Run `python "05 request/build_request.py" build <house> --notes yes` (or `--notes no`, or
    `--notes only:<file>,<file>` for just the pages he named, or `--notes yes-other-house` for a
    shared notes page; Sam's answer) from the folder root. Before printing, it checks that Sam's read-back and review are
-   approved and that the variance agrees with them; then it prints the request with "page 1 of N"
-   from the real count, attaches each PO and EPO once (a file saved twice goes once), adds the
+   approved and that the variance agrees with them; then it prints the request with its page line
+   from the real counts, attaches each PO and EPO once (a file saved twice goes once), adds the
    notes only if Sam said yes, and names any other file it did not attach. Then it runs all six
    checks below on the PDF itself and writes them to `drafts/<house>/script-checks.md`. If one
    fails, fix the draft and build again.
@@ -153,7 +153,8 @@ machine with `python -m unittest discover -s tests` from the folder root.
    `house-info.md` or "Date not recorded"), the trade contractor exactly as `contractor.md` gives
    it, the builder and community every PO prints (the builder also named in `contractor.md`), a
    prepared date between Sam's yes on the review and today, and the document number this commit gives (`VR-0002` for a house's second request);
-   the page count printed equals the actual pages, and the footer is on the last page.
+   the page line's request, proof and whole-file counts equal the actual pages, and the footer is
+   on the last page.
 
 Each line reads `pass: <evidence>` or `fail: <what is on the PDF, and what was expected>`. If any
 check fails, nothing is numbered and Sam does not see the request.

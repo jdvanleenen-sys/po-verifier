@@ -5,7 +5,8 @@
   Layout rules, for whoever fills this in:
   - Copy this file to 05 request/drafts/<house>/request.html and replace the sample rows and numbers
     with the variance and review. Every name and number comes from those files.
-  - Leave {{PAGES}} exactly as it is. build_request.py prints the page, counts it, and fills it in.
+  - Leave {{PAGE_LINE}} exactly as it is. build_request.py prints the page, counts the request and
+    proof pages, and fills in "Request page 1 of N. Proof attached: P pages (N+P pages in this file)."
     Never type a page count.
   - "Why" is one short sentence, about ten words at most.
   - A tax line of $0.00 (for example PST $0.00) is not shown. The tax note says which taxes were $0.
@@ -65,7 +66,7 @@
   <div><div class="lab">Job name</div><div class="val">MKR-02402401-77 Mockup Drive</div></div>
   <div><div class="lab">Community</div><div class="val">Mockup Ridge Single Family</div></div>
   <div><div class="lab">Measured on site</div><div class="val">October 2, 2026</div></div>
-  <div><div class="lab">Document</div><div class="val">VR-0001, page 1 of {{PAGES}}</div></div>
+  <div><div class="lab">Document</div><div class="val">VR-0001, {{PAGE_LINE}}</div></div>
 </div>
 
 <div class="boxes">

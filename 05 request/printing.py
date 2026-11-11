@@ -8,7 +8,8 @@ from pathlib import Path
 
 import pymupdf
 
-PAGE_MARK = "{{PAGES}}"
+# The layout prints this mark once, where the page line goes; build_request fills it with page_words.
+PAGE_MARK = "{{PAGE_LINE}}"
 # Chrome first: Edge has hung on headless printing in testing (2026-10-27); Chrome did not.
 BROWSER_PATHS = [
     r"C:\Program Files\Google\Chrome\Application\chrome.exe",
@@ -64,17 +65,27 @@ def page_count(pdf_path):
         return doc.page_count
 
 
-def print_request(browser, draft):
-    """Print the request twice: once to count pages, once with the real count written in."""
+def page_words(request_pages, proof_pages):
+    """The page line: which pages are the request, and how many proof pages the file holds after it,
+    so a builder holding a 6-page file is not told "page 1 of 1"."""
+    def pages(n):
+        return f"{n} page" + ("" if n == 1 else "s")
+    return (f"Request page 1 of {request_pages}. Proof attached: {pages(proof_pages)} "
+            f"({pages(request_pages + proof_pages)} in this file).")
+
+
+def print_request(browser, draft, proof_pages):
+    """Print the request twice: once to count pages, once with the real counts written in."""
     html = (draft / "request.html").read_text(encoding="utf-8")
     if PAGE_MARK not in html:
-        sys.exit(f"request.html has no {PAGE_MARK} placeholder. Copy the layout again.")
+        sys.exit(f"request.html has no {PAGE_MARK} placeholder (an older layout said 'page 1 of "
+                 "{{PAGES}}'). Copy the layout again.")
     counting, first = draft / "_count.html", draft / "_count.pdf"
-    counting.write_text(html.replace(PAGE_MARK, "9"), encoding="utf-8")
+    counting.write_text(html.replace(PAGE_MARK, page_words(9, proof_pages)), encoding="utf-8")
     print_pdf(browser, counting, first)
     pages = page_count(first)
     final_html = draft / "_final.html"
-    final_html.write_text(html.replace(PAGE_MARK, str(pages)), encoding="utf-8")
+    final_html.write_text(html.replace(PAGE_MARK, page_words(pages, proof_pages)), encoding="utf-8")
     request_pdf = draft / "request-only.pdf"
     print_pdf(browser, final_html, request_pdf)
     for tmp in (counting, first, final_html):
