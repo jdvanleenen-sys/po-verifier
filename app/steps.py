@@ -5,6 +5,7 @@ from datetime import date
 
 import agent
 import config
+import difference
 import houses
 import questions
 import sam_yes
@@ -91,4 +92,34 @@ def read_back_yes(folder, jobs, house, today=None):
     try:
         sam_yes.seal(folder, read_back, sam_yes.painter_name(folder), (today or date.today()).isoformat())
     except sam_yes.Refused as err:
+        raise Stopped(f"Stopped before the money: {err}")
+
+
+def run_compare(folder, house):
+    """compare.py, by code, once the read-back is sealed. No AI."""
+    if houses.stand(folder, house)["screen"] != houses.COMPARE:
+        raise Stopped(f"{house} is not waiting on the compare.")
+    passed, output = sam_yes.script(folder, "03 compare/compare.py", house)
+    if not passed:
+        raise Stopped(f"Stopped before the money: {output}")
+    return output
+
+
+def review_yes(folder, house, picks, today=None):
+    """Sam tapped Build the PDF: write his picks into review-N.md and seal it with his yes. A review
+    the folder refuses is taken back out, so the next try uses the same number."""
+    if houses.stand(folder, house)["screen"] != houses.DIFFERENCE:
+        raise Stopped(f"{house} is not on the Difference screen.")
+    try:
+        text = difference.review_text(folder, house, picks)
+    except ValueError as err:
+        raise Stopped(str(err))
+    attempt = text.split("attempt: ", 1)[1].split("\n", 1)[0]
+    path = folder.stage("04 review", house) / f"review-{attempt}.md"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8", newline="\n")
+    try:
+        sam_yes.seal(folder, path, sam_yes.painter_name(folder), (today or date.today()).isoformat())
+    except sam_yes.Refused as err:
+        path.unlink()
         raise Stopped(f"Stopped before the money: {err}")

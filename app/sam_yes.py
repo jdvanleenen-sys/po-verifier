@@ -39,7 +39,7 @@ def write_yes(path, name, day):
         if not FIELD[field].search(block):
             raise Refused(f"{path.name}'s \"Sam's yes\" block has no {field} line.")
         block = FIELD[field].sub(f"- {field}: {value}", block, count=1)
-    path.write_text(head + YES_HEADING + block, encoding="utf-8")
+    path.write_text(head + YES_HEADING + block, encoding="utf-8", newline="\n")
 
 
 def seal(folder, path, name, day):
@@ -49,6 +49,6 @@ def seal(folder, path, name, day):
     write_yes(path, name, day)
     passed, output = script(folder, "02 read/seal.py", str(path.relative_to(folder.root)))
     if not passed:
-        path.write_text(before, encoding="utf-8")
+        path.write_text(before, encoding="utf-8", newline="\n")
         raise Refused(output or "seal.py refused the record.")
     return output

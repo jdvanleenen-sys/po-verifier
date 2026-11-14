@@ -91,7 +91,7 @@ def hold(folder, address, measured, covers_others, pos, notes):
             saved[kind].append(clean)
     info = {"address": address, "measured": _measured(measured), "covers_others": bool(covers_others), **saved}
     info["questions"] = _questions(where, info)
-    (where / "held.json").write_text(json.dumps(info, indent=1), encoding="utf-8")
+    (where / "held.json").write_text(json.dumps(info, indent=1), encoding="utf-8", newline="\n")
     return {"id": held_id, "questions": info["questions"]}
 
 
@@ -149,10 +149,10 @@ def lock(folder, held_id, answers, today=None):
     intake.mkdir(parents=True)
     for name in info["pos"] + info["notes"]:
         shutil.copy2(where / name, intake / name)
-    (intake / "house-info.md").write_text(_house_info(info, today), encoding="utf-8")
+    (intake / "house-info.md").write_text(_house_info(info, today), encoding="utf-8", newline="\n")
     record = folder.root / config.APP_DIR / house
     record.mkdir(parents=True, exist_ok=True)
     before = {"address": info["address"], "measured": info["measured"], "answers": said, "locked": today}
-    (record / "before-read.json").write_text(json.dumps(before, indent=1), encoding="utf-8")
+    (record / "before-read.json").write_text(json.dumps(before, indent=1), encoding="utf-8", newline="\n")
     shutil.rmtree(where)
     return house
