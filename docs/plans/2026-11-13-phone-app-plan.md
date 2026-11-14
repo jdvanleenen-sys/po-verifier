@@ -71,6 +71,18 @@ the stage forbids. Pass: both runs stop at the draft with a grid built, no forbi
 under 15 minutes. Write the result in `evidence/phone-app/step-0.md` in the private folder and the
 plain numbers (no real data) in the commit message. Fail means approach B, said that day.
 
+*Result, 2026-11-14: passed on the second prompt.* Four runs on one real house. The first two had
+no date measured and POs printing a placeholder job address: one stopped before writing, one wrote a
+draft whose grid refused the address. With those two answers given up front, both runs stopped at a
+checked draft in 3 min 39 s and 3 min 47 s, about $2 each (API-equivalent), intake unchanged.
+Approach A stays. Two changes follow:
+- **Lock asks two things before the read:** the date measured (or not recorded), and, when code
+  finds the POs' job address does not match the typed one, "Are these the POs for <address>?".
+  His answers go into the read prompt; the agent writes them into the read-back.
+- **The questions can differ between runs** on the same files (one line was a "not on the price
+  list" warning in one run and a "pick one" in another). Both block the money until he answers.
+  Proof 2 (same cents by two routes) therefore compares after his answers, not the question lists.
+
 **Step 1. Houses and state.** `houses.py` and its table above. Tests: every row of the table on
 77 Mockup Drive copies, plus a folder with no houses.
 
