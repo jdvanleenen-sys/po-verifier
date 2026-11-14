@@ -7,7 +7,7 @@ import agent
 import config
 import houses
 import questions
-import records
+import sam_yes
 from folder import highest
 
 MAX_ROUNDS = 3
@@ -62,7 +62,7 @@ def check_screen(folder, house):
     open_cards = questions.cards(folder, house)
     if open_cards:
         return {"cards": open_cards, "ready": False, "blocked": None}
-    passed, output = records.script(folder, "02 read/grid.py", "check", house, "--final")
+    passed, output = sam_yes.script(folder, "02 read/grid.py", "check", house, "--final")
     return {"cards": [], "ready": passed, "blocked": None if passed else output}
 
 
@@ -89,6 +89,6 @@ def read_back_yes(folder, jobs, house, today=None):
     if not screen["ready"]:
         raise Stopped(screen["blocked"] or "Answer every card first.")
     try:
-        records.seal(folder, read_back, records.painter_name(folder), (today or date.today()).isoformat())
-    except records.Refused as err:
+        sam_yes.seal(folder, read_back, sam_yes.painter_name(folder), (today or date.today()).isoformat())
+    except sam_yes.Refused as err:
         raise Stopped(f"Stopped before the money: {err}")
