@@ -4,6 +4,13 @@ One house from its POs and a notes photo to an approved, checked request PDF, fr
 same Wi-Fi as the laptop that holds the folder. The folder does the work under its own rules; this
 app only runs its steps in order and shows what it says. Spec: `docs/specs/2026-11-13-phone-app-design.md`.
 
+## Quick start (Windows)
+```
+powershell -ExecutionPolicy Bypass -File app\start.ps1 -Folder "<the contractor's folder>"
+```
+It sets up the Python environment the first time, checks Claude Code is installed, and prints the
+link for the phone. The steps it runs are below.
+
 ## Set up once (Windows)
 ```
 python -m venv --system-site-packages .venv
