@@ -1,0 +1,54 @@
+/* Same palette as the v2 phone mockup. One font stack, 4/8/12/16/24 spacing. */
+:root { --bg:#ffffff; --ink:#16202b; --muted:#5d6b79; --line:#dde3e9; --soft:#f3f6f8; --blue:#1f5fbf; --on-blue:#ffffff;
+  --green:#1d7a46; --amber:#9a5b00; --amber-bg:#fff4df; --amber-line:#f0c36d; --red:#b3261e; --red-bg:#fdecea;
+  --font:-apple-system, "Segoe UI", Roboto, Arial, sans-serif; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root { --bg:#161d24; --ink:#e6ebf0; --muted:#9aa8b5; --line:#2a343e; --soft:#1e262e;
+  --blue:#5b9bf0; --on-blue:#0b1622; --green:#4cc283; --amber:#f0b45a; --amber-bg:#2b2213; --amber-line:#6b5222;
+  --red:#ff8a80; --red-bg:#3a1d1b; color-scheme: dark; } }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.45 var(--font); -webkit-text-size-adjust: 100%; }
+.bar { position: sticky; top: 0; z-index: 2; background: var(--bg); display: grid; grid-template-columns: 1fr auto 1fr;
+  align-items: center; padding: calc(8px + env(safe-area-inset-top)) 16px 8px; border-bottom: 1px solid var(--line); font-weight: 600; }
+.bar .link { justify-self: start; }
+.steps { display: flex; gap: 4px; padding: 8px 16px 0; }
+.steps span { flex: 1; height: 3px; border-radius: 2px; background: var(--line); }
+.steps span.on { background: var(--blue); }
+main { padding: 16px 16px calc(32px + env(safe-area-inset-bottom)); max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+h2 { font-size: 22px; margin: 4px 0 0; }
+.sub { color: var(--muted); font-size: 15px; margin: 0; }
+.small { color: var(--muted); font-size: 13px; }
+.card { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.card.soft { background: var(--soft); }
+.card.warn { border-color: var(--amber-line); background: var(--amber-bg); }
+.card.bad { border-color: var(--red); background: var(--red-bg); }
+.card.ok { border-color: var(--green); }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.money { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+.plus { color: var(--green); }
+.minus { color: var(--red); }
+button { font: inherit; cursor: pointer; }
+.btn { width: 100%; border: 0; border-radius: 12px; padding: 14px; font-weight: 600; background: var(--blue); color: var(--on-blue); }
+a.btn { display: block; text-align: center; text-decoration: none; }
+.btn.go { background: var(--green); }
+.btn.sec { background: var(--soft); color: var(--blue); }
+.btn:disabled { opacity: .45; cursor: default; }
+.link { border: 0; background: none; color: var(--blue); padding: 0; font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1.5px solid var(--blue); color: var(--blue); background: none; border-radius: 18px; padding: 6px 12px; font-size: 15px; }
+.chip.on { background: var(--blue); color: var(--on-blue); }
+label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: var(--muted); }
+input[type=text], input[type=date], textarea, select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px 12px; width: 100%; }
+input[type=file] { font-size: 14px; color: var(--muted); }
+.house { text-align: left; background: none; color: inherit; }
+.house b { display: block; }
+.prog { display: flex; gap: 8px; align-items: center; }
+.spin { width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid var(--line); border-top-color: var(--blue); animation: spin 1s linear infinite; flex: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.photo { width: 100%; max-height: 240px; object-fit: contain; border-radius: 8px; background: var(--soft); }
+details summary { cursor: pointer; color: var(--blue); font-weight: 600; }
+.error { color: var(--red); font-weight: 600; }
+.check-line { font-size: 13px; }
+.check-line b { color: var(--green); }
+.check-line.fail b { color: var(--red); }

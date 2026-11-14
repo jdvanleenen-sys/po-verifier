@@ -124,6 +124,13 @@ to stop: read a house, write the next read-back from these answers, fill the req
 give no rules of their own; the stage `CONTEXT.md` files are the rules. Each is tested in step 0
 or the step that first uses it.
 
+## Found in the folder while building (fix on their own branch, not this one)
+- `05 request/review_gate.py`: the Date regex ends `[ \t]*$`, so a review saved with CRLF line
+  endings skips the "not after today" check. The app writes LF; a review typed by hand on Windows
+  would not be checked. (2026-11-14)
+- The final grid check does not block on an `ask Sam:` the read writes in prose (under Checks run).
+  The app shows each one as a card; a run by hand in chat could pass it unseen. (2026-11-14)
+
 ## Open, not the builder's call
 - How POs reach the painter's iPhone (asking the painter).
 - Who the yes is written as: the name in `contractor.md`, set once when the runner starts.
