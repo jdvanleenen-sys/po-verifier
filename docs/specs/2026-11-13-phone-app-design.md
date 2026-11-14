@@ -51,13 +51,40 @@ The runner is told the folder's path when it starts. Houses live only in that fo
 Known limit: Safari opens the share sheet only on a secure (HTTPS) page. Over plain Wi-Fi, step 7
 may be "download, then share from Files". Tested on a real iPhone before done.
 
+### Kinds of question on screen 4 (found reading `02 read`, 2026-11-13)
+Not every open question is a number. Each kind gets its own card:
+- **A number:** Right, or Fix it with his number.
+- **Pick one:** a line fits two price list items; he taps one.
+- **Not on the price list:** he names an existing item or says leave it unpriced. Adding a row means
+  editing the price list in Excel: in this version the card says so and the house waits.
+- **Same PO twice:** he says whether it is one PO saved twice.
+His fixes go into a new numbered read-back with its own grid, as the stage requires, so the read
+can take more than one round. After three rounds with questions still open, the house stops with
+"Call for help".
+
+### Calls with no default on screen 5 (from `04 review`)
+A flagged credit, a row whose difference is only a back charge, and a row on no PO with no
+standing answer for which PO it goes on all start unset, and Build the PDF stays off until he
+answers each. Rows he does not touch are written `off (Sam did not choose it)`.
+
+### Screen 6
+A `cannot check` line from the request's checks is his call, shown as a card above Approve.
+
+## On a computer (added 2026-11-13, after the phone)
+The same page in a laptop or office browser: the same seven steps, taps and order. Wider layout
+only: houses in a sidebar with the steps under the open house; files dragged in as well as picked;
+the whole notes page beside the question cards with the doubted lines marked; the request PDF at
+page size beside the checks and Approve. Built on Nov 19 only if the phone is solid; otherwise
+after Nov 20. In this version the computer must be on the laptop's Wi-Fi.
+
 ## One house through the runner
 1. **Lock.** Files go into `01 intake/<house>/` untouched; `house-info.md` is written from his
    answers by code. Houses are named `real-N`.
 2. **Read.** Claude Code runs headless in the folder ("read house real-N") and follows `02 read`.
    It stops at the read-back draft. The runner gets the open questions from `grid.py check`.
-3. **His answers.** His fixes go back to the agent, which updates the read-back. The runner writes
-   his yes in the folder's format (his words, name, date) and runs `seal.py`.
+3. **His answers.** His fixes go back to the agent, which writes the next numbered read-back and
+   grid. When `grid.py check --final` passes and he taps That's all right, the runner writes his
+   yes in the folder's format (his words, name, date) and runs `seal.py`.
 4. **Compare.** `compare.py`. No AI.
 5. **Review.** The runner writes his picks and his yes into `04 review`, then `seal.py`.
 6. **Request.** The agent fills the request layout (the stage's one drafting step), then
@@ -98,6 +125,7 @@ recorded" when he says so.
 | Nov 17 | First iPhone runs; the share-sheet test |
 | Nov 18 | Cold run on a second house; fixes |
 | Nov 19 | Final run-through; buffer |
+| Nov 19 | Desktop layout, only if the phone passed Nov 17-18 |
 | By Nov 20 | The painter runs the third house |
 
 If the headless read is unreliable on Nov 14, say so that day and switch the read to approach B.
