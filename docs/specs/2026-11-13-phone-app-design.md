@@ -70,6 +70,13 @@ answers each. Rows he does not touch are written `off (Sam did not choose it)`.
 ### Screen 6
 A `cannot check` line from the request's checks is his call, shown as a card above Approve.
 
+**Moved, 2026-11-14:** the attach-my-notes switch is on screen 5, beside Build the PDF, not on
+screen 6. The request prints a proof line naming the notes, and check 5 reads it, so his answer
+must be known before the layout is filled. Changing it afterwards means building again.
+
+Approve runs the folder's commit and writes his yes to send. `sent:` stays blank until he taps
+"I sent it" on screen 7.
+
 ## On a computer (added 2026-11-13, after the phone)
 The same page in a laptop or office browser: the same seven steps, taps and order. Wider layout
 only: houses in a sidebar with the steps under the open house; files dragged in as well as picked;

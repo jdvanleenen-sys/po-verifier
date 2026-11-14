@@ -8,6 +8,7 @@ import config
 import difference
 import houses
 import questions
+import request_pdf
 import sam_yes
 from folder import highest
 
@@ -123,3 +124,36 @@ def review_yes(folder, house, picks, today=None):
     except sam_yes.Refused as err:
         path.unlink()
         raise Stopped(f"Stopped before the money: {err}")
+
+
+def start_request(folder, jobs, house):
+    """After the review is sealed: the agent fills the request layout and builds the draft with
+    Sam's notes answer. Code checks the result; the agent never numbers it."""
+    state = houses.stand(folder, house, house in jobs.running())
+    if state["screen"] != houses.PDF:
+        raise Stopped(f"{house} is not ready for its request.")
+    if state["busy"]:
+        return False
+    notes = request_pdf.notes_answer(folder, house)
+    if notes is None:
+        raise Stopped("Say whether your site notes go with the request first.")
+    return jobs.start(house, "request", agent.prompt("request", house=house, notes=notes))
+
+
+def approve(folder, jobs, house, today=None):
+    """Sam tapped Approve: the folder's commit numbers the draft only if its six checks pass again,
+    then his yes to send is written. A second tap finds the house done and gives the same number."""
+    state = houses.stand(folder, house, house in jobs.running())
+    if state["screen"] == houses.DONE:
+        return request_pdf.numbered(folder, house).name
+    if state["screen"] != houses.PDF or state["busy"]:
+        raise Stopped(f"{house} has no request ready to approve.")
+    if not request_pdf.draft(folder, house)["passed"]:
+        raise Stopped("Stopped before the money: the request's six checks have not all passed.")
+    passed, output = sam_yes.script(folder, "05 request/build_request.py", "commit", house)
+    if not passed:
+        raise Stopped(f"Stopped before the money: {output}")
+    pdf = request_pdf.numbered(folder, house)
+    check = pdf.with_name(pdf.name.replace("vpo-request-", "request-check-").replace(".pdf", ".md"))
+    request_pdf.write_send_yes(check, sam_yes.painter_name(folder), (today or date.today()).isoformat())
+    return pdf.name

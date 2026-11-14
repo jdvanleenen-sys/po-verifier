@@ -9,6 +9,7 @@ on stdin, saves it where STANDIN_PROMPT_OUT says, and acts by STANDIN_MODE:
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -29,6 +30,13 @@ def main():
         return
     if mode == "stopped":
         print(json.dumps({"result": "STOPPED: a stand-in reason", "is_error": False, "total_cost_usd": 0}))
+        return
+    if "is in stage 05 request" in text:
+        notes = re.search(r"--notes (\S+?)`", text).group(1)
+        done = subprocess.run([sys.executable, "05 request/build_request.py", "build", house, "--notes", notes],
+                              capture_output=True, text=True)
+        line = f"DONE {house} request built, six checks pass" if done.returncode == 0 else "STOPPED: build failed"
+        print(json.dumps({"result": line, "is_error": False, "total_cost_usd": 0}))
         return
     out = Path("02 read") / house
     out.mkdir(parents=True, exist_ok=True)
