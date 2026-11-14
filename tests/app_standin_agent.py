@@ -40,8 +40,14 @@ def main():
         return
     out = Path("02 read") / house
     out.mkdir(parents=True, exist_ok=True)
+    body = ""
+    if os.environ.get("STANDIN_CARDS") and name == "read-back-1":
+        body = ("\n## WARNING: not on the price list (1 items)\n\n| PO number | Description as printed | Qty and unit | "
+                "Closest items | Sam's answer (add row / names item / leave unpriced) |\n|---|---|---|---|---|\n"
+                "| none | \"Extra stair 1\" | count 1 | Stairwell | |\n\n## Checks run\n"
+                "- Same POs in another house folder: ask Sam: is this the same house dropped in again?\n")
     (out / f"{name}.md").write_text(f"---\nhouse: {house}\nattempt: {name[10:]}\nstage: 02 read\n"
-                                    f"from: 01 intake/{house}/\nstatus: draft\n---\n", encoding="utf-8")
+                                    f"from: 01 intake/{house}/\nstatus: draft\n---\n{body}", encoding="utf-8")
     print(json.dumps({"result": f"working\nDONE {house} {name}, 0 questions for Sam",
                       "is_error": False, "total_cost_usd": 0}))
 

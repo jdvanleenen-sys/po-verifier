@@ -15,9 +15,9 @@ function newHouseScreen() {
   const today = new Date().toLocaleDateString("en-CA");
   return `<h2>New house</h2>
     <label>Address<input type="text" id="address" autocomplete="off" placeholder="House number and street"></label>
-    <div class="card"><b>POs</b><span class="small">PDF, saved page, photo or screenshot</span>
+    <div class="card drop"><b>POs</b><span class="small">PDF, saved page, photo or screenshot. On a computer, drag them here.</span>
       <input type="file" id="pos" multiple accept=".pdf,.html,.htm,image/*"></div>
-    <div class="card"><b>Your notes</b><span class="small">Photo of your notes, or a PDF or text file</span>
+    <div class="card drop"><b>Your notes</b><span class="small">Photo of your notes, or a PDF or text file</span>
       <input type="file" id="notes" multiple accept="image/*,.pdf,.txt"></div>
     <div class="card"><div class="row"><span>The notes page shows other houses too</span><input type="checkbox" id="covers"></div>
       <label>Date measured<input type="date" id="measured" value="${today}" max="${today}"></label>
@@ -34,7 +34,8 @@ function readingScreen(h) {
 }
 
 function cardHtml(c, i) {
-  const head = `<b>${esc(c.title)}</b>${c.po ? `<span class="small">PO ${esc(c.po)}</span>` : ""}`;
+  const where = !c.po ? "" : c.po.toLowerCase() === "none" ? "On no PO" : `PO ${esc(c.po)}`;
+  const head = `<b>${esc(c.title)}</b>${where ? `<span class="small">${where}</span>` : ""}`;
   if (c.kind === "warning") {
     return `<div class="card warn" data-card="${i}">${head}<span class="small">Not on your price list. ${esc(c.detail)}</span>
       ${c.closest ? `<span class="small">Closest: ${esc(c.closest)}</span>` : ""}
@@ -62,7 +63,9 @@ function checkScreen(h) {
   const rows = h.rows.map((r) => `<div class="row small"><span>${esc(r.line || r.item)}</span><span>${esc((r.measured || "").split(";")[0])}</span></div>`).join("");
   const read = `<details class="card soft"><summary>${h.rows.length} lines read</summary>${rows}</details>`;
   if (h.cards.length) {
-    return `<h2>${h.cards.length} thing${h.cards.length > 1 ? "s" : ""} to check</h2>${photo}${h.cards.map(cardHtml).join("")}${read}
+    const questions = `<div style="display:flex;flex-direction:column;gap:12px">${h.cards.map(cardHtml).join("")}${read}</div>`;
+    return `<h2>${h.cards.length} thing${h.cards.length > 1 ? "s" : ""} to check</h2>
+      ${photo ? `<div class="split"><div>${photo}</div>${questions}</div>` : questions}
       <p id="err" class="error"></p><button class="btn" data-send>Send my answers</button>`;
   }
   if (!h.ready) return `<h2>Check what I read</h2>${stoppedCard(h.blocked)}${read}`;
@@ -99,10 +102,11 @@ function pdfScreen(h) {
     return `<h2>Your PDF</h2>${stoppedCard(h.has_pdf ? "One of the six checks did not pass." : (h.job && h.job.line) || "The PDF was not built.")}
       <div class="card soft">${lines}</div><button class="btn" data-act="retry">Build it again</button>`;
   }
-  return `<h2>Your PDF</h2><a class="btn sec" href="/api/house/${esc(h.house)}/pdf" target="_blank">Open the PDF</a>
+  return `<h2>Your PDF</h2><div class="split"><iframe class="pdf-frame" title="Your PDF" src="/api/house/${esc(h.house)}/pdf"></iframe>
+    <div style="display:flex;flex-direction:column;gap:12px"><a class="btn sec" href="/api/house/${esc(h.house)}/pdf" target="_blank">Open the PDF</a>
     <div class="card ok"><b>All six checks pass</b>${lines}</div>
     <p class="sub">Notes attached: ${h.notes === "no" ? "no" : "yes"}.</p><p id="err" class="error"></p>
-    <button class="btn go" data-act="approve">Approve</button>`;
+    <button class="btn go" data-act="approve">Approve</button></div></div>`;
 }
 
 function doneScreen(h) {

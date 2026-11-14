@@ -25,6 +25,7 @@ async function route() {
     if (hash === "new") return drawNew();
     if (hash.startsWith("h/")) return drawHouse(decodeURIComponent(hash.slice(2)));
     chrome("PO Checker", 0, false);
+    drawSide(null, null);
     app.innerHTML = housesScreen(await api("/api/houses"));
     app.querySelectorAll("[data-go]").forEach((b) => (b.onclick = () => (location.hash = "h/" + b.dataset.go)));
     app.querySelector("[data-new]").onclick = () => (location.hash = "new");
@@ -35,7 +36,9 @@ async function route() {
 
 function drawNew() {
   chrome("New house", 1, true);
+  drawSide(null, null);
   app.innerHTML = newHouseScreen();
+  wireDrops();
   const lockBtn = document.getElementById("lock");
   lockBtn.onclick = async () => {
     const form = new FormData();
@@ -67,6 +70,7 @@ async function lockHouse(id, answers) {
 async function drawHouse(house) {
   const h = await api(`/api/house/${encodeURIComponent(house)}`);
   chrome(h.address, STEP[h.screen], true);
+  drawSide(house, h.screen);
   const draw = { reading: readingScreen, check: checkScreen, difference: differenceScreen, pdf: pdfScreen,
     done: doneScreen, "no-request": doneScreen, stopped: (x) => `<h2>Stopped</h2>${stoppedCard(x.reason)}` }[h.screen];
   app.innerHTML = draw ? draw(h) : `<p class="sub">Nothing to do here.</p>`;
