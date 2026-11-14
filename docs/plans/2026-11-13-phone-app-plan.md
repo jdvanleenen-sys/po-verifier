@@ -1,7 +1,8 @@
 # Build plan: the phone app
 
 From the spec `docs/specs/2026-11-13-phone-app-design.md`. If this plan and the spec disagree, the
-spec's "Done" sentence wins. Status: plan, not started.
+spec's "Done" sentence wins. Status (2026-11-14): steps 0 to 6 and 8 built; ready for testing.
+Steps 7 (iPhone over Wi-Fi) and 9 (proof of done on real houses) are the testing.
 
 ## Done
 On the laptop that holds the folder, someone on an iPhone in the same room takes a house from its
@@ -138,6 +139,10 @@ Rungs are Bas Rosario's ladder (1 prompt, 2 context, 3 memory, 4 loop).
 | 6 | Prompts against rung 1 and rung 4 | No retry budget or hand-back on the grid check; no date for Prepared (rung 2) | Three-try budget, fixed target, STOPPED with the failing lines; today's date in the request prompt | 46 app tests pass |
 | 7 | Prompt blanks | A missed edit sent `{today}` unfilled | `agent.prompt` refuses any blank left | Caught it on the first run |
 | 8 | The app on the real folder, read only | Practice houses listed for the painter | A real folder lists only `real-N` houses | 2 tests |
+| 9 | Browser: New house and the Check cards (stand-in raising questions) | Empty left column with no photo; "PO none" | Split only with a photo; "On no PO" | Address question, cards, blank answer refused, missing grid stopped |
+| 10 | Live, whole house through the routes, real agent | iPhone names photos `image.jpg`; the request knows notes only by "note" in the name, so the build refused | Lock names notes `site-notes[-N]`; a PO photo is wrapped in a PDF, image unchanged | 2 tests; live rerun |
+| 12 | Live rerun, whole house, real agent | Passed: VR-0001, six checks, notes photo attached, PDF read back and its totals match the checks (figures in the private copy). The request build took 9 min 27 s; the screen said 2 to 4 | Waiting text 5 to 10 min; "taking longer" at 15 min | 922 s upload to Approve, about $5.20 of agent time |
+| 11 | Start on the laptop by hand | Setup steps easy to miss | `app/start.ps1`: sets up, checks Claude Code and the folder | Link printed; 403 without key; wrong folder refused |
 
 ## Found in the folder while building (fix on their own branch, not this one)
 - `05 request/review_gate.py`: the Date regex ends `[ \t]*$`, so a review saved with CRLF line
@@ -145,6 +150,10 @@ Rungs are Bas Rosario's ladder (1 prompt, 2 context, 3 memory, 4 loop).
   would not be checked. (2026-11-14)
 - The final grid check does not block on an `ask Sam:` the read writes in prose (under Checks run).
   The app shows each one as a card; a run by hand in chat could pass it unseen. (2026-11-14)
+
+- `05 request/build_request.py` knows a notes file only by a word in its name and attaches a PO only
+  as PDF or HTML. The app renames notes and wraps PO photos at Lock; a house dropped in by hand
+  still meets both. (2026-11-14)
 
 ## Open, not the builder's call
 - How POs reach the painter's iPhone (asking the painter).

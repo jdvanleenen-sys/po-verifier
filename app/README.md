@@ -24,7 +24,7 @@ be on the PATH and signed in. No API key.
 ```
 .venv\Scripts\python app/server.py --folder "<the contractor's folder>"
 ```
-It prints a link such as `http://192.168.1.95:8000/?k=...`. Open it on the phone. The `k` key is
+It prints a link such as `http://192.168.x.x:8000/?k=...`. Open it on the phone. The `k` key is
 new each start; the phone keeps it for 30 days after the first visit, but a restart needs the new
 link. Without the key the app answers nothing. If the phone cannot reach the laptop, allow Python
 through the Windows firewall on private networks.

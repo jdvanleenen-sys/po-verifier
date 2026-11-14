@@ -7,8 +7,9 @@ AGENT_COMMAND = os.environ.get("PO_APP_AGENT", "").split("|") if os.environ.get(
     shutil.which("claude") or "claude", "-p", "--output-format", "json", "--permission-mode", "acceptEdits",
     "--allowedTools", "Bash(python:*)", "Read", "Write", "Edit", "Glob", "Grep"]
 
-# Step 0 measured 3 min 39 s to 3 min 47 s for a read. Past this, the screen offers Keep waiting or Stop.
-READ_WARN_SECONDS = 10 * 60
+# Measured 2026-11-14: a read 2.5 to 4 min, an answer round 2 to 3.5 min, the request build 9.5 min.
+# Past this, the screen offers Keep waiting or Stop.
+READ_WARN_SECONDS = 15 * 60
 # Past this the run is stopped and the house stays at its last good step.
 READ_LIMIT_SECONDS = 30 * 60
 

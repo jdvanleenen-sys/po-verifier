@@ -96,7 +96,7 @@ function differenceScreen(h) {
 }
 
 function pdfScreen(h) {
-  if (h.busy) return waiting("Building your PDF", h.job, "Usually 2 to 4 minutes.");
+  if (h.busy) return waiting("Building your PDF", h.job, "Usually 5 to 10 minutes. You can lock the phone.");
   const lines = h.checks.map((l) => `<div class="check-line${/:\s*fail:/i.test(l) ? " fail" : ""}">${esc(l).replace(/:\s*(pass|fail):/i, ": <b>$1</b>:")}</div>`).join("");
   if (!h.has_pdf || !h.passed) {
     return `<h2>Your PDF</h2>${stoppedCard(h.has_pdf ? "One of the six checks did not pass." : (h.job && h.job.line) || "The PDF was not built.")}
