@@ -44,6 +44,28 @@ def _check_files(files, allowed, what):
             raise Refused(f"{name} is over {config.MAX_FILE_BYTES // (1024 * 1024)} MB.")
 
 
+PHOTO_TYPES = (".jpg", ".jpeg", ".png")
+
+
+def _po_as_document(name, data):
+    """A PO sent as a photo or screenshot, wrapped in a one-page PDF with the image unchanged: the
+    request stage attaches a PO only as a PDF or a saved page. Any other PO is kept as it came."""
+    suffix = Path(name or "").suffix.lower()
+    if suffix not in PHOTO_TYPES:
+        return name, data
+    try:
+        import pymupdf
+    except ImportError:
+        raise Refused(f"{name} is a photo. Send the PO as a PDF or a saved page instead.")
+    with pymupdf.open(stream=data, filetype=suffix.lstrip(".")) as image:
+        rect = image[0].rect
+        pdf = pymupdf.open()
+        pdf.new_page(width=rect.width, height=rect.height).insert_image(rect, stream=data)
+        out = pdf.tobytes()
+        pdf.close()
+    return f"{Path(name).stem} (PO photo).pdf", out
+
+
 def _measured(value):
     value = (value or "").strip().lower()
     if value == NOT_RECORDED:
@@ -84,11 +106,17 @@ def hold(folder, address, measured, covers_others, pos, notes):
     where = folder.root / config.APP_DIR / "held" / held_id
     where.mkdir(parents=True)
     taken, saved = set(), {"pos": [], "notes": []}
-    for kind, files, fallback in (("pos", pos, "po"), ("notes", notes, "site-notes")):
-        for name, data in files:
-            clean = _clean_name(name, fallback, taken)
-            (where / clean).write_bytes(data)
-            saved[kind].append(clean)
+    for name, data in pos:
+        name, data = _po_as_document(name, data)
+        clean = _clean_name(name, "po", taken)
+        (where / clean).write_bytes(data)
+        saved["pos"].append(clean)
+    for name, data in notes:
+        # The request stage knows a notes file only by "note" in its name; a phone calls every photo
+        # image.jpg. Found on a live run, 2026-11-14.
+        clean = _clean_name("site-notes" + Path(name or "").suffix.lower(), "site-notes", taken)
+        (where / clean).write_bytes(data)
+        saved["notes"].append(clean)
     info = {"address": address, "measured": _measured(measured), "covers_others": bool(covers_others), **saved}
     info["questions"] = _questions(where, info)
     (where / "held.json").write_text(json.dumps(info, indent=1), encoding="utf-8", newline="\n")

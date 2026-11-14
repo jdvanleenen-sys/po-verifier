@@ -92,10 +92,24 @@ class Lock(Base):
         self.assertIn("- Date measured: 2026-11-12", info)
         self.assertIn("- Date dropped in: 2026-11-14", info)
 
-    def test_two_photos_with_one_name_both_kept(self):
-        held = self.held(notes=[("image.jpg", b"a"), ("image.jpg", b"b")])
+    def test_notes_are_named_so_the_request_knows_them(self):
+        held = self.held(notes=[("image.jpg", b"a"), ("image.jpg", b"b"), ("scan.pdf", b"%PDF c")])
         intake = self.folder.stage("01 intake", lock.lock(self.folder, held["id"], {}, today=DAY))
-        self.assertEqual(sorted(p.name for p in intake.glob("image*")), ["image-2.jpg", "image.jpg"])
+        self.assertEqual(sorted(p.name for p in intake.glob("site-notes*")),
+                         ["site-notes-2.jpg", "site-notes.jpg", "site-notes.pdf"])
+        self.assertEqual((intake / "site-notes-2.jpg").read_bytes(), b"b")
+
+    def test_po_photo_is_wrapped_in_a_pdf_with_the_image_unchanged(self):
+        import pymupdf
+        page = pymupdf.open()
+        page.new_page(width=200, height=100)
+        png = page[0].get_pixmap().tobytes("png")
+        held = self.held(pos=po_files() + [("IMG_0001.png", png)])
+        intake = self.folder.stage("01 intake", lock.lock(self.folder, held["id"], {}, today=DAY))
+        wrapped = intake / "IMG_0001 (PO photo).pdf"
+        with pymupdf.open(wrapped) as doc:
+            self.assertEqual(len(doc), 1)
+            self.assertEqual(doc.extract_image(doc[0].get_images()[0][0])["image"], png)
 
     def test_not_recorded_leaves_the_line_blank_for_the_read_back(self):
         held = self.held(measured="Not recorded", covers=True)
