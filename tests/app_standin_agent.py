@@ -19,7 +19,9 @@ def main():
     if os.environ.get("STANDIN_PROMPT_OUT"):
         Path(os.environ["STANDIN_PROMPT_OUT"]).write_text(text, encoding="utf-8")
     mode = os.environ.get("STANDIN_MODE", "draft")
-    house = re.search(r"for the house (\S+)\.", text).group(1)
+    house = re.search(r"\bhouse ([a-z0-9-]+)", text).group(1)
+    nxt = re.search(r"next numbered read-back, `02 read/[^/`]+/(read-back-\d+)\.md`", text)
+    name = nxt.group(1) if nxt else "read-back-1"
     if mode == "slow":
         time.sleep(60)
     if mode == "garbage":
@@ -30,9 +32,9 @@ def main():
         return
     out = Path("02 read") / house
     out.mkdir(parents=True, exist_ok=True)
-    (out / "read-back-1.md").write_text(f"---\nhouse: {house}\nattempt: 1\nstage: 02 read\n"
-                                        f"from: 01 intake/{house}/\nstatus: draft\n---\n", encoding="utf-8")
-    print(json.dumps({"result": f"working\nDONE {house} read-back-1, 0 questions for Sam",
+    (out / f"{name}.md").write_text(f"---\nhouse: {house}\nattempt: {name[10:]}\nstage: 02 read\n"
+                                    f"from: 01 intake/{house}/\nstatus: draft\n---\n", encoding="utf-8")
+    print(json.dumps({"result": f"working\nDONE {house} {name}, 0 questions for Sam",
                       "is_error": False, "total_cost_usd": 0}))
 
 
