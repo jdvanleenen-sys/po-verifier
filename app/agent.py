@@ -1,6 +1,7 @@
 """The headless agent: one task, run in the folder, with a time limit. This is the only place the
 runner talks to a model, so approach B (the Claude API) would replace this file and nothing else."""
 import json
+import re
 import subprocess
 import time
 from pathlib import Path
@@ -14,6 +15,9 @@ def prompt(name, **fields):
     text = (PROMPTS / f"{name}.md").read_text(encoding="utf-8")
     for key, value in fields.items():
         text = text.replace("{" + key + "}", value)
+    left = sorted(set(re.findall(r"\{([a-z_]+)\}", text)))
+    if left:
+        raise ValueError(f"The {name} prompt still has blanks: {', '.join(left)}.")
     return text
 
 

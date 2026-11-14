@@ -137,7 +137,8 @@ def start_request(folder, jobs, house):
     notes = request_pdf.notes_answer(folder, house)
     if notes is None:
         raise Stopped("Say whether your site notes go with the request first.")
-    return jobs.start(house, "request", agent.prompt("request", house=house, notes=notes))
+    today = date.today().strftime("%B %d, %Y").replace(" 0", " ")
+    return jobs.start(house, "request", agent.prompt("request", house=house, notes=notes, today=today))
 
 
 def approve(folder, jobs, house, today=None):

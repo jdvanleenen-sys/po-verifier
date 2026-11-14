@@ -5,6 +5,8 @@ Task: house {house} is in stage 02 read. Sam answered the open questions in `02 
 Sam's answers, in his words, given {today}:
 {answers}
 
+If `grid.py check` refuses, fix only what it names and run it again: at most three runs, each judged against the full check. If it still refuses after the third, stop and end with `STOPPED:` and the lines it still refuses.
+
 Run every command from this folder's top level; never start a command with cd. Do not seal anything, do not write a yes for Sam, and do not start 03 compare or any later stage. If an answer raises a new question, put it in the read-back and grid the way the stage says; do not ask in chat and do not guess. Never change anything in `01 intake`. Never read or write the `_app` folder.
 
 End with one line only: `DONE {house} {next_read_back_stem}, N questions for Sam` or `STOPPED: <the reason>`.

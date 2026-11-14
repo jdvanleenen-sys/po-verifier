@@ -89,6 +89,15 @@ class HouseState(unittest.TestCase):
         (empty / "01 intake").mkdir()
         self.assertEqual(houses.all_houses(Folder(empty)), [])
 
+    def test_real_contractor_sees_only_his_houses(self):
+        setup = self.folder.root / "reference" / "contractor.md"
+        setup.write_text(setup.read_text(encoding="utf-8").replace("practice stand-in", "standing answer"), encoding="utf-8")
+        (self.folder.stage("01 intake") / "real-1").mkdir()
+        self.assertEqual(self.folder.houses(), ["real-1"])
+
+    def test_practice_folder_lists_its_practice_houses(self):
+        self.assertIn(HOUSE, self.folder.houses())
+
     def test_folder_that_is_not_set_up_is_refused(self):
         with self.assertRaises(SystemExit):
             Folder(self.tmp)

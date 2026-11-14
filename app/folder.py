@@ -24,9 +24,19 @@ class Folder:
             sys.path.insert(0, where)
         return importlib.import_module(module)
 
+    def practice(self):
+        """True for the practice folder (its contractor.md says "practice stand-ins")."""
+        # The same test as "practice" in 02 read/contractor.py read(); read here directly so the
+        # house list never depends on importing a stage script.
+        text = (self.root / "reference" / "contractor.md").read_text(encoding="utf-8-sig")
+        return "practice stand-in" in text.lower()
+
     def houses(self):
+        """Every house folder in intake. In a real contractor's folder, only his houses (real-N):
+        the practice houses that ship with the folder are not his and never show on his phone."""
         intake = self.stage("01 intake")
-        return sorted(p.name for p in intake.iterdir() if p.is_dir() and not p.name.startswith((".", "_")))
+        found = sorted(p.name for p in intake.iterdir() if p.is_dir() and not p.name.startswith((".", "_")))
+        return found if self.practice() else [h for h in found if h.startswith("real-")]
 
 
 def highest(folder, stem, suffix=".md"):

@@ -124,6 +124,21 @@ to stop: read a house, write the next read-back from these answers, fill the req
 give no rules of their own; the stage `CONTEXT.md` files are the rules. Each is tested in step 0
 or the step that first uses it.
 
+## Improvement log
+Each round: one test that tries to break something, what it found, the one change, the proof.
+Rungs are Bas Rosario's ladder (1 prompt, 2 context, 3 memory, 4 loop).
+
+| # | Test | Found | Change | Proof |
+|---|---|---|---|---|
+| 1 | Headless read, prompt v1, twice | Stopped on the date and the address: answers Sam must give before the read (rung 2) | Lock asks both; answers go in the prompt | Runs 3 and 4 reach a checked draft |
+| 2 | Live read through the app | A prose `ask Sam:` the final check does not block | Every prose ask is a card; Lock refuses a PO already in another house | 3 questions, 3 cards |
+| 3 | Full suite after step 3 | `app/records.py` hid `05 request/records.py`: 33 errors, pushed | Renamed; a test refuses any clash | 470 pass |
+| 4 | Review dated 2099 | Sealed: CRLF hid the date from `review_gate.py` | App writes LF everywhere; folder bug logged | Refused, file taken back out |
+| 5 | Browser, Difference to Done | Steps bar on the list, "compare" label, "PO none" | CSS `[hidden]`, labels | Clicked through to VR-0001 |
+| 6 | Prompts against rung 1 and rung 4 | No retry budget or hand-back on the grid check; no date for Prepared (rung 2) | Three-try budget, fixed target, STOPPED with the failing lines; today's date in the request prompt | 46 app tests pass |
+| 7 | Prompt blanks | A missed edit sent `{today}` unfilled | `agent.prompt` refuses any blank left | Caught it on the first run |
+| 8 | The app on the real folder, read only | Practice houses listed for the painter | A real folder lists only `real-N` houses | 2 tests |
+
 ## Found in the folder while building (fix on their own branch, not this one)
 - `05 request/review_gate.py`: the Date regex ends `[ \t]*$`, so a review saved with CRLF line
   endings skips the "not after today" check. The app writes LF; a review typed by hand on Windows
