@@ -1,6 +1,8 @@
 """The open questions in a draft read-back, as cards for the Check screen, and Sam's card answers
 as plain lines for the agent's next read-back. Code reads only the tables the stage fixes (the
 warning table, Pick one, the Rows table and the rule grid); it never reads the AI's prose for them."""
+import hashlib
+
 from folder import highest
 
 ASK = "ask sam:"
@@ -64,6 +66,21 @@ def _asks(gr, grid_text, rows, picked):
     return cards
 
 
+def _prose_asks(text):
+    """An "ask Sam:" the read wrote outside a table (under Checks run, say). The folder's final check
+    does not block on these, so the app shows each one rather than let it pass unseen."""
+    cards = []
+    for line in text.splitlines():
+        plain = line.strip()
+        if plain.startswith("|") or ASK not in plain.lower():
+            continue
+        at = plain.lower().index(ASK)
+        topic = plain[:at].strip(" -:*`") or "A question from the read"
+        cards.append({"id": "prose:" + hashlib.sha256(plain.encode("utf-8")).hexdigest()[:12], "kind": "other",
+                      "row": None, "title": topic, "why": plain[at + len(ASK):].strip(), "po": ""})
+    return cards
+
+
 def cards(folder, house):
     """Every open question in the house's highest read-back, or [] when none is open."""
     where = folder.stage("02 read", house)
@@ -77,7 +94,7 @@ def cards(folder, house):
     rows = _rows(gr, text)
     picks = _picks(gr, text, rows)
     asks = _asks(gr, grid_text, rows, {p["row"] for p in picks})
-    return _warnings(gr, text) + picks + asks
+    return _warnings(gr, text) + picks + asks + _prose_asks(text)
 
 
 def answer_lines(open_cards, answers):
@@ -108,4 +125,6 @@ def _line(card, value):
         return f"- Row {card['row']}: Sam: \"Right, that is what I measured.\""
     if not words:
         raise ValueError(f"{card['title']}: give your answer.")
+    if card["row"] is None:
+        return f"- {card['title']} (the read asked: {card['why']}): Sam: \"{words}\""
     return f"- Row {card['row']} ({card['why']}): Sam: \"{words}\""

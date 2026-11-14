@@ -39,6 +39,8 @@ class Base(unittest.TestCase):
         self.tmp = Path(tempfile.mkdtemp())
         shutil.copytree(ROOT, self.tmp / "f", ignore=LEAVE_OUT)
         self.folder = Folder(self.tmp / "f")
+        # The sample POs are uploaded as a new house, so the copy must not already hold them.
+        shutil.rmtree(self.folder.stage("01 intake", "77-mockup-drive"))
         patcher = mock.patch.object(config, "AGENT_COMMAND", STANDIN)
         patcher.start()
         self.addCleanup(patcher.stop)
@@ -119,6 +121,12 @@ class Lock(Base):
         for held_id in ("0" * 16, "../../etc", ""):
             with self.subTest(held_id=held_id), self.assertRaises(lock.Refused):
                 lock.lock(self.folder, held_id, {}, today=DAY)
+
+    def test_po_already_in_another_house_is_refused(self):
+        house = lock.lock(self.folder, self.held()["id"], {}, today=DAY)
+        with self.assertRaises(lock.Refused) as caught:
+            self.held(address="77 Mockup Drive")
+        self.assertIn(f"already in {house} (77 Mockup Drive)", str(caught.exception))
 
     def test_next_house_number_skips_used_ones(self):
         self.folder.stage("02 read", "real-1").mkdir(parents=True)

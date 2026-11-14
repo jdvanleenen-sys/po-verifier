@@ -3,6 +3,7 @@
 Two steps, so nothing reaches 01 intake until Sam has answered: hold() keeps the files in the
 runner's own folder and lists the questions; lock() writes intake once, with house-info.md built from
 his answers by code. After lock() nothing writes to that intake folder again."""
+import hashlib
 import json
 import re
 import secrets
@@ -53,6 +54,24 @@ def _measured(value):
         raise Refused("Give the date measured, or say it was not recorded.")
 
 
+def _house_address(folder, house):
+    info = folder.stage("01 intake", house) / "house-info.md"
+    found = re.search(r"^-\s*Address:[ \t]*(\S.*)$", info.read_text(encoding="utf-8"), re.M) if info.is_file() else None
+    return f" ({found.group(1).strip()})" if found else ""
+
+
+def _already_in(folder, pos):
+    """Refuse a PO that is already, byte for byte, in another house's intake: the same house locked
+    twice would ask the builder for the same money twice."""
+    wanted = {hashlib.sha256(data).hexdigest(): name for name, data in pos}
+    for house in folder.houses():
+        for path in folder.stage("01 intake", house).iterdir():
+            if path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() in wanted:
+                name = wanted[hashlib.sha256(path.read_bytes()).hexdigest()]
+                raise Refused(f"{name} is already in {house}{_house_address(folder, house)}. Open that house "
+                              "instead.")
+
+
 def hold(folder, address, measured, covers_others, pos, notes):
     """Keep the uploads aside and return {"id", "questions"}. Raises Refused in plain words."""
     address = " ".join((address or "").split())
@@ -60,6 +79,7 @@ def hold(folder, address, measured, covers_others, pos, notes):
         raise Refused("Type the house address.")
     _check_files(pos, config.PO_TYPES, "PO")
     _check_files(notes, config.NOTES_TYPES, "notes photo or file")
+    _already_in(folder, pos)
     held_id = secrets.token_hex(8)
     where = folder.root / config.APP_DIR / "held" / held_id
     where.mkdir(parents=True)

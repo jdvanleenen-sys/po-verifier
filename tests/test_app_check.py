@@ -83,6 +83,14 @@ class Check(unittest.TestCase):
         kinds = sorted(c["kind"] for c in steps.check_screen(self.folder, HOUSE)["cards"])
         self.assertEqual(kinds, ["number", "pick", "warning"])
 
+    def test_question_written_outside_a_table_is_a_card(self):
+        self.plant("- Same POs in another house folder: ask Sam: is this the same house dropped in again?")
+        found = questions.cards(self.folder, HOUSE)
+        self.assertEqual([(c["kind"], c["title"]) for c in found], [("other", "Same POs in another house folder")])
+        line = questions.answer_lines(found, {found[0]["id"]: {"words": "No, a different house"}})[0]
+        self.assertIn('Sam: "No, a different house"', line)
+        self.assertFalse(steps.check_screen(self.folder, HOUSE)["ready"])
+
     def test_answered_warning_is_no_card(self):
         self.plant(WARNING.replace("| Stairwell | |", "| Stairwell | leave unpriced: Sam |"))
         self.assertEqual(questions.cards(self.folder, HOUSE), [])
