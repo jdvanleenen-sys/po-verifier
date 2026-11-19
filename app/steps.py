@@ -106,13 +106,13 @@ def run_compare(folder, house):
     return output
 
 
-def review_yes(folder, house, picks, today=None):
+def review_yes(folder, house, picks, today=None, none_reason=""):
     """Sam tapped Build the PDF: write his picks into review-N.md and seal it with his yes. A review
     the folder refuses is taken back out, so the next try uses the same number."""
     if houses.stand(folder, house)["screen"] != houses.DIFFERENCE:
         raise Stopped(f"{house} is not on the Difference screen.")
     try:
-        text = difference.review_text(folder, house, picks)
+        text = difference.review_text(folder, house, picks, none_reason)
     except ValueError as err:
         raise Stopped(str(err))
     attempt = text.split("attempt: ", 1)[1].split("\n", 1)[0]

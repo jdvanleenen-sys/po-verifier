@@ -50,6 +50,7 @@ class Difference(unittest.TestCase):
         self.assertEqual(sorted(rows), ["3", "5", "7"])
         self.assertEqual((rows["3"]["default"], rows["5"]["default"]), ("on", "off"))
         self.assertTrue(rows["7"]["no_po"] and rows["7"]["epo_asks"])
+        self.assertIsNone(rows["7"]["default"])  # flagged, on no PO, no standing answer: his call
 
     def test_picks_are_written_and_sealed(self):
         steps.review_yes(self.folder, HOUSE, OWN_GROUP, today=DAY)
@@ -62,6 +63,9 @@ class Difference(unittest.TestCase):
     def test_no_po_row_needs_its_epo_answered(self):
         with self.assertRaises(steps.Stopped) as caught:
             steps.review_yes(self.folder, HOUSE, {}, today=DAY)
+        self.assertIn("needs your call", str(caught.exception))
+        with self.assertRaises(steps.Stopped) as caught:
+            steps.review_yes(self.folder, HOUSE, {"7": {"on": True}}, today=DAY)
         self.assertIn("on no PO", str(caught.exception))
         self.assertFalse((self.folder.stage("04 review", HOUSE) / "review-1.md").exists())
 
@@ -73,9 +77,15 @@ class Difference(unittest.TestCase):
         self.assertIn("off (Sam: doors were ours)", self.review())
 
     def test_all_off_is_nothing_to_ask_for(self):
-        picks = {"3": {"on": False, "reason": "leave it"}, "7": {"on": False, "reason": "leave it"}}
-        steps.review_yes(self.folder, HOUSE, picks, today=DAY)
+        picks = {"3": {"on": False, "reason": "doors were ours"}, "7": {"on": False}}
+        with self.assertRaises(steps.Stopped):
+            steps.review_yes(self.folder, HOUSE, picks, today=DAY)
+        steps.review_yes(self.folder, HOUSE, picks, today=DAY, none_reason="builder already paid this house")
         self.assertEqual(self.screen(), houses.NO_REQUEST)
+        text = self.review()
+        self.assertIn("| 3 | MKR-02402401/027 | 8' doors and trim | +$300.00 | flag | off (Sam: doors were ours) |", text)
+        self.assertIn("ignore | off (Sam: builder already paid this house) |", text)
+        self.assertNotIn("did not choose", text)
 
     def test_refused_review_is_taken_back_out(self):
         with self.assertRaises(steps.Stopped) as caught:

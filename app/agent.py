@@ -47,6 +47,6 @@ def run(folder, text, limit, keep):
     except subprocess.TimeoutExpired:
         proc.kill()
         proc.communicate()
-        return {"ok": False, "line": f"Stopped: the read ran past {limit // 60} minutes.",
+        return {"ok": False, "line": f"Stopped: the job ran past {limit // 60} minutes.",
                 "seconds": round(time.monotonic() - started), "cost": None}
     return _outcome(proc.returncode, out, err, round(time.monotonic() - started))

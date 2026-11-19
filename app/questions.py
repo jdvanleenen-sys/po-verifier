@@ -1,6 +1,7 @@
 """The open questions in a draft read-back, as cards for the Check screen, and Sam's card answers
 as plain lines for the agent's next read-back. Code reads only the tables the stage fixes (the
-warning table, Pick one, the Rows table and the rule grid); it never reads the AI's prose for them."""
+warning table, Pick one, the Rows table and the rule grid), plus one safety net: any line outside a
+table that holds "ask Sam:" becomes a card, because the folder's final check does not block on it."""
 import hashlib
 
 from folder import highest

@@ -102,6 +102,12 @@ def hold(folder, address, measured, covers_others, pos, notes):
     _check_files(pos, config.PO_TYPES, "PO")
     _check_files(notes, config.NOTES_TYPES, "notes photo or file")
     _already_in(folder, pos)
+    seen = {}
+    for name, data in pos:
+        digest = hashlib.sha256(data).hexdigest()
+        if digest in seen:
+            raise Refused(f"{name} and {seen[digest]} are the same file. Add each PO once.")
+        seen[digest] = name
     held_id = secrets.token_hex(8)
     where = folder.root / config.APP_DIR / "held" / held_id
     where.mkdir(parents=True)

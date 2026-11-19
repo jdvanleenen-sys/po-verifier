@@ -87,6 +87,23 @@ class Request(unittest.TestCase):
             steps.approve(self.folder, self.jobs, HOUSE, today=KEY_DAY)
         self.assertIsNone(request_pdf.numbered(self.folder, HOUSE))
 
+    def test_a_check_that_is_not_pass_stops_before_approve(self):
+        self.build()
+        checks = self.folder.stage("05 request", "drafts") / HOUSE / "script-checks.md"
+        text = checks.read_text(encoding="utf-8")
+        checks.write_text(text.replace("5. Every proof document attached: pass:", "5. Every proof document attached: cannot check:"),
+                          encoding="utf-8")
+        self.assertFalse(request_pdf.draft(self.folder, HOUSE)["passed"])
+
+    def test_draft_from_before_the_current_review_is_never_shown(self):
+        draft = self.folder.stage("05 request", "drafts") / HOUSE
+        old = __import__("time").time() - 3600
+        for name in ("vpo-request.pdf", "script-checks.md"):
+            if (draft / name).exists():
+                __import__("os").utime(draft / name, (old, old))
+        shown = request_pdf.draft(self.folder, HOUSE)
+        self.assertEqual((shown["pdf"], shown["passed"]), (None, False))
+
     def test_request_needs_the_notes_answer_first(self):
         with self.assertRaises(steps.Stopped):
             steps.start_request(self.folder, self.jobs, HOUSE)

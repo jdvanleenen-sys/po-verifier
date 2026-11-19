@@ -71,8 +71,9 @@ def detail(folder, jobs, house):
 
 def _review(folder, jobs, house, body):
     picks = {str(k): v for k, v in (body.get("picks") or {}).items()}
-    request_pdf.save_notes(folder, house, body.get("notes"))
-    steps.review_yes(folder, house, picks)
+    if body.get("notes"):
+        request_pdf.save_notes(folder, house, body.get("notes"))
+    steps.review_yes(folder, house, picks, none_reason=body.get("none_reason") or "")
     if houses.stand(folder, house)["screen"] == houses.PDF:
         steps.start_request(folder, jobs, house)
 

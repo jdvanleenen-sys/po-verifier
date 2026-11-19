@@ -136,6 +136,12 @@ class Lock(Base):
             with self.subTest(held_id=held_id), self.assertRaises(lock.Refused):
                 lock.lock(self.folder, held_id, {}, today=DAY)
 
+    def test_same_po_twice_in_one_upload_is_refused(self):
+        twice = po_files()[:1] * 2
+        with self.assertRaises(lock.Refused) as caught:
+            self.held(pos=[twice[0], ("copy.html", twice[1][1])])
+        self.assertIn("are the same file", str(caught.exception))
+
     def test_po_already_in_another_house_is_refused(self):
         house = lock.lock(self.folder, self.held()["id"], {}, today=DAY)
         with self.assertRaises(lock.Refused) as caught:

@@ -30,7 +30,23 @@ function readingScreen(h) {
   if (h.busy) return waiting("Reading your files", h.job, "Usually 3 to 4 minutes. You can lock the phone.");
   const job = h.job || {};
   const why = job.status === "interrupted" ? "The laptop restarted while reading." : job.line || "The read did not finish.";
-  return `<h2>The read stopped</h2>${stoppedCard(why)}<button class="btn" data-act="retry">Read again</button>`;
+  return `<h2>The read stopped</h2>${stoppedCard(why)}<button class="btn" data-act="retry">Read again</button>
+    <p class="sub">If a PO could not be read, its file is locked as it came. Start the house again with a clearer copy or a PDF:</p>
+    <button class="btn sec" data-go-new>Start a new house with clearer files</button>${HOME}`;
+}
+
+const HOME = `<button class="btn sec" data-go-home>Back to houses</button>`;
+
+function stoppedScreen(h) {
+  return `<h2>Stopped</h2>${stoppedCard(h.reason)}${HOME}`;
+}
+
+function jobNotice(h) {
+  const job = h.job || {};
+  if (job.kind !== "answers" || !["failed", "stopped", "interrupted"].includes(job.status)) return "";
+  const why = job.status === "interrupted" ? "The laptop restarted while your answers were being read." : job.line;
+  return `<div class="card bad"><b>Your last answers did not go through</b><div>${esc(why)}</div>
+    <div class="small">Answer the cards below again and send them.</div></div>`;
 }
 
 function cardHtml(c, i) {
@@ -59,12 +75,13 @@ function cardHtml(c, i) {
 
 function checkScreen(h) {
   if (h.busy) return waiting("Updating what I read", h.job, "Usually 3 to 4 minutes.");
-  const photo = h.photos ? `<a href="/api/house/${esc(h.house)}/notes/0" target="_blank"><img class="photo" src="/api/house/${esc(h.house)}/notes/0" alt="Your notes"></a>` : "";
+  const photo = Array.from({ length: h.photos || 0 }, (_, n) =>
+    `<a href="/api/house/${esc(h.house)}/notes/${n}" target="_blank"><img class="photo" src="/api/house/${esc(h.house)}/notes/${n}" alt="Your notes, page ${n + 1}"></a>`).join("");
   const rows = h.rows.map((r) => `<div class="row small"><span>${esc(r.line || r.item)}</span><span>${esc((r.measured || "").split(";")[0])}</span></div>`).join("");
   const read = `<details class="card soft"><summary>${h.rows.length} lines read</summary>${rows}</details>`;
   if (h.cards.length) {
     const questions = `<div style="display:flex;flex-direction:column;gap:12px">${h.cards.map(cardHtml).join("")}${read}</div>`;
-    return `<h2>${h.cards.length} thing${h.cards.length > 1 ? "s" : ""} to check</h2>
+    return `<h2>${h.cards.length} thing${h.cards.length > 1 ? "s" : ""} to check</h2>${jobNotice(h)}
       ${photo ? `<div class="split"><div>${photo}</div>${questions}</div>` : questions}
       <p id="err" class="error"></p><button class="btn" data-send>Send my answers</button>`;
   }
@@ -91,16 +108,21 @@ function differenceScreen(h) {
        <div class="chips"><button class="chip" data-notes="yes-other-house">Yes, send it</button><button class="chip" data-notes="no">No</button></div></div>`
     : `<div class="card"><b>Attach your site notes as proof?</b><div class="chips"><button class="chip" data-notes="yes">Yes</button><button class="chip" data-notes="no">No</button></div></div>`;
   return `<h2>${h.rows.length} line${h.rows.length === 1 ? "" : "s"} differ</h2><p class="sub">From your price list. You pick what goes on the PDF.</p>
-    ${h.rows.map(diffRow).join("")}<div class="card"><div class="row"><span>On the PDF, before tax (preview)</span><span class="money" id="total"></span></div></div>
-    ${notes}<p id="err" class="error"></p><button class="btn" data-review>Build the PDF</button>`;
+    ${h.rows.map(diffRow).join("")}<div class="card"><div class="row"><span>On the PDF, before tax (preview)</span><span class="money" id="total"></span></div>
+      <input type="text" data-none-reason placeholder="Nothing goes on: why, in a few words" hidden></div>
+    ${notes}<p id="err" class="error"></p><p id="gap" class="sub"></p><button class="btn" data-review>Build the PDF</button>`;
 }
 
 function pdfScreen(h) {
   if (h.busy) return waiting("Building your PDF", h.job, "Usually 5 to 10 minutes. You can lock the phone.");
   const lines = h.checks.map((l) => `<div class="check-line${/:\s*fail:/i.test(l) ? " fail" : ""}">${esc(l).replace(/:\s*(pass|fail):/i, ": <b>$1</b>:")}</div>`).join("");
   if (!h.has_pdf || !h.passed) {
-    return `<h2>Your PDF</h2>${stoppedCard(h.has_pdf ? "One of the six checks did not pass." : (h.job && h.job.line) || "The PDF was not built.")}
-      <div class="card soft">${lines}</div><button class="btn" data-act="retry">Build it again</button>`;
+    const job = h.job || {};
+    const jobStopped = job.kind === "request" && ["failed", "stopped", "interrupted"].includes(job.status);
+    const why = jobStopped ? (job.status === "interrupted" ? "The laptop restarted while the PDF was being built." : job.line)
+      : h.has_pdf ? "One of the six checks did not pass." : "The PDF was not built.";
+    return `<h2>Your PDF</h2>${stoppedCard(why)}
+      ${lines ? `<div class="card soft">${lines}</div>` : ""}<button class="btn" data-act="retry">Build it again</button>${HOME}`;
   }
   return `<h2>Your PDF</h2><div class="split"><iframe class="pdf-frame" title="Your PDF" src="/api/house/${esc(h.house)}/pdf"></iframe>
     <div style="display:flex;flex-direction:column;gap:12px"><a class="btn sec" href="/api/house/${esc(h.house)}/pdf" target="_blank">Open the PDF</a>

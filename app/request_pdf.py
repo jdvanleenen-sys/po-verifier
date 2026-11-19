@@ -8,7 +8,7 @@ from folder import highest
 
 NOTES = ("yes", "no", "yes-other-house")
 NUMBERED = re.compile(r"vpo-request-(\d+)\.pdf")
-FAIL = re.compile(r":\s*fail:", re.I)
+PASS = re.compile(r":\s*pass:", re.I)
 CHECK = re.compile(r"^\s*-?\s*([1-6])[a-z]?\.\s")
 
 
@@ -47,11 +47,15 @@ def draft(folder, house):
     all six read pass. Read from the script's own script-checks.md, never from the agent's word."""
     where = folder.stage("05 request", "drafts") / house
     pdf, checks = where / "vpo-request.pdf", where / "script-checks.md"
-    if not pdf.is_file() or not checks.is_file():
+    review = highest(folder.stage("04 review", house), "review")
+    stale = review is not None and checks.is_file() and checks.stat().st_mtime < review.stat().st_mtime
+    if not pdf.is_file() or not checks.is_file() or stale:
+        # A draft built before the current review is from an earlier attempt: never shown or approved.
         return {"pdf": None, "checks": [], "passed": False}
     lines = [l.strip().lstrip("- ") for l in checks.read_text(encoding="utf-8").splitlines() if CHECK.match(l)]
     numbers = {CHECK.match(l).group(1) for l in checks.read_text(encoding="utf-8").splitlines() if CHECK.match(l)}
-    passed = numbers == set("123456") and not any(FAIL.search(l) for l in lines)
+    # Every line must say pass. A "cannot check" or any other word stops before Approve.
+    passed = numbers == set("123456") and all(PASS.search(l) for l in lines)
     return {"pdf": pdf, "checks": lines, "passed": passed}
 
 

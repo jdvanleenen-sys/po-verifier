@@ -72,7 +72,7 @@ async function drawHouse(house) {
   chrome(h.address, STEP[h.screen], true);
   drawSide(house, h.screen);
   const draw = { reading: readingScreen, check: checkScreen, difference: differenceScreen, pdf: pdfScreen,
-    done: doneScreen, "no-request": doneScreen, stopped: (x) => `<h2>Stopped</h2>${stoppedCard(x.reason)}` }[h.screen];
+    done: doneScreen, "no-request": doneScreen, stopped: stoppedScreen }[h.screen];
   app.innerHTML = draw ? draw(h) : `<p class="sub">Nothing to do here.</p>`;
   wire(h);
   if (h.busy) timer = setTimeout(route, 3000);
@@ -93,6 +93,8 @@ function wire(h) {
   }));
   if (h.screen === "check" && h.cards) wireCards(h);
   if (h.screen === "difference") wireDifference(h);
+  app.querySelectorAll("[data-go-home]").forEach((b) => (b.onclick = () => (location.hash = "")));
+  app.querySelectorAll("[data-go-new]").forEach((b) => (b.onclick = () => (location.hash = "new")));
   const share = app.querySelector("[data-share]");
   if (share) share.onclick = () => sharePdf(h);
 }

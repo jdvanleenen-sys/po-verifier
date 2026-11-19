@@ -32,7 +32,9 @@ app, and the money matches a run of the folder by hand to the cent.
 | The laptop's firewall lets the phone reach the server | Step 7 | One firewall rule, with the owner |
 
 ## Parts, in `app/`
-Each file under 300 lines, each function under 50. Standard library apart from Flask. No build step.
+Each file under 300 lines, each function under 50. Standard library apart from Flask, plus PyMuPDF
+(which the folder's request stage already needs). No build step. The table below is the first plan;
+the parts as built, with their jobs, are in `app/README.md`, which is the one current list.
 
 | File | Job |
 |---|---|
@@ -41,7 +43,7 @@ Each file under 300 lines, each function under 50. Standard library apart from F
 | `steps.py` | Run each step in order: lock, read, answer round, compare, review, request, commit |
 | `agent.py` | Start the headless agent for one task and wait for it, with a time limit. The one place approach B would plug in |
 | `questions.py` | Turn the grid's `ask Sam` cells and the warning table into cards |
-| `records.py` | Write his yes and his review picks in the folder's own formats, then call `seal.py` |
+| `records.py` (built as `sam_yes.py`, see improvement 3) | Write his yes and his review picks in the folder's own formats, then call `seal.py` |
 | `jobs.py` | One job per house at a time; a second tap while one runs does nothing |
 | `static/index.html`, `app.js`, `app.css` | The seven screens. Polls status every few seconds while a step runs |
 | `README.md` | How to start it, point it at a folder, and open it on the phone |
@@ -113,6 +115,8 @@ loading and error states on every step. Checked by driving them in a desktop bro
 file kind, run 77 Mockup Drive through, test save and share. Write down every hesitation.
 
 **Step 8. Desktop layout (Nov 19, only if step 7 passed).** Same page, wider layout, drag and drop.
+*Built 2026-11-14 ahead of step 7, on Jeff's "keep going ... finish everything"; it changes only
+the layout at 900px and wider, so the phone test is unaffected.*
 If step 7 left fixes open, this waits until after Nov 20.
 
 **Step 9. Proof of done (Nov 18-20).** The spec's four proofs: the test suite; one real house
@@ -122,8 +126,10 @@ second real house; the third house kept for the painter. The held-out house stay
 ## The prompts the agent gets
 Three short task prompts, kept in `app/prompts/`, each naming the stage file to follow and where
 to stop: read a house, write the next read-back from these answers, fill the request layout. They
-give no rules of their own; the stage `CONTEXT.md` files are the rules. Each is tested in step 0
-or the step that first uses it.
+give no rules about the work; the stage `CONTEXT.md` files are those rules. Each carries only the
+task, Sam's answers, today's date, where to stop, a three-try budget on the stage's own check, and
+the one-line ending the app reads (improvement 6). Each is tested in step 0 or the step that first
+uses it.
 
 ## Improvement log
 Each round: one test that tries to break something, what it found, the one change, the proof.
@@ -142,6 +148,7 @@ Rungs are Bas Rosario's ladder (1 prompt, 2 context, 3 memory, 4 loop).
 | 9 | Browser: New house and the Check cards (stand-in raising questions) | Empty left column with no photo; "PO none" | Split only with a photo; "On no PO" | Address question, cards, blank answer refused, missing grid stopped |
 | 10 | Live, whole house through the routes, real agent | iPhone names photos `image.jpg`; the request knows notes only by "note" in the name, so the build refused | Lock names notes `site-notes[-N]`; a PO photo is wrapped in a PDF, image unchanged | 2 tests; live rerun |
 | 12 | Live rerun, whole house, real agent | Passed: VR-0001, six checks, notes photo attached, PDF read back and its totals match the checks (figures in the private copy). The request build took 9 min 27 s; the screen said 2 to 4 | Waiting text 5 to 10 min; "taking longer" at 15 min | 922 s upload to Approve, about $5.20 of agent time |
+| 13 | Ship check (cold reader, 2026-11-18) | HOLD: 24 quote-verified findings. Dead ends (Stopped screen, a stopped read), a failed answer round shown silently, Build the PDF never off, an untouched no-PO row written off, "nothing to ask for" without his words, a "cannot check" line passing as pass, and spec lines left from before the build | Way-out buttons, a failed-answers notice, Build off until answered, his call on a flagged no-PO row, his words when nothing is on, only "pass" passes, same file twice refused at Lock, spec and plan brought in line | Re-frozen and re-checked |
 | 11 | Start on the laptop by hand | Setup steps easy to miss | `app/start.ps1`: sets up, checks Claude Code and the folder | Link printed; 403 without key; wrong folder refused |
 
 ## Found in the folder while building (fix on their own branch, not this one)
