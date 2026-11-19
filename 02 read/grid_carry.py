@@ -1,4 +1,6 @@
-"""Carrying answers into a rebuilt grid, so `grid.py build <house> --replace` never loses one.
+"""Carrying answers into a rebuilt grid, so `grid.py build <house> --replace` never loses one, and
+into the next read-back's grid, so an answer round never makes every unchanged row be answered again
+(an outside tester's run, 2026-11-19: grid-2 came out with all 26 AI cells blank).
 
 Each grid records a short fingerprint of every row and PO it was built from (grid_read.row_prints).
 When a draft read-back's grid is rebuilt, an answered cell is carried into the new grid only when
@@ -36,13 +38,17 @@ def ai_cells(grid_text):
     return found
 
 
-def answered(grid_text):
-    return {k: c for k, c in ai_cells(grid_text).items() if c not in ("", rules.ASK)}
+def answered(grid_text, keep_asks=True):
+    """Every answered AI cell. keep_asks=False leaves out "ask Sam" answers: once Sam has answered,
+    the next read-back's grid asks those cells again with his answer in hand."""
+    return {k: c for k, c in ai_cells(grid_text).items() if c not in ("", rules.ASK)
+            and (keep_asks or not c.lower().startswith("ask sam"))}
 
 
-def carry(old_grid, new_grid):
-    """(new grid text with the carried answers in, how many were carried, [each answer not carried])."""
-    old, before, now = answered(old_grid), prints_of(old_grid), prints_of(new_grid)
+def carry(old_grid, new_grid, keep_asks=True):
+    """(new grid text with the carried answers in, how many were carried, [each answer not carried]).
+    old_grid is the grid being replaced (--replace) or the previous read-back's grid (keep_asks=False)."""
+    old, before, now = answered(old_grid, keep_asks), prints_of(old_grid), prints_of(new_grid)
     lines, header, noun, carried = [], [], None, set()
     for line in new_grid.splitlines():
         if line.startswith("#"):
@@ -67,9 +73,9 @@ def carry(old_grid, new_grid):
     return rebuilt, len(carried), lost
 
 
-def message(name, asks, carried, lost):
-    """What grid.py build --replace prints."""
-    text = (f"{name} written: {carried} answer(s) carried from the grid it replaces; "
+def message(name, asks, carried, lost, source="the grid it replaces"):
+    """What grid.py build prints when answers were carried."""
+    text = (f"{name} written: {carried} answer(s) carried from {source}; "
             f"{asks} cell(s) are '?' for you to answer, one rule at a time.")
     if lost:
         text += ("\nThese answers were not carried, because their row changed or is gone (or the old grid "

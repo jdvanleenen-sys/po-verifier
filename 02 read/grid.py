@@ -5,6 +5,8 @@
       can work out; the rest are "?". --replace rebuilds a grid whose read-back is still a draft:
       each answer whose row is unchanged is carried into the new grid, and each answer that could
       not be carried (its row changed or is gone) is listed with what it said, to ask again.
+      For read-back-N with N > 1, answers are carried the same way from grid-(N-1), except
+      "ask Sam" answers, which are asked again now that Sam has answered.
 
   python "02 read/grid.py" check <house> [--final]
       Refuses the grid if any cell is blank or "?", a row or PO is missing or extra, a code cell
@@ -70,13 +72,17 @@ def build(house, replace=False):
     if changed:
         sys.exit(f"{target.name} was not built:\n- " + "\n- ".join(changed))
     grid_text = render(house, n, text, snapshot) + "\n".join(intake_read.section(ROOT / "01 intake" / house))
-    replacing = target.exists()
+    replacing, previous = target.exists(), target.with_name(f"grid-{n - 1}.md")
     if replacing:  # a draft's grid: keep every answer whose row did not change, name the rest
         grid_text, carried, lost = grid_carry.carry(read(target), grid_text)
+    elif previous.exists():  # the next read-back: keep unchanged rows' answers, never an "ask Sam"
+        grid_text, carried, lost = grid_carry.carry(read(previous), grid_text, keep_asks=False)
     target.write_text(grid_text, encoding="utf-8")
     asks = len(re.findall(r"\| \?(?= \|)", grid_text))
     if replacing:
         return grid_carry.message(target.name, asks, carried, lost)
+    if previous.exists():
+        return grid_carry.message(target.name, asks, carried, lost, previous.name)
     return f"{target.name} written: {asks} cell(s) are '?' for you to answer, one rule at a time."
 
 

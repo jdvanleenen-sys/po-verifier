@@ -165,7 +165,11 @@ check fails, nothing is numbered and Sam does not see the request.
 ## What goes out
 `<house>/vpo-request-N.pdf` and `<house>/request-check-N.md`, numbered by the script's commit,
 for Sam to check. Sam reads both and says yes to the request he will send. His yes, his name, the
-date, and `sent: yes` go in the yes block the script left blank in the request check. This yes block is the only part of a numbered request check written after the
+date, and `sent: yes` go in the yes block the script left blank in the request check. Write the yes as
+`yes` or `yes, to vpo-request-N.pdf as shown`; a yes with a condition ("yes, but...") is not a yes.
+Leave `sent:` blank (or `no`, with a note if you like) until he has sent it. Then run
+`python "05 request/send_yes.py" <house>`, which refuses a yes that is not plain, a missing name or
+date, a date after today, and a sent line that is not yes, no or blank. This yes block is the only part of a numbered request check written after the
 commit; nothing else in a numbered file changes. A changed request is the next number; a request already sent is never replaced. Sam
 sends it to the site super himself.
 
