@@ -1,6 +1,7 @@
 """The folder the runner drives: its stage paths and its own scripts. The runner never carries a copy
 of the folder's rules; it loads the scripts from the folder it was started on."""
 import importlib
+import json
 import sys
 from pathlib import Path
 
@@ -31,11 +32,21 @@ class Folder:
         text = (self.root / "reference" / "contractor.md").read_text(encoding="utf-8-sig")
         return "practice stand-in" in text.lower()
 
+    def hidden(self):
+        """Houses kept out of the app, listed in _app/hidden.json ({"houses": [...], "why": "..."}).
+        Their records stay where they are; delete the file to show them again."""
+        path = self.root / "_app" / "hidden.json"
+        if not path.is_file():
+            return set()
+        return set(json.loads(path.read_text(encoding="utf-8")).get("houses", []))
+
     def houses(self):
         """Every house folder in intake. In a real contractor's folder, only his houses (real-N):
-        the practice houses that ship with the folder are not his and never show on his phone."""
+        the practice houses that ship with the folder are not his and never show on his phone.
+        Hidden houses never show and never block a new upload."""
         intake = self.stage("01 intake")
         found = sorted(p.name for p in intake.iterdir() if p.is_dir() and not p.name.startswith((".", "_")))
+        found = [h for h in found if h not in self.hidden()]
         return found if self.practice() else [h for h in found if h.startswith("real-")]
 
 

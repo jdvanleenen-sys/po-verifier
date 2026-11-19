@@ -167,6 +167,15 @@ class Lock(Base):
             self.read_once(new)
             self.held()
 
+    def test_a_hidden_house_does_not_show_or_block_a_new_upload(self):
+        old = lock.lock(self.folder, self.held()["id"], {}, today=DAY)
+        self.read_once(old)  # past the read, so it would block the same POs
+        (self.folder.root / "_app" / "hidden.json").write_text(json.dumps({"houses": [old]}), encoding="utf-8")
+        self.assertNotIn(old, self.folder.houses())
+        new = lock.lock(self.folder, self.held()["id"], {}, today=DAY)
+        self.assertNotEqual(new, old)
+        self.assertTrue(self.folder.stage("02 read", old).is_dir())  # its records stay
+
     def test_a_second_restart_also_works(self):
         first = lock.lock(self.folder, self.held()["id"], {}, today=DAY)
         second = lock.lock(self.folder, self.held()["id"], {}, today=DAY)
