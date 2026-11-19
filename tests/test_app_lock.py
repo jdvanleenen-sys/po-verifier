@@ -167,6 +167,13 @@ class Lock(Base):
             self.read_once(new)
             self.held()
 
+    def test_a_second_restart_also_works(self):
+        first = lock.lock(self.folder, self.held()["id"], {}, today=DAY)
+        second = lock.lock(self.folder, self.held()["id"], {}, today=DAY)
+        third = lock.lock(self.folder, self.held()["id"], {}, today=DAY)
+        self.assertEqual((lock.replaced_by(self.folder, first), lock.replaced_by(self.folder, second)), (second, third))
+        self.assertIsNone(lock.replaced_by(self.folder, third))
+
     def test_notes_file_twice_or_a_po_also_as_notes_is_refused(self):
         for notes in ([("a.jpg", b"same"), ("b.jpg", b"same")], [("po.html", po_files()[0][1])]):
             with self.subTest(notes=[n for n, _ in notes]), self.assertRaises(lock.Refused):

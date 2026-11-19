@@ -8,8 +8,8 @@ app only runs its steps in order and shows what it says. Spec: `docs/specs/2026-
 ```
 powershell -ExecutionPolicy Bypass -File app\start.ps1 -Folder "<the contractor's folder>"
 ```
-It sets up the Python environment the first time, checks Claude Code is installed, and prints the
-link for the phone. The steps it runs are below.
+It sets up the Python environment the first time, checks that Claude Code, PyMuPDF and Chrome or
+Edge are there (it stops and says which is missing), and prints the link for the phone. The steps it runs are below.
 
 ## Set up once (Windows)
 ```

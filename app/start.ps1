@@ -14,6 +14,16 @@ if (-not (Test-Path $python)) {
 if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
     throw "Claude Code (claude) is not on the PATH. The read needs it. Install it and sign in, then start again."
 }
+& $python -c "import pymupdf" 2>$null
+if ($LASTEXITCODE -ne 0) {
+    throw "PyMuPDF is missing. The request PDF and PO photos need it: run  $python -m pip install pymupdf  then start again."
+}
+$browsers = @($env:BROWSER, "${env:ProgramFiles}\Google\Chrome\Application\chrome.exe",
+    "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe", "${env:ProgramFiles}\Microsoft\Edge\Application\msedge.exe") |
+    Where-Object { $_ -and (Test-Path $_) }
+if (-not $browsers) {
+    throw "No Chrome or Edge found. The request PDF is printed with one. Install one, or set BROWSER to its path."
+}
 if (-not (Test-Path (Join-Path $Folder "reference\contractor.md"))) {
     throw "$Folder is not a set-up PO Verifier folder (no reference\contractor.md)."
 }

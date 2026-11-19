@@ -30,7 +30,9 @@ async function route() {
     app.querySelectorAll("[data-go]").forEach((b) => (b.onclick = () => (location.hash = "h/" + b.dataset.go)));
     app.querySelector("[data-new]").onclick = () => (location.hash = "new");
   } catch (err) {
-    app.innerHTML = `<p class="error">${esc(err.message)}</p><button class="btn sec" onclick="route()">Try again</button>`;
+    document.getElementById("back").hidden = !location.hash;
+    app.innerHTML = `${stoppedCard(err.message)}<button class="btn sec" onclick="route()">Try again</button>
+      ${location.hash ? `<button class="btn sec" onclick="location.hash=''">Back to houses</button>` : ""}`;
   }
 }
 

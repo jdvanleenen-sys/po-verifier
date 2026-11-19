@@ -17,7 +17,7 @@ async function drawSide(current, screen) {
     `<div${i === at ? ' style="font-weight:600;color:var(--ink)"' : ""}>${i < at ? "Done: " : ""}${n}</div>`).join("")}</div>` : "";
   side.innerHTML = `<div class="small">Your houses</div>` + list.map((h) =>
     `<button class="card house${h.house === current ? " cur" : ""}" data-side="${esc(h.house)}"><b>${esc(h.address)}</b>
-     <span class="small">${h.busy ? "Working" : esc(STATUS[h.screen] || h.screen)}</span></button>
+     <span class="small">${h.busy ? "Working" : esc(h.note || STATUS[h.screen] || h.screen)}</span></button>
      ${h.house === current ? steps : ""}`).join("") + `<button class="btn sec" data-side-new>New house</button>`;
   side.querySelectorAll("[data-side]").forEach((b) => (b.onclick = () => (location.hash = "h/" + b.dataset.side)));
   side.querySelector("[data-side-new]").onclick = () => (location.hash = "new");

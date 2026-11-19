@@ -103,9 +103,9 @@ def _already_in(folder, files):
     replaced = []
     for house in folder.houses():
         clash = wanted.keys() & _digests_of(folder, house)
-        if not clash:
+        if not clash or replaced_by(folder, house):  # a replaced house can never be read again
             continue
-        if house_state.stand(folder, house)["screen"] == house_state.READING and not replaced_by(folder, house):
+        if house_state.stand(folder, house)["screen"] == house_state.READING:
             replaced.append(house)
             continue
         name = wanted[sorted(clash)[0]]

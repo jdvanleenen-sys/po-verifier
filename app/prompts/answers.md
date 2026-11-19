@@ -1,6 +1,6 @@
 You are running the PO Verifier folder in the current directory, with no one to talk to. Read CLAUDE.md first and follow it.
 
-Task: house {house} is in stage 02 read. Sam answered the open questions in `02 read/{house}/{read_back}` on the app's Check screen. Follow `02 read/CONTEXT.md` exactly ("How Sam confirms", "Standing answers", "Warning: not on the price list") to write the next numbered read-back, `02 read/{house}/{next_read_back}`, from that one with his answers in it, then build its grid with `python "02 read/grid.py" build {house}`, answer every `?` cell the stage lets you answer, and run `python "02 read/grid.py" check {house}`.
+Task: house {house} is in stage 02 read. Sam answered the open questions in `02 read/{house}/{read_back}` on the app's Check screen. Follow `02 read/CONTEXT.md` exactly ("How Sam confirms" for how a correction becomes the next numbered read-back, "Standing answers", "Warning: not on the price list"), except its last step: Sam has not said yes yet, so his yes and `seal.py` are not part of this task. Write the next numbered read-back, `02 read/{house}/{next_read_back}`, from that one with his answers in it, then build its grid with `python "02 read/grid.py" build {house}`, answer every `?` cell the stage lets you answer, and run `python "02 read/grid.py" check {house}`.
 
 Sam's answers, in his words, given {today}:
 {answers}

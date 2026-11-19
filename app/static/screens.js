@@ -7,7 +7,7 @@ const STATUS = { reading: "Not read yet", compare: "Working out the difference",
 
 function housesScreen(list) {
   const rows = list.map((h) => `<button class="card house" data-go="${esc(h.house)}"><b>${esc(h.address)}</b>
-    <span class="small">${h.busy ? (h.screen === "reading" ? "Reading your files" : "Working") : esc(STATUS[h.screen] || h.screen)}</span></button>`).join("");
+    <span class="small">${h.busy ? (h.screen === "reading" ? "Reading your files" : "Working") : esc(h.note || STATUS[h.screen] || h.screen)}</span></button>`).join("");
   return `<h2>Your houses</h2>${rows || `<p class="sub">No houses yet.</p>`}<button class="btn" data-new>New house</button>`;
 }
 
@@ -99,6 +99,8 @@ function diffRow(r) {
       <option value="__own">Its own No PO group</option>${(window.HOUSE_POS || []).map((p) => `<option>${esc(p)}</option>`).join("")}</select></label>` : "";
   return `<div class="card" data-row="${esc(r.row)}"><div class="row"><b>${esc(r.item)}</b><span class="money ${sign}">${esc(r.variance)}</span></div>
     <span class="small">${r.no_po ? "No PO" : "PO " + esc(r.po)} · ${esc(r.why)} · ${esc(r.call)}${unset ? " · needs your call" : ""}</span>
+    ${r.epo_only ? `<span class="small">Your count and rate match the PO. The difference is a back charge or EPO already counted in the PO amount: putting this on asks the builder to reverse it.</span>` : ""}
+    ${r.credit && unset ? `<span class="small">This is a credit back to the builder. On the PDF means you offer it; nothing decides it for you.</span>` : ""}
     <div class="chips"><button class="chip${r.default === "on" ? " on" : ""}" data-on="1">On the PDF</button><button class="chip${r.default === "off" ? " on" : ""}" data-on="0">Leave off</button></div>
     <input type="text" data-reason placeholder="Why it comes off (a few words)" hidden>${epo}</div>`;
 }

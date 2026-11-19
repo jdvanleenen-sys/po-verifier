@@ -72,7 +72,9 @@ Not every open question is a number. Each kind gets its own card:
 - **Anything else the read asks him,** including an "ask Sam:" it wrote outside a table: he answers
   in his own words.
 The same file uploaded twice (PO or notes) is refused at Lock, and a file already in another house
-is refused there too, so "same PO twice" is caught before the read. The one exception is a house
+is refused there too, so the same file twice is caught before the read. The same PO saved in two
+formats (a PDF and a saved page) is not the same file: the read's own check 6 stops on it, and in
+this version that is a "call for help" stop, not a card. The one exception is a house
 whose read stopped before writing a read-back: starting again with clearer files may reuse its
 files, and the old house is marked replaced and can no longer be read. His fixes go into a new numbered read-back with its own grid, as the stage requires, so the read
 can take more than one round. After three rounds with questions still open, the house stops with

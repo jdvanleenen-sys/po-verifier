@@ -156,5 +156,6 @@ Rungs are Bas Rosario's ladder (1 prompt, 2 context, 3 memory, 4 loop).
 
 ## Open, not the builder's call
 - How POs reach the painter's iPhone (asking the painter).
-- Who the yes is written as: the name in `contractor.md`, set once when the runner starts.
+- Who the yes is written as: built as the first `- Name:` line of `contractor.md`, read at each yes.
+  Whether that is the right person (the painter, not the office) is the painter's call.
 - Whether real numbers can be shown at Demo Day.

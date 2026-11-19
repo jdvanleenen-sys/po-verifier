@@ -4,6 +4,7 @@ import re
 
 import difference
 import houses
+import lock
 import request_pdf
 import steps
 from folder import highest
@@ -23,9 +24,21 @@ def note_photos(folder, house):
     return sorted(p for p in intake.iterdir() if p.is_file() and p.suffix.lower() in PHOTOS)
 
 
+def _note(folder, jobs, state):
+    """A word for the house list beyond the screen name: replaced, or its last read stopped."""
+    newer = lock.replaced_by(folder, state["house"])
+    if newer:
+        return f"Replaced by {newer}"
+    job = jobs.status(state["house"]) or {}
+    if state["screen"] == houses.READING and not state["busy"] and job.get("status") in ("failed", "stopped", "interrupted"):
+        return "Read stopped"
+    return None
+
+
 def summary(folder, jobs):
     running = jobs.running()
-    return [{**s, "address": _address(folder, s["house"])} for s in houses.all_houses(folder, running)]
+    return [{**s, "address": _address(folder, s["house"]), "note": _note(folder, jobs, s)}
+            for s in houses.all_houses(folder, running)]
 
 
 def _rows_read(folder, house):
