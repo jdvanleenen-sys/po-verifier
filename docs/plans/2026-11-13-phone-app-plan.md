@@ -71,7 +71,8 @@ Each step ends with its tests passing, the whole suite passing, a commit, and a 
 (the painter's settings, real-3 from a real house's POs and notes), run the read twice. Record: time, whether it
 stopped at the draft, `grid.py check` result, what questions it raised, and anything it did that
 the stage forbids. Pass: both runs stop at the draft with a grid built, no forbidden action, each
-under 15 minutes. Write the result in `evidence/phone-app/step-0.md` in the private folder and the
+under 15 minutes. Write the result in the private folder (evidence, phone-app, step 0; not in this
+public repo) and the
 plain numbers (no real data) in the commit message. Fail means approach B, said that day.
 
 *Result, 2026-11-14: passed on the second prompt.* Four runs on one real house. The first two had
