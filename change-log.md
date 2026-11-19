@@ -1,5 +1,16 @@
 # Change log
 
+## 2026-11-19, an outside tester's findings: $0.00 in the layout, answers carried, the send yes
+An outside tester (Opus, 14 Example Crescent, VR-0001, $562.80) found three things. The request
+layout's tax note said "PST is $0 on every PO", which check 1 refuses as an amount without cents:
+it now says $0.00. When Sam's answer on one row forced read-back 2, grid-2 came out with every AI
+cell blank: `grid.py build` now carries grid-(N-1)'s answers for each row whose fingerprint is
+unchanged, never an "ask Sam" (his answer settles it, so that cell is asked again), and lists every
+answer it could not carry. The tester script had Sam answer "Yes, but this is practice..." at the
+send yes, which the folder's own rule says is not a yes, and nothing checked that block: the script
+now separates the yes from the note, and `05 request/send_yes.py` checks the block like every other
+yes. TESTING.md now asks testers not to point the agent at it. 12 tests added.
+
 ## 2026-11-11, an outside tester's findings: python3, grid answers kept, headings, page line
 An outside tester (2026-11-07) found four things. On a stock Mac only `python3` exists: the map and
 README now say to type it there. `grid.py build --replace` rewrote a draft's grid and wiped every

@@ -101,5 +101,32 @@ class ReplaceKeepsAnswers(unittest.TestCase):
         self.assertIn("PO MKR-02402401/012, address", message)
 
 
+class NextReadBackCarries(ReplaceKeepsAnswers):
+    """An outside tester (2026-11-19): after Sam answered one row, grid-2 came out with every AI
+    cell blank, so all 26 had to be answered again. Now grid-N carries grid-(N-1)'s answers for
+    unchanged rows, and never carries an "ask Sam", which his answer has now settled."""
+
+    def next_grid(self, read_back):
+        self.write("read-back-2.md", read_back)
+        message = grid.build(HOUSE)
+        return message, answers_of((FOLDER / "grid-2.md").read_text(encoding="utf-8"))
+
+    def test_unchanged_rows_carry_and_a_changed_row_is_asked_again(self):
+        before = answers_of(self.grid())
+        message, now = self.next_grid(self.read_back.replace(STRINGERS, STRINGERS_CHANGED, 1))
+        self.assertEqual(now[("4", "count")], before[("4", "count")])
+        self.assertEqual(now[("5", "count")], "?")
+        self.assertIn("carried from grid-1.md", message)
+        self.assertIn("row 5, count", message)
+
+    def test_an_ask_sam_answer_is_not_carried(self):
+        old = answers_of(self.grid())[("4", "count")]
+        self.write("grid-1.md", self.grid().replace(old, "ask Sam: is this the right count?", 1))
+        message, now = self.next_grid(self.read_back)
+        self.assertEqual(now[("4", "count")], "?")
+        self.assertNotIn("ask Sam", message)
+        self.assertEqual(now[("3", "count")], answers_of(ANSWERED)[("3", "count")])
+
+
 if __name__ == "__main__":
     unittest.main()

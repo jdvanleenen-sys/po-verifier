@@ -8,7 +8,7 @@ every house ends as a number: asked for, received, and the difference.
 - Each EPO the builder issued after the request, dropped by Sam into `<house>/` in this folder,
   untouched, with the date it arrived.
 - The request it answers: each `../05 request/<house>/vpo-request-N.pdf` whose request check says
-  `sent: yes`, and its rows. Sam says which request an EPO answers if it is not clear.
+  `sent: yes` and passes `python "05 request/send_yes.py" <house> <N>`, and its rows. Sam says which request an EPO answers if it is not clear.
 
 ## What is worked out
 Match each EPO to the request rows it pays, by PO number, account code and notes, the same way

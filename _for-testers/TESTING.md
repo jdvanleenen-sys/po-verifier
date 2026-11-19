@@ -31,6 +31,8 @@ Open the repo folder in your agent and give it this, word for word:
 > request for the difference.
 
 Then let it work. **Give it no other hints**: the test is whether the folder alone gets it there.
+Do not point the agent at this page or ask it to read it: it holds Sam's answers, so a run that has
+read it is not a cold run.
 `01 intake/77-mockup-drive` is a house that has already been run; leave it as it is.
 
 ## You play Sam
@@ -45,8 +47,9 @@ so every tester's run can be compared:
 - **At review:** "Include the French door credit. Chase the 8' doors. Leave the stringers and the
   headers off. Keep the other flagged rows on. Yes, to the table with those decisions."
 - **If it asks whether to attach your site notes:** "Yes, attach them."
-- **At the end, when it asks if this is the request he will send:** "Yes, but this is practice,
-  so it is not being sent. Write sent: no." Stop there; skip `06 outcome`.
+- **At the end, when it asks if this is the request he will send:** "Yes." Then: "It is
+  practice, so it is not being sent. Write sent: no." Stop there; skip `06 outcome`. (Keep the
+  two apart: the folder refuses a yes with a condition, such as "yes, but...".)
 
 Disagree with something it does? Say so as Sam would, and note it. That's a finding too.
 

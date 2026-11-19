@@ -28,6 +28,7 @@ On a Mac or Linux, type `python3` wherever these files say `python`. On Windows 
 | `04 review/` | Sam's decisions |
 | `05 request/` | The request for the site super, checked before Sam sees it |
 | `05 request/build_request.py` | Prints the request, merges the proof, runs the six checks on the PDF, and numbers only a request that passed. Its helpers: `money.py` (works out what the request must say from Sam's approved records, reading them with `records.py`), `house_checks.py` (the contractor, intake, draft-PDF and one-request-per-review checks), `verify.py` (the six checks, reading the PDF text with `request_text.py`, each row with `row_checks.py`, the header with `header_checks.py`, group headings with `heading_check.py`), `printing.py` (the browser) |
+| `05 request/send_yes.py` | Checks Sam's yes to send in a numbered request check: a plain yes, his name, a date not after today, and a sent line that is yes, no or blank |
 | `tests/` (left out of a tester's copy) | Planted mistakes the money gate, the price check and the rule grid must refuse, and the variance code checked against the gate: `python -m unittest discover -s tests` |
 | `tests/houses/` | Six test houses with POs, site notes, Sam's answers and the key; `tests/cold_run.py` runs one cold and scores it. For testing the folder, not for the agent doing the job |
 | `05 request/drafts/` | The workbench for a request before it passes. Not the record |
