@@ -16,9 +16,9 @@ function newHouseScreen() {
   return `<h2>New house</h2>
     <label>Address<input type="text" id="address" autocomplete="off" placeholder="House number and street"></label>
     <div class="card drop"><b>POs</b><span class="small">PDF, saved page, photo or screenshot. On a computer, drag them here.</span>
-      <input type="file" id="pos" multiple accept=".pdf,.html,.htm,image/*"></div>
+      <input type="file" id="pos" multiple></div>
     <div class="card drop"><b>Your notes</b><span class="small">Photo of your notes, or a PDF or text file</span>
-      <input type="file" id="notes" multiple accept="image/*,.pdf,.txt"></div>
+      <input type="file" id="notes" multiple></div>
     <div class="card"><div class="row"><span>The notes page shows other houses too</span><input type="checkbox" id="covers"></div>
       <label>Date measured<input type="date" id="measured" value="${today}" max="${today}"></label>
       <div class="row"><span>Not recorded</span><input type="checkbox" id="norecord"></div></div>
