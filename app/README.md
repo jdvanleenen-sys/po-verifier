@@ -16,9 +16,10 @@ Edge are there (it stops and says which is missing), and prints the link for the
 python -m venv --system-site-packages .venv
 .venv\Scripts\python -m pip install -r app/requirements.txt
 ```
-`--system-site-packages` lets the app use the PyMuPDF the folder's request stage already needs.
-The read and the request layout run Claude Code headless on this laptop's own login: `claude` must
-be on the PATH and signed in. No API key.
+`requirements.txt` installs Flask and PyMuPDF (the request PDF, PO photos and the address check
+need PyMuPDF). The request PDF is printed with Chrome or Edge, which must be installed. The read and
+the request layout run Claude Code headless on this laptop's own login: `claude` must be on the
+PATH and signed in. No API key.
 
 ## Start it
 ```

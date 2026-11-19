@@ -36,12 +36,12 @@ function dollars(c) {
   return `${sign}$${Math.floor(abs / 100).toLocaleString("en-CA")}.${String(abs % 100).padStart(2, "0")}`;
 }
 
-function waiting(title, job, note) {
+function waiting(title, job, note, limit) {
   const long = job && job.long;
   return `<h2>${esc(title)}</h2><p class="sub">${esc(note)}</p>
     <div class="card soft"><div class="prog"><span class="spin"></span>Working: ${esc(minutes(job && job.elapsed))} so far</div>
     <div class="small">Your files are locked; nothing can change them now.</div></div>
-    ${long ? `<p class="sub">This is taking longer than usual. It stops by itself at 30 minutes, and the house stays at its last good step.</p>
+    ${long ? `<p class="sub">This is taking longer than usual. It stops by itself at ${esc(limit || 30)} minutes, and the house stays at its last good step.</p>
       <button class="btn sec" data-act="keep">Keep waiting</button><button class="btn sec" data-act="stop">Stop</button>` : ""}`;
 }
 

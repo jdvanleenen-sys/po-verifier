@@ -2,6 +2,7 @@
 server.py so the routes stay thin and this can be tested without a web server."""
 import re
 
+import config
 import difference
 import houses
 import lock
@@ -76,7 +77,8 @@ def detail(folder, jobs, house):
     if state["screen"] == houses.COMPARE and not state["busy"]:
         steps.run_compare(folder, house)
         state = houses.stand(folder, house, False)
-    data = {**state, "address": _address(folder, house), "job": jobs.status(house)}
+    data = {**state, "address": _address(folder, house), "job": jobs.status(house),
+            "note": _note(folder, jobs, state), "limit_minutes": config.READ_LIMIT_SECONDS // 60}
     if not state["busy"]:
         data.update(_screen_data(folder, house, state["screen"]))
     return data

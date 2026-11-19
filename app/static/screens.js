@@ -27,7 +27,10 @@ function newHouseScreen() {
 }
 
 function readingScreen(h) {
-  if (h.busy) return waiting("Reading your files", h.job, "Usually 3 to 4 minutes. You can lock the phone.");
+  if (h.busy) return waiting("Reading your files", h.job, "Usually 3 to 4 minutes. You can lock the phone.", h.limit_minutes);
+  if (h.note && h.note.startsWith("Replaced by")) {
+    return `<h2>${esc(h.note)}</h2><p class="sub">This house was started again with clearer files. Its record stays, but it is not read again.</p>${HOME}`;
+  }
   const job = h.job || {};
   const why = job.status === "interrupted" ? "The laptop restarted while reading." : job.line || "The read did not finish.";
   return `<h2>The read stopped</h2>${stoppedCard(why)}<button class="btn" data-act="retry">Read again</button>
@@ -76,7 +79,7 @@ function cardHtml(c, i) {
 }
 
 function checkScreen(h) {
-  if (h.busy) return waiting("Updating what I read", h.job, "Usually 3 to 4 minutes.");
+  if (h.busy) return waiting("Updating what I read", h.job, "Usually 3 to 4 minutes.", h.limit_minutes);
   const photo = Array.from({ length: h.photos || 0 }, (_, n) =>
     `<a href="/api/house/${esc(h.house)}/notes/${n}" target="_blank"><img class="photo" src="/api/house/${esc(h.house)}/notes/${n}" alt="Your notes, page ${n + 1}"></a>`).join("");
   const rows = h.rows.map((r) => `<div class="row small"><span>${esc(r.line || r.item)}</span><span>${esc((r.measured || "").split(";")[0])}</span></div>`).join("");
@@ -122,7 +125,7 @@ function differenceScreen(h) {
 }
 
 function pdfScreen(h) {
-  if (h.busy) return waiting("Building your PDF", h.job, "Usually 5 to 10 minutes. You can lock the phone.");
+  if (h.busy) return waiting("Building your PDF", h.job, "Usually 5 to 10 minutes. You can lock the phone.", h.limit_minutes);
   const lines = h.checks.map((l) => `<div class="check-line${/:\s*fail:/i.test(l) ? " fail" : ""}">${esc(l).replace(/:\s*(pass|fail):/i, ": <b>$1</b>:")}</div>`).join("");
   if (!h.has_pdf || !h.passed) {
     const job = h.job || {};

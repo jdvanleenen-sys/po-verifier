@@ -1,7 +1,7 @@
 # Start the PO Checker phone app on this laptop.
 #   powershell -ExecutionPolicy Bypass -File app\start.ps1 -Folder "<the contractor's folder>"
-# Sets up the app's Python environment the first time, checks Claude Code is there, then starts the
-# server and prints the link to open on the phone.
+# Sets up the app's Python environment the first time, checks that Claude Code, PyMuPDF and Chrome or
+# Edge are there, then starts the server and prints the link to open on the phone.
 param([Parameter(Mandatory = $true)][string]$Folder, [int]$Port = 8000)
 $ErrorActionPreference = "Stop"
 $repo = Split-Path -Parent $PSScriptRoot
@@ -19,6 +19,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "PyMuPDF is missing. The request PDF and PO photos need it: run  $python -m pip install pymupdf  then start again."
 }
 $browsers = @($env:BROWSER, "${env:ProgramFiles}\Google\Chrome\Application\chrome.exe",
+    "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe",
     "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe", "${env:ProgramFiles}\Microsoft\Edge\Application\msedge.exe") |
     Where-Object { $_ -and (Test-Path $_) }
 if (-not $browsers) {
