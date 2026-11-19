@@ -75,6 +75,11 @@ def write_send_yes(path, name, day):
     path.write_text(text, encoding="utf-8", newline="\n")
 
 
+def yes_missing(path):
+    """True when a numbered request check has no answer under Sam's yes to send."""
+    return path.is_file() and re.search(r"^-\s*Answer:[ \t]*$", path.read_text(encoding="utf-8"), re.M) is not None
+
+
 def mark_sent(path):
     text = path.read_text(encoding="utf-8")
     text, n = re.subn(r"^-\s*sent:.*$", "- sent: yes", text, count=1, flags=re.M)

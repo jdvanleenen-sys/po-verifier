@@ -18,6 +18,7 @@ function readPicks() {
 }
 
 function missing(h) {
+  if (!h.rows.length) return "";
   for (const card of app.querySelectorAll("[data-row]")) {
     const row = h.rows.find((r) => r.row === card.dataset.row);
     const on = card.querySelector("[data-on].on");

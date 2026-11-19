@@ -43,10 +43,11 @@ function stoppedScreen(h) {
 
 function jobNotice(h) {
   const job = h.job || {};
-  if (job.kind !== "answers" || !["failed", "stopped", "interrupted"].includes(job.status)) return "";
-  const why = job.status === "interrupted" ? "The laptop restarted while your answers were being read." : job.line;
-  return `<div class="card bad"><b>Your last answers did not go through</b><div>${esc(why)}</div>
-    <div class="small">Answer the cards below again and send them.</div></div>`;
+  if (!["answers", "read"].includes(job.kind) || !["failed", "stopped", "interrupted"].includes(job.status)) return "";
+  const what = job.kind === "read" ? "The read stopped before it finished" : "Your last answers did not go through";
+  const why = job.status === "interrupted" ? "The laptop restarted while it was working." : job.line;
+  return `<div class="card bad"><b>${what}</b><div>${esc(why)}</div>
+    <div class="small">The cards below are from the last read-back that was written. Answer them and send.</div></div>`;
 }
 
 function cardHtml(c, i) {
@@ -55,9 +56,10 @@ function cardHtml(c, i) {
   if (c.kind === "warning") {
     return `<div class="card warn" data-card="${i}">${head}<span class="small">Not on your price list. ${esc(c.detail)}</span>
       ${c.closest ? `<span class="small">Closest: ${esc(c.closest)}</span>` : ""}
-      <div class="chips"><button class="chip" data-choice="leave">Leave it unpriced</button><button class="chip" data-choice="names">It is this item</button></div>
+      <div class="chips"><button class="chip" data-choice="leave">Leave it unpriced</button><button class="chip" data-choice="names">It is this item</button>
+        <button class="chip" data-choice="added">I added it to my price list</button></div>
       <input type="text" data-words placeholder="Price list item, as your list names it" hidden>
-      <span class="small">New item for your list? Add it in Excel first, then call for help.</span></div>`;
+      <span class="small">A new item goes in your price list in Excel on the laptop first. Then tap "I added it" and send.</span></div>`;
   }
   if (c.kind === "pick") {
     const opts = c.options.map((o, n) => `<button class="chip" data-choice="${n}">${esc(o)}</button>`).join("");
@@ -85,7 +87,7 @@ function checkScreen(h) {
       ${photo ? `<div class="split"><div>${photo}</div>${questions}</div>` : questions}
       <p id="err" class="error"></p><button class="btn" data-send>Send my answers</button>`;
   }
-  if (!h.ready) return `<h2>Check what I read</h2>${stoppedCard(h.blocked)}${read}`;
+  if (!h.ready) return `<h2>Check what I read</h2>${jobNotice(h)}${stoppedCard(h.blocked)}${read}${HOME}`;
   return `<h2>Everything is answered</h2><p class="sub">Look over what was read. Your yes covers all of it.</p>${photo}${read}
     <p id="err" class="error"></p><button class="btn" data-act="yes">That's all right</button>`;
 }
@@ -108,7 +110,11 @@ function differenceScreen(h) {
        <div class="chips"><button class="chip" data-notes="yes-other-house">Yes, send it</button><button class="chip" data-notes="no">No</button></div></div>`
     : `<div class="card"><b>Attach your site notes as proof?</b><div class="chips"><button class="chip" data-notes="yes">Yes</button><button class="chip" data-notes="no">No</button></div></div>`;
   return `<h2>${h.rows.length} line${h.rows.length === 1 ? "" : "s"} differ</h2><p class="sub">From your price list. You pick what goes on the PDF.</p>
-    ${h.rows.map(diffRow).join("")}<div class="card"><div class="row"><span>On the PDF, before tax (preview)</span><span class="money" id="total"></span></div>
+    ${h.rows.length ? "" : `<p class="sub">Every line matches your price list. Nothing to ask for.</p>`}
+    ${h.rows.map(diffRow).join("")}
+    ${(h.info || []).length ? `<details class="card soft"><summary>${h.info.length} for information</summary>${h.info.map((i) =>
+      `<div class="small">PO ${esc(i.po)}: ${esc(i.item)}. ${esc(i.why)}</div>`).join("")}</details>` : ""}
+    <div class="card"><div class="row"><span>On the PDF, before tax (preview)</span><span class="money" id="total"></span></div>
       <input type="text" data-none-reason placeholder="Nothing goes on: why, in a few words" hidden></div>
     ${notes}<p id="err" class="error"></p><p id="gap" class="sub"></p><button class="btn" data-review>Build the PDF</button>`;
 }

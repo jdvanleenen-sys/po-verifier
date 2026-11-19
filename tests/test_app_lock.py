@@ -142,11 +142,45 @@ class Lock(Base):
             self.held(pos=[twice[0], ("copy.html", twice[1][1])])
         self.assertIn("are the same file", str(caught.exception))
 
-    def test_po_already_in_another_house_is_refused(self):
+    def read_once(self, house):
+        with mock.patch.dict(os.environ, {"STANDIN_MODE": "draft"}):
+            jobs = Jobs(self.folder)
+            steps.start_read(self.folder, jobs, house)
+            self.assertTrue(jobs.wait(house))
+
+    def test_po_already_in_a_house_that_was_read_is_refused(self):
         house = lock.lock(self.folder, self.held()["id"], {}, today=DAY)
+        self.read_once(house)
         with self.assertRaises(lock.Refused) as caught:
             self.held(address="77 Mockup Drive")
         self.assertIn(f"already in {house} (77 Mockup Drive)", str(caught.exception))
+
+    def test_starting_again_after_a_stopped_read_replaces_the_old_house(self):
+        old = lock.lock(self.folder, self.held()["id"], {}, today=DAY)  # its read never wrote a read-back
+        new = lock.lock(self.folder, self.held()["id"], {}, today=DAY)
+        self.assertNotEqual(old, new)
+        self.assertEqual(lock.replaced_by(self.folder, old), new)
+        with self.assertRaises(steps.Stopped) as caught:
+            steps.start_read(self.folder, Jobs(self.folder), old)
+        self.assertIn(f"as {new}", str(caught.exception))
+        with self.assertRaises(lock.Refused):  # a third copy: the old house is replaced, the new one stands
+            self.read_once(new)
+            self.held()
+
+    def test_notes_file_twice_or_a_po_also_as_notes_is_refused(self):
+        for notes in ([("a.jpg", b"same"), ("b.jpg", b"same")], [("po.html", po_files()[0][1])]):
+            with self.subTest(notes=[n for n, _ in notes]), self.assertRaises(lock.Refused):
+                self.held(notes=notes)
+
+    def test_the_same_po_photo_cannot_go_in_two_houses(self):
+        import pymupdf
+        page = pymupdf.open()
+        page.new_page(width=200, height=100)
+        png = page[0].get_pixmap().tobytes("png")
+        house = lock.lock(self.folder, self.held(pos=[("IMG_1.png", png)])["id"], {}, today=DAY)
+        self.read_once(house)
+        with self.assertRaises(lock.Refused):
+            self.held(pos=[("IMG_1 copy.png", png)])
 
     def test_next_house_number_skips_used_ones(self):
         self.folder.stage("02 read", "real-1").mkdir(parents=True)

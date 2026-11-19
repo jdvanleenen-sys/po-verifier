@@ -82,16 +82,44 @@ def _house_address(folder, house):
     return f" ({found.group(1).strip()})" if found else ""
 
 
-def _already_in(folder, pos):
-    """Refuse a PO that is already, byte for byte, in another house's intake: the same house locked
-    twice would ask the builder for the same money twice."""
-    wanted = {hashlib.sha256(data).hexdigest(): name for name, data in pos}
+def _digests_of(folder, house):
+    """Every file a house holds, by sha256: its intake files, and the files as uploaded (a PO photo
+    is stored wrapped in a PDF, so its upload is recorded too)."""
+    found = {hashlib.sha256(p.read_bytes()).hexdigest()
+             for p in folder.stage("01 intake", house).iterdir() if p.is_file()}
+    before = folder.root / config.APP_DIR / house / "before-read.json"
+    if before.is_file():
+        found |= set(json.loads(before.read_text(encoding="utf-8")).get("uploads", []))
+    return found
+
+
+def _already_in(folder, files):
+    """Which house a file is already in. The same house locked twice would ask the builder for the
+    same money twice, so that is refused, except against a house whose read never got a read-back
+    (a read that stopped): starting again with a clearer copy is the way out of that, and the old
+    house is marked replaced so it cannot be read again. Returns the houses replaced."""
+    import houses as house_state
+    wanted = {hashlib.sha256(data).hexdigest(): name for name, data in files}
+    replaced = []
     for house in folder.houses():
-        for path in folder.stage("01 intake", house).iterdir():
-            if path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() in wanted:
-                name = wanted[hashlib.sha256(path.read_bytes()).hexdigest()]
-                raise Refused(f"{name} is already in {house}{_house_address(folder, house)}. Open that house "
-                              "instead.")
+        clash = wanted.keys() & _digests_of(folder, house)
+        if not clash:
+            continue
+        if house_state.stand(folder, house)["screen"] == house_state.READING and not replaced_by(folder, house):
+            replaced.append(house)
+            continue
+        name = wanted[sorted(clash)[0]]
+        raise Refused(f"{name} is already in {house}{_house_address(folder, house)}. Open that house instead.")
+    return replaced
+
+
+def replaced_by(folder, house):
+    """The house that started this one again with clearer files, or None."""
+    for other in folder.houses():
+        before = folder.root / config.APP_DIR / other / "before-read.json"
+        if other != house and before.is_file() and house in json.loads(before.read_text(encoding="utf-8")).get("replaces", []):
+            return other
+    return None
 
 
 def hold(folder, address, measured, covers_others, pos, notes):
@@ -101,13 +129,14 @@ def hold(folder, address, measured, covers_others, pos, notes):
         raise Refused("Type the house address.")
     _check_files(pos, config.PO_TYPES, "PO")
     _check_files(notes, config.NOTES_TYPES, "notes photo or file")
-    _already_in(folder, pos)
     seen = {}
-    for name, data in pos:
+    for name, data in pos + notes:
         digest = hashlib.sha256(data).hexdigest()
         if digest in seen:
-            raise Refused(f"{name} and {seen[digest]} are the same file. Add each PO once.")
+            raise Refused(f"{name} and {seen[digest]} are the same file. Add each file once.")
         seen[digest] = name
+    replaces = _already_in(folder, pos + notes)
+    uploads = sorted(seen)
     held_id = secrets.token_hex(8)
     where = folder.root / config.APP_DIR / "held" / held_id
     where.mkdir(parents=True)
@@ -123,7 +152,8 @@ def hold(folder, address, measured, covers_others, pos, notes):
         clean = _clean_name("site-notes" + Path(name or "").suffix.lower(), "site-notes", taken)
         (where / clean).write_bytes(data)
         saved["notes"].append(clean)
-    info = {"address": address, "measured": _measured(measured), "covers_others": bool(covers_others), **saved}
+    info = {"address": address, "measured": _measured(measured), "covers_others": bool(covers_others), **saved,
+            "uploads": uploads, "replaces": replaces}
     info["questions"] = _questions(where, info)
     (where / "held.json").write_text(json.dumps(info, indent=1), encoding="utf-8", newline="\n")
     return {"id": held_id, "questions": info["questions"]}
@@ -186,7 +216,8 @@ def lock(folder, held_id, answers, today=None):
     (intake / "house-info.md").write_text(_house_info(info, today), encoding="utf-8", newline="\n")
     record = folder.root / config.APP_DIR / house
     record.mkdir(parents=True, exist_ok=True)
-    before = {"address": info["address"], "measured": info["measured"], "answers": said, "locked": today}
+    before = {"address": info["address"], "measured": info["measured"], "answers": said, "locked": today,
+              "uploads": info.get("uploads", []), "replaces": info.get("replaces", [])}
     (record / "before-read.json").write_text(json.dumps(before, indent=1), encoding="utf-8", newline="\n")
     shutil.rmtree(where)
     return house

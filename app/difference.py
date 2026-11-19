@@ -68,7 +68,17 @@ def screen(folder, house):
     main = _main_po(folder, house, rule)
     differ = [_row(r, rule, main) for r in rows if r.get("call", "").strip().lower() in DIFFERS]
     pos = sorted({r.get("po number", "").strip() for r in rows} - {NO_PO, ""})
-    return {"variance": f"03 compare/{house}/{path.name}", "rows": differ, "pos": pos}
+    return {"variance": f"03 compare/{house}/{path.name}", "rows": differ, "pos": pos,
+            "info": _for_information(folder, path)}
+
+
+def _for_information(folder, path):
+    """Rows compare set apart (not comparable, or left unpriced by Sam): shown to him and written
+    under the review's table as "For information", never decided (04 review)."""
+    gr = folder.script("02 read", "grid_read")
+    rows = gr.as_dicts(gr.under(path.read_text(encoding="utf-8"), "not comparable"))
+    return [{"po": r.get("po number", "").strip(), "item": r.get("item", "").strip(), "why": r.get("why", "").strip()}
+            for r in rows if r.get("item", "").strip()]
 
 
 def _decision(row, pick):
@@ -100,7 +110,7 @@ def _nothing_on(rows, picks, none_reason):
     """When Sam puts no row on, every row is written off with his words (04 review, "When nothing is
     on"): his own reason for a row, or his few words for the whole house."""
     words = " ".join(str(none_reason or "").split())
-    if not words:
+    if rows and not words:
         raise ValueError("Nothing goes on this request. Say in a few words why.")
     return {r["row"]: {"on": False, "reason": " ".join(str((picks.get(r["row"]) or {}).get("reason", "")).split()) or words}
             for r in rows}
@@ -126,6 +136,9 @@ def review_text(folder, house, picks, none_reason=""):
     for r in shown["rows"]:
         word, reason, epo = _decision(r, picks.get(r["row"]))
         lines.append(f"| {r['row']} | {r['po']} | {r['item']} | {r['variance']} | {r['call']} | {word} | {reason} | {epo} |")
+    if shown["info"]:
+        lines += ["", "For information (no decision; these never go on the request):"]
+        lines += [f"- PO {i['po']}: {i['item']}. {i['why']}" for i in shown["info"]]
     lines += ["", "## Sam's yes", "- Answer:", "- Name:", "- Date:", ""]
     return "\n".join(lines)
 

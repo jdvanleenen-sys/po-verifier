@@ -75,6 +75,16 @@ class Request(unittest.TestCase):
         self.assertEqual(steps.approve(self.folder, self.jobs, HOUSE, today=KEY_DAY), first)
         self.assertEqual(len(list(self.folder.stage("05 request", HOUSE).glob("vpo-request-*.pdf"))), 1)
 
+    def test_second_approve_writes_a_missing_yes_to_send(self):
+        self.build()
+        steps.approve(self.folder, self.jobs, HOUSE, today=KEY_DAY)
+        check = self.folder.stage("05 request", HOUSE) / "request-check-1.md"
+        check.write_text(check.read_text(encoding="utf-8").replace("- Answer: yes, to vpo-request-1.pdf as shown", "- Answer:"),
+                         encoding="utf-8", newline="\n")
+        self.assertTrue(request_pdf.yes_missing(check))
+        steps.approve(self.folder, self.jobs, HOUSE, today=KEY_DAY)
+        self.assertFalse(request_pdf.yes_missing(check))
+
     def test_approve_before_a_passing_draft_is_refused(self):
         with self.assertRaises(steps.Stopped):
             steps.approve(self.folder, self.jobs, HOUSE, today=KEY_DAY)

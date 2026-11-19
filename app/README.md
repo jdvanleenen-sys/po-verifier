@@ -39,7 +39,11 @@ through the Windows firewall on private networks.
 ## Parts
 | File | Job |
 |---|---|
+| `start.ps1` | Set up on first start, check the laptop and the folder, start the server |
 | `server.py` | Routes only |
+| `config.py` | Settings: the agent command, time limits, accepted file types and size |
+| `folder.py` | The folder being driven: its stage paths, its own scripts, its house list |
+| `steps.py` | Each step of a house in order; each checks the files first, so nothing runs twice |
 | `house_view.py` | What each screen shows and what each tap does |
 | `houses.py` | Which screen a house is on, read from its files every time |
 | `lock.py`, `po_address.py` | New house: hold the uploads, ask before the read, lock into intake |

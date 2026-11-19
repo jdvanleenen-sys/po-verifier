@@ -7,6 +7,7 @@ import agent
 import config
 import difference
 import houses
+import lock
 import questions
 import request_pdf
 import sam_yes
@@ -44,6 +45,9 @@ def start_read(folder, jobs, house):
         raise Stopped(f"{house} is past the read.")
     if state["busy"]:
         return False
+    newer = lock.replaced_by(folder, house)
+    if newer:
+        raise Stopped(f"This house was started again with clearer files as {newer}. Open that house instead.")
     text = agent.prompt("read", house=house, answers=read_answers(_before_read(folder, house)))
     return jobs.start(house, "read", text)
 
@@ -62,6 +66,10 @@ def check_screen(folder, house):
     """{"cards", "ready", "blocked"}: ready when no card is open and grid.py check --final passes;
     blocked holds the folder's reason when no card is open but the check still refuses."""
     open_cards = questions.cards(folder, house)
+    read_back = highest(folder.stage("02 read", house), "read-back")
+    if open_cards and read_back and int(read_back.stem.rsplit("-", 1)[1]) >= MAX_ROUNDS:
+        return {"cards": [], "ready": False,
+                "blocked": f"{MAX_ROUNDS} rounds of questions and still not settled. Call for help."}
     if open_cards:
         return {"cards": open_cards, "ready": False, "blocked": None}
     passed, output = sam_yes.script(folder, "02 read/grid.py", "check", house, "--final")
@@ -146,7 +154,11 @@ def approve(folder, jobs, house, today=None):
     then his yes to send is written. A second tap finds the house done and gives the same number."""
     state = houses.stand(folder, house, house in jobs.running())
     if state["screen"] == houses.DONE:
-        return request_pdf.numbered(folder, house).name
+        pdf = request_pdf.numbered(folder, house)
+        check = pdf.with_name(pdf.name.replace("vpo-request-", "request-check-").replace(".pdf", ".md"))
+        if request_pdf.yes_missing(check):  # numbered, but his yes to send was never written
+            request_pdf.write_send_yes(check, sam_yes.painter_name(folder), (today or date.today()).isoformat())
+        return pdf.name
     if state["screen"] != houses.PDF or state["busy"]:
         raise Stopped(f"{house} has no request ready to approve.")
     if not request_pdf.draft(folder, house)["passed"]:

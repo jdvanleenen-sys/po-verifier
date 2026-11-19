@@ -8,8 +8,12 @@ On the laptop that holds the folder, someone on an iPhone in the same room takes
 POs and a notes photo to an approved, checked request PDF on the phone, with no step outside the
 app, and the money matches a run of the folder by hand to the cent.
 
-Known limit: an item that is on no price list row can only be added to the price list in Excel.
-The card says so and the house waits; that one step is outside the app in this version.
+Known limits, outside the app in this version: an item on no price list row is added in Excel on
+the laptop, then Sam taps "I added it to my price list" and the read picks it up; and three cases
+stop with "call for help" (the laptop's owner): questions still open after three rounds, a request
+check that is not "pass" (such as "cannot check"), and a folder refusal the screen cannot fix.
+Whether the Done sentence is met is proven by the tests in "Proof of done" 2 to 4, on an iPhone;
+the files alone cannot show it.
 
 ## Why
 The folder works, but it runs in a chat. Sam works from his truck. He should put the POs and his
@@ -63,12 +67,14 @@ may be "download, then share from Files". Tested on a real iPhone before done.
 Not every open question is a number. Each kind gets its own card:
 - **A number:** Right, or Fix it with his number.
 - **Pick one:** a line fits two price list items; he taps one.
-- **Not on the price list:** he names an existing item or says leave it unpriced. Adding a row means
-  editing the price list in Excel: in this version the card says so and the house waits.
+- **Not on the price list:** he names an existing item, says leave it unpriced, or adds it to his
+  price list in Excel on the laptop and taps "I added it to my price list" (sent as `add row`).
 - **Anything else the read asks him,** including an "ask Sam:" it wrote outside a table: he answers
   in his own words.
-The same file uploaded twice is refused at Lock, and a PO already in another house is refused
-there too, so "same PO twice" is caught before the read. His fixes go into a new numbered read-back with its own grid, as the stage requires, so the read
+The same file uploaded twice (PO or notes) is refused at Lock, and a file already in another house
+is refused there too, so "same PO twice" is caught before the read. The one exception is a house
+whose read stopped before writing a read-back: starting again with clearer files may reuse its
+files, and the old house is marked replaced and can no longer be read. His fixes go into a new numbered read-back with its own grid, as the stage requires, so the read
 can take more than one round. After three rounds with questions still open, the house stops with
 "Call for help".
 
@@ -101,8 +107,10 @@ ahead of it, on Jeff's "finish everything". In this version the computer must be
 Wi-Fi, and the doubted lines are not marked on the photo.
 
 ## One house through the runner
-1. **Lock.** Files go into `01 intake/<house>/` untouched; `house-info.md` is written from his
-   answers by code. Houses are named `real-N`.
+1. **Lock.** Files go into `01 intake/<house>/` and are never changed after: POs as uploaded (a PO
+   photo wrapped in a one-page PDF, image unchanged, because the request attaches POs only as PDF
+   or page); notes renamed `site-notes`, contents unchanged, because the request knows notes by
+   that word. `house-info.md` is written from his answers by code. Houses are named `real-N`.
 2. **Read.** Claude Code runs headless in the folder ("read house real-N") and follows `02 read`.
    It stops at the read-back draft. The runner reads the open questions from the read-back's
    tables and grid (plus any "ask Sam:" line outside them), and runs `grid.py check --final` itself.
@@ -123,7 +131,7 @@ headless agent uses the laptop's own Claude login; no API key.
 |---|---|---|
 | A PO it cannot read | The reader's reason in plain words; Read again, or Start a new house with clearer files | Nothing reaches compare. Intake is never edited; the clearer copy starts a new house folder (`real-N`), and the stopped house stays as the record |
 | A number it doubts | A card on screen 4 | An "ask Sam" cell; the house waits for his answer |
-| An answer round fails | "Your last answers did not go through", the reason, and the cards again | The draft read-back is unchanged |
+| An answer round or a read stops | "Your last answers did not go through" (or "The read stopped"), the reason, and the cards from the last read-back written | The agent may have written the next read-back before it stopped; the cards come from whichever is highest, and that counts as a round |
 | A seal or check refuses | "Stopped before the money: <the folder's reason>", Back to houses; if it does not make sense, call for help (the laptop's owner) | Not sealed, so no number is used up |
 | The agent runs long | Elapsed time; past a set limit, Keep waiting or Stop | The runner stops the run; the house stays at its last good step |
 | Laptop or Wi-Fi drops | On reopen, the house resumes at its last finished step | State is read from the folder's files, never held only in memory |
@@ -151,7 +159,7 @@ recorded" when he says so.
 | Nov 17 | First iPhone runs; the share-sheet test |
 | Nov 18 | Cold run on a second house; fixes |
 | Nov 19 | Final run-through; buffer |
-| Nov 19 | Desktop layout, only if the phone passed Nov 17-18 |
+| Nov 19 | Desktop layout, only if the phone passed Nov 17-18 (as planned; built Nov 14 instead, see "On a computer") |
 | By Nov 20 | The painter runs the third house |
 
 If the headless read is unreliable on Nov 14, say so that day and switch the read to approach B.

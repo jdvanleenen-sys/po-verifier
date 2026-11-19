@@ -1,7 +1,13 @@
 """Where each house stands, worked out from the folder's own files every time it is asked. Nothing
 is held only in memory, so a dropped Wi-Fi link or a restarted laptop picks up at the last finished
 step. A record that says approved but fails its seal stops the house: the runner never trusts it."""
+import re
+
 from folder import highest
+
+# The line difference.py writes above the table when no row is on. Matched at the start of a line,
+# so Sam's own words in a table cell ("nothing to ask for on the doors") never stop a request.
+NOTHING_ON = re.compile(r"^Nothing to ask for: every row matches or Sam left it off\.", re.M | re.I)
 
 NEW, READING, CHECK, COMPARE, DIFFERENCE, PDF, DONE, NO_REQUEST, STOPPED = (
     "new", "reading", "check", "compare", "difference", "pdf", "done", "no-request", "stopped")
@@ -28,7 +34,7 @@ def _after_read(folder, house):
         return STOPPED, review_state
     if not review_state:
         return DIFFERENCE, None
-    if "nothing to ask for" in review.read_text(encoding="utf-8").lower():
+    if NOTHING_ON.search(review.read_text(encoding="utf-8")):
         return NO_REQUEST, None
     if highest(folder.stage("05 request", house), "vpo-request", ".pdf"):
         return DONE, None

@@ -114,9 +114,10 @@ def answer_lines(open_cards, answers):
 def _line(card, value):
     choice, words = value.get("choice", ""), " ".join(str(value.get("words", "")).split())
     if card["kind"] == "warning":
-        said = {"leave": "leave unpriced", "names": f"names {words}"}.get(choice)
+        said = {"leave": "leave unpriced", "names": f"names {words}",
+                "added": "add row: I added it to my price list in Excel"}.get(choice)
         if not said or (choice == "names" and not words):
-            raise ValueError(f"{card['title']}: leave it unpriced, or name the price list item.")
+            raise ValueError(f"{card['title']}: leave it unpriced, name the price list item, or add it to your list.")
         return f"- Warning item {card['po']} '{card['title']}': Sam: \"{said}\""
     if card["kind"] == "pick":
         if choice not in ("0", "1") or int(choice) >= len(card["options"]):

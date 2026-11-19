@@ -89,6 +89,14 @@ class HouseState(unittest.TestCase):
         (empty / "01 intake").mkdir()
         self.assertEqual(houses.all_houses(Folder(empty)), [])
 
+    def test_sams_words_nothing_to_ask_for_in_a_cell_do_not_stop_the_request(self):
+        self.drop("05 request")
+        path = self.folder.stage("04 review", HOUSE) / "review-1.md"
+        self.assertNotIn("Nothing to ask for: every row matches", path.read_text(encoding="utf-8"))
+        self.assertIsNone(houses.NOTHING_ON.search("| 3 | x | off (Sam: nothing to ask for on the doors) |"))
+        self.assertIsNotNone(houses.NOTHING_ON.search("intro\nNothing to ask for: every row matches or Sam left it off.\n"))
+        self.assertEqual(self.screen(), houses.PDF)
+
     def test_real_contractor_sees_only_his_houses(self):
         setup = self.folder.root / "reference" / "contractor.md"
         setup.write_text(setup.read_text(encoding="utf-8").replace("practice stand-in", "standing answer"), encoding="utf-8")

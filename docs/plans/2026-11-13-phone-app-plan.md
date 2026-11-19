@@ -1,13 +1,11 @@
 # Build plan: the phone app
 
 From the spec `docs/specs/2026-11-13-phone-app-design.md`. If this plan and the spec disagree, the
-spec's "Done" sentence wins. Status (2026-11-14): steps 0 to 6 and 8 built; ready for testing.
+spec's "Done" sentence wins. Status (2026-11-18): steps 0 to 6 and 8 built; ready for testing.
 Steps 7 (iPhone over Wi-Fi) and 9 (proof of done on real houses) are the testing.
 
 ## Done
-On the laptop that holds the folder, someone on an iPhone in the same room takes a house from its
-POs and a notes photo to an approved, checked request PDF on the phone, with no step outside the
-app, and the money matches a run of the folder by hand to the cent.
+The spec's "Done, in one sentence" is the definition; it lives only there.
 
 ## Must not break
 - Every stage folder, script, rule and template. The app calls them; it never edits them. If a
@@ -52,16 +50,9 @@ The runner is started with the folder's path: `python app/server.py --folder "<p
 to start on a folder with no `reference/contractor.md`.
 
 ## Where a house stands, read off the files
-| Files present | Screen |
-|---|---|
-| None for this house | 2 New house |
-| Intake, no read-back, or a read job running | 3 Reading |
-| Highest read-back is a draft | 4 Check |
-| Sealed read-back, no variance | compare runs, then 5 |
-| Variance, no sealed review | 5 The difference |
-| Sealed review, no committed request | 6 Your PDF |
-| Committed request | 7 Done |
-| Sealed review saying "nothing to ask for" | 7 Done, no PDF |
+Worked out by `app/houses.py` from the house's files every time, never held in memory. That file's
+`stand()` is the one statement of the rule (including the Stopped screen for a record that says
+approved but fails its seal); it is not copied here so it cannot drift.
 
 ## Build order
 Each step ends with its tests passing, the whole suite passing, a commit, and a push to

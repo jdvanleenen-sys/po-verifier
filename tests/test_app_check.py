@@ -141,6 +141,14 @@ class Check(unittest.TestCase):
             with self.subTest(answers=answers), self.assertRaises(steps.Stopped):
                 steps.send_answers(self.folder, Jobs(self.folder), HOUSE, answers, today=DAY)
 
+    def test_after_three_rounds_the_screen_stops_with_call_for_help(self):
+        self.plant(WARNING)
+        for n in (2, 3):
+            shutil.copy(self.read_back, self.where / f"read-back-{n}.md")
+        screen = steps.check_screen(self.folder, HOUSE)
+        self.assertEqual((screen["cards"], screen["ready"]), ([], False))
+        self.assertIn("Call for help", screen["blocked"])
+
     def test_fourth_round_calls_for_help(self):
         self.plant(WARNING)
         for n in (2, 3):
